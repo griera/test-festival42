@@ -1,0 +1,51 @@
+type,title,author,publisher,genre,isbn,location,datetime
+book,La pell freda,Albert Sánchez Piñol,La Campana,Fantasia / Terror,978-84-1234-567-8,,
+book,Cicle de les Fundacions,Isaac Asimov,Edhasa,Ciència-ficció,978-84-9876-543-2,,
+book,El Senyor dels Anells: La Comunitat de l'Anell,J.R.R. Tolkien,Minotauro,Fantasia èpica,978-84-4507-140-3,,
+book,Dune,Frank Herbert,Nova,Ciència-ficció,978-84-6665-824-9,,
+book,Neuromàntic,William Gibson,Minotauro,Ciberpunk,978-84-4507-353-7,,
+book,La carretera,Cormac McCarthy,Mondadori,Distopia,978-84-3972-056-1,,
+book,La història interminable,Michael Ende,Alfaguara,Fantasía infantil/juvenil,978-84-2044-884-8,,
+book,Fahrenheit 451,Ray Bradbury,Minotauro,Ciència-ficció,978-84-4507-351-3,,
+book,1984,George Orwell,Destino,Distopia,978-84-2334-539-7,,
+book,Frankenstein,Mary Shelley,Alianza Editorial,Gòtic / Ciència-ficció,978-84-2067-422-3,,
+book,Dràcula,Bram Stoker,Valdemar,Terror / Gòtic,978-84-7702-340-5,,
+book,La mà esquerra de la foscor,Ursula K. Le Guin,Minotauro,Ciència-ficció,978-84-4507-688-0,,
+book,Solaris,Stanisław Lem,Impedimenta,Ciència-ficció,978-84-9371-125-9,,
+book,El priorat de l'arbre taronja,Samantha Shannon,Sembra Llibres,Fantasia èpica,978-84-1672-870-4,,
+book,La guadaña,Neal Shusterman,Elflein,Distopia / YA,978-84-1734-112-4,,
+book,Estació Onze,Emily St. John Mandel,Kalandraka,Distopia,978-84-8464-989-1,,
+book,L'ull del món,Robert Jordan,Minotauro,Fantasia èpica,978-84-4507-440-4,,
+book,Joc de trons,George R.R. Martin,Gigamesh,Fantasia heroica,978-84-9621-277-2,,
+book,La dimensió oculta,Liu Cixin,Ediciones B,Ciència-ficció dura,978-84-6665-983-3,,
+book,American Gods,Neil Gaiman,Roca Editorial,Fantasia urbana,978-84-9918-454-8,,
+book,Malaz: Els jardins de la lluna,Steven Erikson,Nova,Fantasia fosca,978-84-1734-129-2,,
+book,Hyperion,Dan Simmons,Ediciones B,Ciència-ficció,978-84-6662-817-1,,
+book,La ciutat i la ciutat,China Miéville,Nova,Fantasia / Noir,978-84-4500-093-9,,
+book,Ready Player One,Ernest Cline,Ediciones B,Ciència-ficció / Frikis,978-84-6664-933-9,,
+book,Cuentos de Terramar,Ursula K. Le Guin,Minotauro,Fantasia,978-84-4507-399-5,,
+book,La zona morta,Stephen King,Debolsillo,Terror / Sobrenatural,978-84-9759-373-1,,
+book,It,Stephen King,Debolsillo,Terror,978-84-9908-456-5,,
+book,El resplendor,Stephen King,Debolsillo,Terror,978-84-9759-379-3,,
+book,Fundació i Imperi,Isaac Asimov,Edhasa,Ciència-ficció,978-84-9876-544-9,,
+book,Segona Fundació,Isaac Asimov,Edhasa,Ciència-ficció,978-84-9876-545-6,,
+talk,Conferència inaugural: El poder de la fantasia,Ursula K. Le Guin (In memoriam),,,,Auditori Principal,04/11/2026 - 10:30h
+talk,Taula rodona: La ciència-ficció catalana avui,Albert Sánchez Piñol,,,,Sala de Conferències A,04/11/2026 - 12:00h
+talk,El futur de la intel·ligència artificial a la literatura,Liu Cixin,,,,Auditori Principal,05/11/2026 - 17:00h
+talk,Mites i llegendes en la fantasia moderna,Samantha Shannon,,,,Sala Polivalent,06/11/2026 - 11:30h
+talk,Terror còsmic i modernitat,Stephen King (Online/Vídeo),,,,Auditori Principal,06/11/2026 - 19:00h
+talk,Creació de mons impossibles,George R.R. Martin,,,,Auditori Principal,07/11/2026 - 18:00h
+talk,Ciberpunk i realitat actual,William Gibson,,,,Sala de Conferències B,08/11/2026 - 11:00h
+talk,De Tolkien als jocs de rol,J.R.R. Tolkien (Recordatori històric),,,,Sala Polivalent,08/11/2026 - 13:00h
+talk,Distopies juvenils: realitat o advertència,Neal Shusterman,,,,Sala de Conferències A,08/11/2026 - 16:30h
+talk,Cloenda del Festival 42: Premis i comiat,Organització Festival 42,,,,Auditori Principal,08/11/2026 - 20:00h
+signing,Signatura d'exemplars de la seva obra,Albert Sánchez Piñol,,,,Estand 12 (La Campana),04/11/2026 - 13:30h
+signing,Trobada i signatura de llibres,Samantha Shannon,,,,Estand 24 (Sembra Llibres),05/11/2026 - 13:00h
+signing,Signatura de novel·les de ciència-ficció,Liu Cixin,,,,Estand 8 (Ediciones B),05/11/2026 - 18:30h
+signing,Firma massiva de llibres de fantasia,George R.R. Martin,,,,Estand Central Gigamesh,07/11/2026 - 12:00h
+signing,Signatura de novetats ciberpunk,William Gibson,,,,Estand 15 (Minotauro),08/11/2026 - 12:30h
+signing,Signatura de distopies juvenils,Neal Shusterman,,,,Estand 19 (Elflein),08/11/2026 - 18:00h
+signing,Signatura col·lectiva d'autors emergents,Diversos Autors,,,,Estand Col·lectiu 42,06/11/2026 - 17:00h
+signing,Signatura de relats fantàstics,Neil Gaiman,,,,Estand 30 (Roca Editorial),07/11/2026 - 16:00h
+signing,Signatura de fantasia èpica,Steven Erikson,,,,Estand 5 (Nova),06/11/2026 - 13:00h
+signing,Firmes especials de títols clàssics,Diversos Autors,,,,Estand d'Informació Festival,08/11/2026 - 10:00h

@@ -1,0 +1,502 @@
+[
+  {
+    "type": "book",
+    "title": "La pell freda",
+    "author": "Albert Sánchez Piñol",
+    "publisher": "La Campana",
+    "genre": "Fantasia / Terror",
+    "isbn": "978-84-1234-567-8",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "Cicle de les Fundacions",
+    "author": "Isaac Asimov",
+    "publisher": "Edhasa",
+    "genre": "Ciència-ficció",
+    "isbn": "978-84-9876-543-2",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "El Senyor dels Anells: La Comunitat de l'Anell",
+    "author": "J.R.R. Tolkien",
+    "publisher": "Minotauro",
+    "genre": "Fantasia èpica",
+    "isbn": "978-84-4507-140-3",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "Dune",
+    "author": "Frank Herbert",
+    "publisher": "Nova",
+    "genre": "Ciència-ficció",
+    "isbn": "978-84-6665-824-9",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "Neuromàntic",
+    "author": "William Gibson",
+    "publisher": "Minotauro",
+    "genre": "Ciberpunk",
+    "isbn": "978-84-4507-353-7",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "La carretera",
+    "author": "Cormac McCarthy",
+    "publisher": "Mondadori",
+    "genre": "Distopia",
+    "isbn": "978-84-3972-056-1",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "La història interminable",
+    "author": "Michael Ende",
+    "publisher": "Alfaguara",
+    "genre": "Fantasía infantil/juvenil",
+    "isbn": "978-84-2044-884-8",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "Fahrenheit 451",
+    "author": "Ray Bradbury",
+    "publisher": "Minotauro",
+    "genre": "Ciència-ficció",
+    "isbn": "978-84-4507-351-3",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "1984",
+    "author": "George Orwell",
+    "publisher": "Destino",
+    "genre": "Distopia",
+    "isbn": "978-84-2334-539-7",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "Frankenstein",
+    "author": "Mary Shelley",
+    "publisher": "Alianza Editorial",
+    "genre": "Gòtic / Ciència-ficció",
+    "isbn": "978-84-2067-422-3",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "Dràcula",
+    "author": "Bram Stoker",
+    "publisher": "Valdemar",
+    "genre": "Terror / Gòtic",
+    "isbn": "978-84-7702-340-5",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "La mà esquerra de la foscor",
+    "author": "Ursula K. Le Guin",
+    "publisher": "Minotauro",
+    "genre": "Ciència-ficció",
+    "isbn": "978-84-4507-688-0",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "Solaris",
+    "author": "Stanisław Lem",
+    "publisher": "Impedimenta",
+    "genre": "Ciència-ficció",
+    "isbn": "978-84-9371-125-9",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "El priorat de l'arbre taronja",
+    "author": "Samantha Shannon",
+    "publisher": "Sembra Llibres",
+    "genre": "Fantasia èpica",
+    "isbn": "978-84-1672-870-4",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "La guadaña",
+    "author": "Neal Shusterman",
+    "publisher": "Elflein",
+    "genre": "Distopia / YA",
+    "isbn": "978-84-1734-112-4",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "Estació Onze",
+    "author": "Emily St. John Mandel",
+    "publisher": "Kalandraka",
+    "genre": "Distopia",
+    "isbn": "978-84-8464-989-1",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "L'ull del món",
+    "author": "Robert Jordan",
+    "publisher": "Minotauro",
+    "genre": "Fantasia èpica",
+    "isbn": "978-84-4507-440-4",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "Joc de trons",
+    "author": "George R.R. Martin",
+    "publisher": "Gigamesh",
+    "genre": "Fantasia heroica",
+    "isbn": "978-84-9621-277-2",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "La dimensió oculta",
+    "author": "Liu Cixin",
+    "publisher": "Ediciones B",
+    "genre": "Ciència-ficció dura",
+    "isbn": "978-84-6665-983-3",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "American Gods",
+    "author": "Neil Gaiman",
+    "publisher": "Roca Editorial",
+    "genre": "Fantasia urbana",
+    "isbn": "978-84-9918-454-8",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "Malaz: Els jardins de la lluna",
+    "author": "Steven Erikson",
+    "publisher": "Nova",
+    "genre": "Fantasia fosca",
+    "isbn": "978-84-1734-129-2",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "Hyperion",
+    "author": "Dan Simmons",
+    "publisher": "Ediciones B",
+    "genre": "Ciència-ficció",
+    "isbn": "978-84-6662-817-1",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "La ciutat i la ciutat",
+    "author": "China Miéville",
+    "publisher": "Nova",
+    "genre": "Fantasia / Noir",
+    "isbn": "978-84-4500-093-9",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "Ready Player One",
+    "author": "Ernest Cline",
+    "publisher": "Ediciones B",
+    "genre": "Ciència-ficció / Frikis",
+    "isbn": "978-84-6664-933-9",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "Cuentos de Terramar",
+    "author": "Ursula K. Le Guin",
+    "publisher": "Minotauro",
+    "genre": "Fantasia",
+    "isbn": "978-84-4507-399-5",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "La zona morta",
+    "author": "Stephen King",
+    "publisher": "Debolsillo",
+    "genre": "Terror / Sobrenatural",
+    "isbn": "978-84-9759-373-1",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "It",
+    "author": "Stephen King",
+    "publisher": "Debolsillo",
+    "genre": "Terror",
+    "isbn": "978-84-9908-456-5",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "El resplendor",
+    "author": "Stephen King",
+    "publisher": "Debolsillo",
+    "genre": "Terror",
+    "isbn": "978-84-9759-379-3",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "Fundació i Imperi",
+    "author": "Isaac Asimov",
+    "publisher": "Edhasa",
+    "genre": "Ciència-ficció",
+    "isbn": "978-84-9876-544-9",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "book",
+    "title": "Segona Fundació",
+    "author": "Isaac Asimov",
+    "publisher": "Edhasa",
+    "genre": "Ciència-ficció",
+    "isbn": "978-84-9876-545-6",
+    "location": "",
+    "datetime": ""
+  },
+  {
+    "type": "talk",
+    "title": "Conferència inaugural: El poder de la fantasia",
+    "author": "Ursula K. Le Guin (In memoriam)",
+    "publisher": "",
+    "genre": "",
+    "isbn": "",
+    "location": "Auditori Principal",
+    "datetime": "04/11/2026 - 10:30h"
+  },
+  {
+    "type": "talk",
+    "title": "Taula rodona: La ciència-ficció catalana avui",
+    "author": "Albert Sánchez Piñol",
+    "publisher": "",
+    "genre": "",
+    "isbn": "",
+    "location": "Sala de Conferències A",
+    "datetime": "04/11/2026 - 12:00h"
+  },
+  {
+    "type": "talk",
+    "title": "El futur de la intel·ligència artificial a la literatura",
+    "author": "Liu Cixin",
+    "publisher": "",
+    "genre": "",
+    "isbn": "",
+    "location": "Auditori Principal",
+    "datetime": "05/11/2026 - 17:00h"
+  },
+  {
+    "type": "talk",
+    "title": "Mites i llegendes en la fantasia moderna",
+    "author": "Samantha Shannon",
+    "publisher": "",
+    "genre": "",
+    "isbn": "",
+    "location": "Sala Polivalent",
+    "datetime": "06/11/2026 - 11:30h"
+  },
+  {
+    "type": "talk",
+    "title": "Terror còsmic i modernitat",
+    "author": "Stephen King (Online/Vídeo)",
+    "publisher": "",
+    "genre": "",
+    "isbn": "",
+    "location": "Auditori Principal",
+    "datetime": "06/11/2026 - 19:00h"
+  },
+  {
+    "type": "talk",
+    "title": "Creació de mons impossibles",
+    "author": "George R.R. Martin",
+    "publisher": "",
+    "genre": "",
+    "isbn": "",
+    "location": "Auditori Principal",
+    "datetime": "07/11/2026 - 18:00h"
+  },
+  {
+    "type": "talk",
+    "title": "Ciberpunk i realitat actual",
+    "author": "William Gibson",
+    "publisher": "",
+    "genre": "",
+    "isbn": "",
+    "location": "Sala de Conferències B",
+    "datetime": "08/11/2026 - 11:00h"
+  },
+  {
+    "type": "talk",
+    "title": "De Tolkien als jocs de rol",
+    "author": "J.R.R. Tolkien (Recordatori històric)",
+    "publisher": "",
+    "genre": "",
+    "isbn": "",
+    "location": "Sala Polivalent",
+    "datetime": "08/11/2026 - 13:00h"
+  },
+  {
+    "type": "talk",
+    "title": "Distopies juvenils: realitat o advertència",
+    "author": "Neal Shusterman",
+    "publisher": "",
+    "genre": "",
+    "isbn": "",
+    "location": "Sala de Conferències A",
+    "datetime": "08/11/2026 - 16:30h"
+  },
+  {
+    "type": "talk",
+    "title": "Cloenda del Festival 42: Premis i comiat",
+    "author": "Organització Festival 42",
+    "publisher": "",
+    "genre": "",
+    "isbn": "",
+    "location": "Auditori Principal",
+    "datetime": "08/11/2026 - 20:00h"
+  },
+  {
+    "type": "signing",
+    "title": "Signatura d'exemplars de la seva obra",
+    "author": "Albert Sánchez Piñol",
+    "publisher": "",
+    "genre": "",
+    "isbn": "",
+    "location": "Estand 12 (La Campana)",
+    "datetime": "04/11/2026 - 13:30h"
+  },
+  {
+    "type": "signing",
+    "title": "Trobada i signatura de llibres",
+    "author": "Samantha Shannon",
+    "publisher": "",
+    "genre": "",
+    "isbn": "",
+    "location": "Estand 24 (Sembra Llibres)",
+    "datetime": "05/11/2026 - 13:00h"
+  },
+  {
+    "type": "signing",
+    "title": "Signatura de novel·les de ciència-ficció",
+    "author": "Liu Cixin",
+    "publisher": "",
+    "genre": "",
+    "isbn": "",
+    "location": "Estand 8 (Ediciones B)",
+    "datetime": "05/11/2026 - 18:30h"
+  },
+  {
+    "type": "signing",
+    "title": "Firma massiva de llibres de fantasia",
+    "author": "George R.R. Martin",
+    "publisher": "",
+    "genre": "",
+    "isbn": "",
+    "location": "Estand Central Gigamesh",
+    "datetime": "07/11/2026 - 12:00h"
+  },
+  {
+    "type": "signing",
+    "title": "Signatura de novetats ciberpunk",
+    "author": "William Gibson",
+    "publisher": "",
+    "genre": "",
+    "isbn": "",
+    "location": "Estand 15 (Minotauro)",
+    "datetime": "08/11/2026 - 12:30h"
+  },
+  {
+    "type": "signing",
+    "title": "Signatura de distopies juvenils",
+    "author": "Neal Shusterman",
+    "publisher": "",
+    "genre": "",
+    "isbn": "",
+    "location": "Estand 19 (Elflein)",
+    "datetime": "08/11/2026 - 18:00h"
+  },
+  {
+    "type": "signing",
+    "title": "Signatura col·lectiva d'autors emergents",
+    "author": "Diversos Autors",
+    "publisher": "",
+    "genre": "",
+    "isbn": "",
+    "location": "Estand Col·lectiu 42",
+    "datetime": "06/11/2026 - 17:00h"
+  },
+  {
+    "type": "signing",
+    "title": "Signatura de relats fantàstics",
+    "author": "Neil Gaiman",
+    "publisher": "",
+    "genre": "",
+    "isbn": "",
+    "location": "Estand 30 (Roca Editorial)",
+    "datetime": "07/11/2026 - 16:00h"
+  },
+  {
+    "type": "signing",
+    "title": "Signatura de fantasia èpica",
+    "author": "Steven Erikson",
+    "publisher": "",
+    "genre": "",
+    "isbn": "",
+    "location": "Estand 5 (Nova)",
+    "datetime": "06/11/2026 - 13:00h"
+  },
+  {
+    "type": "signing",
+    "title": "Firmes especials de títols clàssics",
+    "author": "Diversos Autors",
+    "publisher": "",
+    "genre": "",
+    "isbn": "",
+    "location": "Estand d'Informació Festival",
+    "datetime": "08/11/2026 - 10:00h"
+  }
+]
