@@ -41,6 +41,22 @@
             <span class="absolute left-4 top-4 text-slate-400 text-xl">🔍</span>
         </div>
 
+        <!-- Type Filter Chips -->
+        <div class="flex flex-wrap justify-center gap-2 mt-4" id="typeFilterContainer">
+            <button onclick="setTypeFilter('all')" id="btn-filter-all" class="type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-indigo-600 text-white border-indigo-500">
+                Tots
+            </button>
+            <button onclick="setTypeFilter('book')" id="btn-filter-book" class="type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
+                📚 Llibres
+            </button>
+            <button onclick="setTypeFilter('talk')" id="btn-filter-talk" class="type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
+                🎤 Xerrades
+            </button>
+            <button onclick="setTypeFilter('signing')" id="btn-filter-signing" class="type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
+                ✍️ Signatures
+            </button>
+        </div>
+
         <!-- Loading State -->
         <div id="loadingIndicator" class="text-center py-12 text-slate-400">
             Carregant el catàleg del festival...
@@ -87,6 +103,9 @@
         // Timer reference used for the search input debounce delay (prevents main thread blocking while typing)
         let searchTimeout = null;
 
+        // Active type filter setting: 'all', 'book', 'talk', or 'signing'
+        let currentTypeFilter = 'all';
+
         // Fetch JSON data asynchronously when the page loads
         window.addEventListener('DOMContentLoaded', async () => {
             try {
@@ -118,24 +137,43 @@
             return val;
         }
 
-        // Filter and handle search query input with Debounce optimization
-        // When typing in search, reset the limit back to 50
-        function handleSearch() {
-            // Clear the previous timer if the user keeps typing
-            clearTimeout(searchTimeout);
+        // Updates active type filter and re-runs the search filtering
+        function setTypeFilter(type) {
+            currentTypeFilter = type;
+            visibleBooksLimit = 50; // Reset limit when switching filter
 
-            // Wait 300ms after the user stops typing before executing the search and render
-            searchTimeout = setTimeout(() => {
-                visibleBooksLimit = 50; // Reset limit on new search query
-                const query = document.getElementById('searchInput').value.toLowerCase().trim();
-
-                if (query === '') {
-                    lastFilteredData = fairData;
-                    renderResults(fairData);
-                    return;
+            // Update UI button styles
+            const buttons = ['all', 'book', 'talk', 'signing'];
+            buttons.forEach(t => {
+                const btn = document.getElementById(`btn-filter-${t}`);
+                if (btn) {
+                    if (t === type) {
+                        btn.className = 'type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-indigo-600 text-white border-indigo-500';
+                    } else {
+                        btn.className = 'type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
+                    }
                 }
+            });
 
-                lastFilteredData = fairData.filter(item => {
+            // Trigger search with updated filter type immediately
+            executeSearch();
+        }
+
+        // Refactored core search logic to combine query input and type filtering
+        // When typing in search, reset the limit back to 50
+        function executeSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+
+            let results = fairData;
+
+            // Filter by item type if not 'all'
+            if (currentTypeFilter !== 'all') {
+                results = results.filter(item => item.type === currentTypeFilter);
+            }
+
+            // Filter by search query text if present
+            if (query !== '') {
+                results = results.filter(item => {
                     const matchTitle = item.title && item.title.toLowerCase().includes(query);
                     const matchAuthor = item.author && item.author.toLowerCase().includes(query);
                     const matchPublisher = item.publisher && item.publisher.toLowerCase().includes(query);
@@ -147,8 +185,20 @@
 
                     return matchTitle || matchAuthor || matchPublisher || matchCollection || matchCategory || matchEan || matchLocation || matchDatetime;
                 });
+            }
 
-                renderResults(lastFilteredData, query);
+            lastFilteredData = results;
+            renderResults(results, query);
+        }
+
+        // Filter and handle search query input with Debounce optimization
+        function handleSearch() {
+            clearTimeout(searchTimeout);
+
+            // Wait 300ms after the user stops typing before executing the search and render
+            searchTimeout = setTimeout(() => {
+                visibleBooksLimit = 50; // Reset limit on new search query
+                executeSearch();
             }, 300); // 300 milliseconds delay prevents UI freezing while typing
         }
 
