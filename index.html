@@ -241,11 +241,16 @@
             const container = document.getElementById('resultsContainer');
 
             if (data.length === 0) {
-                container.innerHTML = `
+                const emptyHtml = `
                     <div class="text-center py-12 bg-slate-800 rounded-xl shadow-sm border border-slate-700">
                         <p class="text-slate-400 text-lg">No s'ha trobat cap resultat per "${query}".</p>
                     </div>
                 `;
+
+                // Performance optimization: Render asynchronously via requestAnimationFrame
+                requestAnimationFrame(() => {
+                    container.innerHTML = emptyHtml;
+                });
                 return;
             }
 
@@ -350,7 +355,10 @@
                 `;
             }
 
-            container.innerHTML = htmlContent;
+            // Performance optimization: Push DOM mutation to the next repaint frame
+            requestAnimationFrame(() => {
+                container.innerHTML = htmlContent;
+            });
         }
 
         // Quick helper when clicking on an author name to instantly filter everything related to them
