@@ -113,21 +113,48 @@
         // Active type filter setting: 'all', 'book', 'talk', or 'signing'
         let currentTypeFilter = 'all';
 
-        // Fetch JSON data asynchronously when the page loads
+        // Fetch JSON data asynchronously when the page loads and securely load initial URL search/filters
         window.addEventListener('DOMContentLoaded', async () => {
             try {
                 const response = await fetch('data.json');
                 if (!response.ok) throw new Error('Network response was not ok');
                 fairData = await response.json();
 
-                // CRUCIAL: Initialize lastFilteredData with all data for the home page view
-                lastFilteredData = fairData;
-
-                // Hide loading and show results
+                // Hide loading and show results container
                 document.getElementById('loadingIndicator').classList.add('hidden');
                 document.getElementById('resultsContainer').classList.remove('hidden');
 
-                renderResults(fairData);
+                // Read URL query parameters safely
+                const urlParams = new URLSearchParams(window.location.search);
+                const initialQuery = urlParams.get('search');
+                const initialType = urlParams.get('type');
+
+                // Apply initial type filter if valid
+                if (initialType && ['book', 'talk', 'signing'].includes(initialType)) {
+                    currentTypeFilter = initialType;
+
+                    // Update UI buttons visually
+                    const buttons = ['all', 'book', 'talk', 'signing'];
+                    buttons.forEach(t => {
+                        const btn = document.getElementById(`btn-filter-${t}`);
+                        if (btn) {
+                            if (t === initialType) {
+                                btn.className = 'type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-indigo-600 text-white border-indigo-500';
+                            } else {
+                                btn.className = 'type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
+                            }
+                        }
+                    });
+                }
+
+                // Apply initial search query safely into the input field (.value is safe against XSS)
+                if (initialQuery) {
+                    document.getElementById('searchInput').value = initialQuery;
+                }
+
+                // Run initial search/render matching URL state
+                executeSearch();
+
             } catch (error) {
                 console.error('Error loading data:', error);
                 document.getElementById('loadingIndicator').innerHTML = `
@@ -164,6 +191,14 @@
             return val;
         }
 
+        // Helper to escape HTML special characters and prevent DOM-based XSS from URL params
+        function escapeHTML(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>'"]/g,
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
         // Updates active type filter and re-runs the search filtering
         function setTypeFilter(type) {
             currentTypeFilter = type;
@@ -186,7 +221,26 @@
             executeSearch();
         }
 
-        // Refactored core search logic to combine query input and type filtering
+        // Updates browser URL query parameters without reloading the page securely
+        function updateUrlParams(query, type) {
+            const url = new URL(window.location);
+
+            if (query && query.trim() !== '') {
+                url.searchParams.set('search', query);
+            } else {
+                url.searchParams.delete('search');
+            }
+
+            if (type && type !== 'all') {
+                url.searchParams.set('type', type);
+            } else {
+                url.searchParams.delete('type');
+            }
+
+            window.history.replaceState({}, '', url);
+        }
+
+	// Core search logic combining filters, text search, and secure URL persistence
         // When typing in search, reset the limit back to 50
         function executeSearch() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
@@ -215,6 +269,10 @@
             }
 
             lastFilteredData = results;
+
+            // Sync state to URL parameters securely (persistence)
+            updateUrlParams(query, currentTypeFilter);
+
             renderResults(results, query);
         }
 
@@ -243,7 +301,7 @@
             if (data.length === 0) {
                 const emptyHtml = `
                     <div class="text-center py-12 bg-slate-800 rounded-xl shadow-sm border border-slate-700">
-                        <p class="text-slate-400 text-lg">No s'ha trobat cap resultat per "${query}".</p>
+                        <p class="text-slate-400 text-lg">No s'ha trobat cap resultat per "${escapeHTML(query)}".</p>
                     </div>
                 `;
 
