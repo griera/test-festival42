@@ -70,8 +70,22 @@
 
     <!-- JavaScript Application Logic -->
     <script>
-        // Global variable to store festival dataset loaded from JSON
+
+        // ==========================================
+        // GLOBAL APPLICATION STATE
+        // ==========================================
+
+        // Stores the complete festival dataset loaded from 'data.json'
         let fairData = [];
+
+        // Controls the initial and progressive book display limit (Result Capping for INP performance optimization)
+        let visibleBooksLimit = 50;
+
+        // Stores the latest search or filter results to preserve state when loading more items
+        let lastFilteredData = [];
+
+        // Timer reference used for the search input debounce delay (prevents main thread blocking while typing)
+        let searchTimeout = null;
 
         // Fetch JSON data asynchronously when the page loads
         window.addEventListener('DOMContentLoaded', async () => {
@@ -79,6 +93,9 @@
                 const response = await fetch('data.json');
                 if (!response.ok) throw new Error('Network response was not ok');
                 fairData = await response.json();
+
+                // CRUCIAL: Initialize lastFilteredData with all data for the home page view
+                lastFilteredData = fairData;
 
                 // Hide loading and show results
                 document.getElementById('loadingIndicator').classList.add('hidden');
@@ -101,24 +118,24 @@
             return val;
         }
 
-	// Debounce timer variable
-        let searchTimeout = null;
-
         // Filter and handle search query input with Debounce optimization
+        // When typing in search, reset the limit back to 50
         function handleSearch() {
             // Clear the previous timer if the user keeps typing
             clearTimeout(searchTimeout);
 
             // Wait 300ms after the user stops typing before executing the search and render
             searchTimeout = setTimeout(() => {
+                visibleBooksLimit = 50; // Reset limit on new search query
                 const query = document.getElementById('searchInput').value.toLowerCase().trim();
 
                 if (query === '') {
+                    lastFilteredData = fairData;
                     renderResults(fairData);
                     return;
                 }
 
-                const filtered = fairData.filter(item => {
+                lastFilteredData = fairData.filter(item => {
                     const matchTitle = item.title && item.title.toLowerCase().includes(query);
                     const matchAuthor = item.author && item.author.toLowerCase().includes(query);
                     const matchPublisher = item.publisher && item.publisher.toLowerCase().includes(query);
@@ -131,11 +148,18 @@
                     return matchTitle || matchAuthor || matchPublisher || matchCollection || matchCategory || matchEan || matchLocation || matchDatetime;
                 });
 
-                renderResults(filtered, query);
+                renderResults(lastFilteredData, query);
             }, 300); // 300 milliseconds delay prevents UI freezing while typing
         }
 
-        // Render results into HTML structure
+        // Function triggered when clicking "Load More Books" button
+        function loadMoreBooks() {
+            visibleBooksLimit += 50; // Increase limit by 50
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            renderResults(lastFilteredData.length > 0 || query !== '' ? lastFilteredData : fairData, query);
+        }
+
+        // Render results into HTML structure with performance capping
         function renderResults(data, query = '') {
             const container = document.getElementById('resultsContainer');
 
@@ -149,9 +173,13 @@
             }
 
             // Separate data into categories based on the 'type' field
-            const books = data.filter(item => item.type === 'book');
+            const allBooks = data.filter(item => item.type === 'book');
             const talks = data.filter(item => item.type === 'talk');
             const signings = data.filter(item => item.type === 'signing');
+
+            // PERFORMANCE OPTIMIZATION: Apply dynamic limit based on state
+            const books = allBooks.slice(0, visibleBooksLimit);
+            const hasMoreBooks = allBooks.length > visibleBooksLimit;
 
             let htmlContent = '';
 
@@ -159,7 +187,10 @@
             if (books.length > 0) {
                 htmlContent += `
                     <section>
-                        <h2 class="text-xl font-bold text-indigo-400 mb-3 flex items-center gap-2">📚 Llibres</h2>
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="text-xl font-bold text-indigo-400 flex items-center gap-2">📚 Llibres</h2>
+                            <span class="text-xs text-slate-400">Mostrant ${books.length} de ${allBooks.length}</span>
+                        </div>
                         <div class="grid gap-4 sm:grid-cols-2">
                             ${books.map(book => `
                                 <div class="bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-700 hover:border-indigo-500 transition-colors flex flex-col justify-between">
@@ -184,11 +215,19 @@
                                 </div>
                             `).join('')}
                         </div>
+
+                        ${hasMoreBooks ? `
+                            <div class="text-center mt-6">
+                                <button onclick="loadMoreBooks()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
+                                    Carregar més llibres (${allBooks.length - books.length} restants)...
+                                </button>
+                            </div>
+                        ` : ''}
                     </section>
                 `;
             }
 
-            // Render Talks Section if any (unchanged style)
+            // Render Talks Section if any (unchanged)
             if (talks.length > 0) {
                 htmlContent += `
                     <section class="mt-6">
@@ -211,7 +250,7 @@
                 `;
             }
 
-            // Render Signings Section if any (unchanged style)
+            // Render Signings Section if any (unchanged)
             if (signings.length > 0) {
                 htmlContent += `
                     <section class="mt-6">
