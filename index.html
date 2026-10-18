@@ -101,29 +101,38 @@
             return val;
         }
 
-        // Filter and handle search query input
+	// Debounce timer variable
+        let searchTimeout = null;
+
+        // Filter and handle search query input with Debounce optimization
         function handleSearch() {
-            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            // Clear the previous timer if the user keeps typing
+            clearTimeout(searchTimeout);
 
-            if (query === '') {
-                renderResults(fairData);
-                return;
-            }
+            // Wait 300ms after the user stops typing before executing the search and render
+            searchTimeout = setTimeout(() => {
+                const query = document.getElementById('searchInput').value.toLowerCase().trim();
 
-            const filtered = fairData.filter(item => {
-                const matchTitle = item.title && item.title.toLowerCase().includes(query);
-                const matchAuthor = item.author && item.author.toLowerCase().includes(query);
-                const matchPublisher = item.publisher && item.publisher.toLowerCase().includes(query);
-                const matchCollection = item.collection && item.collection.toLowerCase().includes(query);
-                const matchCategory = item.category && item.category.toLowerCase().includes(query);
-                const matchEan = item.ean && item.ean.toLowerCase().includes(query);
-                const matchLocation = item.location && item.location.toLowerCase().includes(query);
-                const matchDatetime = item.datetime && item.datetime.toLowerCase().includes(query);
+                if (query === '') {
+                    renderResults(fairData);
+                    return;
+                }
 
-                return matchTitle || matchAuthor || matchPublisher || matchCollection || matchCategory || matchEan || matchLocation || matchDatetime;
-            });
+                const filtered = fairData.filter(item => {
+                    const matchTitle = item.title && item.title.toLowerCase().includes(query);
+                    const matchAuthor = item.author && item.author.toLowerCase().includes(query);
+                    const matchPublisher = item.publisher && item.publisher.toLowerCase().includes(query);
+                    const matchCollection = item.collection && item.collection.toLowerCase().includes(query);
+                    const matchCategory = item.category && item.category.toLowerCase().includes(query);
+                    const matchEan = item.ean && item.ean.toLowerCase().includes(query);
+                    const matchLocation = item.location && item.location.toLowerCase().includes(query);
+                    const matchDatetime = item.datetime && item.datetime.toLowerCase().includes(query);
 
-            renderResults(filtered, query);
+                    return matchTitle || matchAuthor || matchPublisher || matchCollection || matchCategory || matchEan || matchLocation || matchDatetime;
+                });
+
+                renderResults(filtered, query);
+            }, 300); // 300 milliseconds delay prevents UI freezing while typing
         }
 
         // Render results into HTML structure
