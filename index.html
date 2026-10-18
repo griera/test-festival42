@@ -69,6 +69,13 @@
 
     </main>
 
+    <!-- Scroll to Top Floating Button -->
+    <button onclick="scrollToTop()" id="scrollToTopBtn" class="fixed bottom-6 right-6 z-50 hidden bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-full shadow-lg border border-indigo-500 transition-all cursor-pointer items-center justify-center" aria-label="Tornar a dalt">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+        </svg>
+    </button>
+
     <!-- Footer -->
     <footer class="bg-slate-950 text-slate-400 text-center py-6 text-sm border-t border-slate-800 px-4">
         <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -128,6 +135,26 @@
                 `;
             }
         });
+
+        // Show or hide the "Scroll to Top" button based on window vertical scroll position
+        window.addEventListener('scroll', () => {
+            const scrollBtn = document.getElementById('scrollToTopBtn');
+            if (window.scrollY > 300) {
+                scrollBtn.classList.remove('hidden');
+                scrollBtn.classList.add('flex');
+            } else {
+                scrollBtn.classList.add('hidden');
+                scrollBtn.classList.remove('flex');
+            }
+        });
+
+        // Smooth scroll window back to top
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
 
         // Helper function to return '-' if a field is null, undefined, or empty string
         function safeValue(val) {
