@@ -75,7 +75,7 @@ This static prototype is audited locally using **OWASP ZAP** via Docker.
 
 ### Run local scan
 ```bash
-docker run --rm -v $(pwd):/zap/wrk/:rw -t --add-host=host.docker.internal:host-gateway ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t [http://host.docker.internal:8000/index.html](http://host.docker.internal:8000/index.html) -J zap_report.json -r zap_report.html
+docker run --rm -v $(pwd):/zap/wrk/:rw -t --add-host=host.docker.internal:host-gateway ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://host.docker.internal:8000 -J zap_report.json -r zap_report.html
 
 ```
 
