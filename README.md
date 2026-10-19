@@ -65,6 +65,22 @@ python3 scripts/convert_csv_to_json.py --input data/catalog.csv --output data.js
 
 ---
 
+## 🛡️ Security Audit
+
+This static prototype is audited locally using **OWASP ZAP** via Docker.
+
+### Prerequisites
+* Docker
+* Local server running (`python3 -m http.server 8000`)
+
+### Run local scan
+```bash
+docker run --rm -v $(pwd):/zap/wrk/:rw -t --add-host=host.docker.internal:host-gateway ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t [http://host.docker.internal:8000/index.html](http://host.docker.internal:8000/index.html) -J zap_report.json -r zap_report.html
+
+```
+
+---
+
 ## 📄 License
 
 Open-source project distributed under the [MIT License](https://opensource.org/licenses/MIT). Feel free to fork or adapt for other cultural events or book fairs.

@@ -16,3 +16,7 @@ __pycache__/
 *.pyd
 .venv/
 env/
+
+# OWASP ZAP generated reports
+zap_report.html
+zap_report.json
