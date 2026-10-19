@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Festival 42 - Festival Gèneres Fantàstics de Barcelona</title>
-    <!-- Prevent search engines from indexing and following links on this page -->
+    <!-- Crawler access rules definition -->
     <meta name="robots" content="noindex, nofollow">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
@@ -98,7 +98,7 @@
         // GLOBAL APPLICATION STATE
         // ==========================================
 
-        // Stores the complete festival dataset loaded from 'data.json'
+        // Stores main application records
         let fairData = [];
 
         // Controls the initial and progressive book display limit (Result Capping for INP performance optimization)
@@ -124,7 +124,7 @@
                 document.getElementById('loadingIndicator').classList.add('hidden');
                 document.getElementById('resultsContainer').classList.remove('hidden');
 
-                // Read URL query parameters safely
+                // Read URL location parameters
                 const urlParams = new URLSearchParams(window.location.search);
                 const initialQuery = urlParams.get('search');
                 const initialType = urlParams.get('type');
@@ -147,7 +147,7 @@
                     });
                 }
 
-                // Apply initial search query safely into the input field (.value is safe against XSS)
+                // Load initial search parameters (.value is safe against XSS)
                 if (initialQuery) {
                     document.getElementById('searchInput').value = initialQuery;
                 }
@@ -183,7 +183,7 @@
             });
         }
 
-        // Helper function to return '-' if a field is null, undefined, or empty string
+        // Utility function to return '-' if a field is null, undefined, or empty string
         function safeValue(val) {
             if (!val || val === 'null' || String(val).trim() === '') {
                 return '-';
@@ -191,7 +191,7 @@
             return val;
         }
 
-        // Helper to escape HTML special characters and prevent DOM-based XSS from URL params
+        // Utility function to sanitize input strings before rendering
         function escapeHTML(str) {
             if (!str) return '';
             return String(str).replace(/[&<>'"]/g,
@@ -221,7 +221,7 @@
             executeSearch();
         }
 
-        // Updates browser URL query parameters without reloading the page securely
+        // Modify address bar state dynamically without page refresh
         function updateUrlParams(query, type) {
             const url = new URL(window.location);
 
@@ -247,12 +247,12 @@
 
             let results = fairData;
 
-            // Filter by item type if not 'all'
+            // Apply category selection criteria
             if (currentTypeFilter !== 'all') {
                 results = results.filter(item => item.type === currentTypeFilter);
             }
 
-            // Filter by search query text if present
+            // Apply text search criteria if available
             if (query !== '') {
                 results = results.filter(item => {
                     const matchTitle = item.title && item.title.toLowerCase().includes(query);
@@ -276,13 +276,13 @@
             renderResults(results, query);
         }
 
-        // Filter and handle search query input with Debounce optimization
+        // Process text input events with timing control
         function handleSearch() {
             clearTimeout(searchTimeout);
 
-            // Wait 300ms after the user stops typing before executing the search and render
+            // Delay input handler for performance optimization
             searchTimeout = setTimeout(() => {
-                visibleBooksLimit = 50; // Reset limit on new search query
+                visibleBooksLimit = 50; // Reset view parameters on update
                 executeSearch();
             }, 300); // 300 milliseconds delay prevents UI freezing while typing
         }
@@ -317,7 +317,7 @@
             const talks = data.filter(item => item.type === 'talk');
             const signings = data.filter(item => item.type === 'signing');
 
-            // PERFORMANCE OPTIMIZATION: Apply dynamic limit based on state
+            // Performance optimization: Apply dynamic limit based on state
             const books = allBooks.slice(0, visibleBooksLimit);
             const hasMoreBooks = allBooks.length > visibleBooksLimit;
 
@@ -367,7 +367,7 @@
                 `;
             }
 
-            // Render Talks Section if any (unchanged)
+            // Render Talks Section if any
             if (talks.length > 0) {
                 htmlContent += `
                     <section class="mt-6">
@@ -390,7 +390,7 @@
                 `;
             }
 
-            // Render Signings Section if any (unchanged)
+            // Render Signings Section if any
             if (signings.length > 0) {
                 htmlContent += `
                     <section class="mt-6">
