@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
 import csv
 import json
 import argparse
+import os
 
 def parse_float(val):
     """ Convert numeric strings with a comma (e.g., '28,80') to float (28.80). """
@@ -45,6 +47,15 @@ def convert_csv_to_json(csv_filename, json_filename, minify=True):
                     item[clean_key] = parse_float(clean_val)
                 else:
                     item[clean_key] = clean_val
+
+            # Add local cover image path based on the EAN field
+            ean_value = item.get("ean", "")
+            cover_path = f"assets/covers/{ean_value}.png"
+
+            if ean_value and os.path.exists(cover_path):
+                item["cover"] = cover_path
+            else:
+                item["cover"] = ""
 
             records.append(item)
 

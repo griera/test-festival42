@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import random
 import argparse
 
@@ -8,7 +9,7 @@ def generate_large_csv(output_filename, num_books, num_talks, num_signings):
     """
     # Base header matching your exact format
     header = "type;title;ean;author;publisher;collection;category;quantity;price;discount;tax;total;location;datetime\n"
-
+    
     # Base rows provided by the user
     base_rows = [
         "book;ACCELERANDO;9788498891621;CHARLES STROSS;ALAMUT;FONDO;FICCION MODERNA Y CONTEMPORANEA, CIENCIA FICCION, Ciencia ficci¢n;10;28,80;0;4;299,52;;",
@@ -39,34 +40,34 @@ def generate_large_csv(output_filename, num_books, num_talks, num_signings):
         "VALKIRIA", "FANTASMA", "PARADOJA", "NEXUS", "SINGULARIDAD", "HECATOMBE", "LABORATORIO", "MUTANTE", "STELLAR",
         "ABISMO", "HERMANDAD", "PROFECIA", "ATOMIC", "FRACTAL", "QUIMERA", "ALQUIMIA", "SANTUARIO", "VANGUARDIA"
     ]
-    
+
     nouns = [
         "DEL TIEMPO", "DE MARTE", "DEL ABISMO", "SYNTH", "QUANTUM", "DE LA NIEBLA", "DE CRISTAL", "OFERTA", "CYBER", "STEAMPUNK",
-        "DE LA LUNA", "SINTETICO", "DE ACERO", "MULTIVERSO", "DE LA OBSIDIANA", "NEON", "DE LA TIERRA ROTA", "NEBULOSA", 
+        "DE LA LUNA", "SINTETICO", "DE ACERO", "MULTIVERSO", "DE LA OBSIDIANA", "NEON", "DE LA TIERRA ROTA", "NEBULOSA",
         "PARADOJA", "DEL VACIO", "DE LOS ANCESTROS", "DE LA TORRE", "DEL CICLÓN", "DE LA SOMBRA", "DE LA MATRIX",
         "DE LOS TITANES", "DEL OCASO", "DE LA GALAXIA", "DEL CORTEX", "DE LA ALQUIMIA", "DEL ECLIPSE", "DE LA ETERNIDAD"
     ]
-    
+
     authors = [
         "MARTÍNEZ, CARLOS", "GARCÍA, LAURA", "RODRÍGUEZ, PERE", "SMITH, JOHN", "KIM, MIN-HO", "DU PONT, CLAIRE", "VANCE, JACK", "MENDOZA, ELENA",
-        "ASIMOV, ISAAC", "LE GUIN, URSULA", "SHELLEY, MARY", "VANDERMEER, JEFF", "CHAMBERS, BECKY", "GARCÍA BINDER, MARTA", 
+        "ASIMOV, ISAAC", "LE GUIN, URSULA", "SHELLEY, MARY", "VANDERMEER, JEFF", "CHAMBERS, BECKY", "GARCÍA BINDER, MARTA",
         "GÓMEZ, NURIA", "SOLER, MARC", "PLAZA, JOAN", "CASTILLO, SOFÍA", "NAVARRO, HÉCTOR", "ESTÉVEZ, BEATRIZ",
         "SANDOVAL, RAÚL", "GIBSON, WILLIAM", "PK DICK, PHILIP", "CLARKE, ARTHUR C.", "LOVECRAFT, H.P.", "SHELLEY, MARY",
         "SHELBY, THOMAS", "WALTERS, ANNA", "HERNÁNDEZ, CARLES", "BLANCO, MIREIA", "ROIG, CLAUDIA", "FERNÁNDEZ, BORJA"
     ]
-    
+
     publishers = [
         "ALAMUT", "CRONONAUTA", "EDICIONES MINOTAURO", "NOCTURNA", "LITERUP", "VERSIÓN BETA",
         "MINOTAURO", "INSÓLITA EDITORIAL", "PULP BOOKS", "EDITORIAL LUNAR", "FANTASY EDICIONES", "NEO LIBROS",
         "FIBRA EDITORIAL", "GAIA EDICIONES", "VALHALLA PRESS", "HORROR VACUI", "BAJAMAR EDITORES", "APACHE"
     ]
-    
+
     collections = [
         "FANTASIA OSCURA", "CIENCIA FICCION MODERNA", "NEOPULP", "FUTUROS IMPERFECTOS", "GENERAL",
         "FANTASÍA ÉPICA", "ESPECULATIVA", "HORROR CÓSMICO", "CIENCIA FICCIÓN CLÁSICA", "NARRATIVA EXTRAÑA", "TERROR URBANO",
         "RECUERDOS DEL FUTURO", "MUJERES QUE LEEN MUJERES", "AMARILLA", "ANTOLOGIAS LUJO", "FONDO"
     ]
-    
+
     categories = [
         "CIENCIA FICCION, FANTASIA", "CUENTOS DE TERROR Y FANTASMAS", "FICCION MODERNA Y CONTEMPORANEA", "POESIA",
         "ANTOLOGIAS (NO POETICAS), FANTASIA", "FICCION RELIGIOSA Y ESPIRITUAL, MENTE, CUERPO Y ESPIRITU",
@@ -94,7 +95,7 @@ def generate_large_csv(output_filename, num_books, num_talks, num_signings):
         price_str = str(price_val).replace('.', ',')
         total_val = round(price_val * qty, 2)
         total_str = str(total_val).replace('.', ',')
-
+        
         row = f"book;{title};{ean};{author};{pub};{col};{cat};{qty};{price_str};0;4;{total_str};;"
         generated_rows.append(row)
 
@@ -104,7 +105,7 @@ def generate_large_csv(output_filename, num_books, num_talks, num_signings):
         speaker = f"{random.choice(authors)} & {random.choice(authors)}"
         loc = random.choice(locations_talks)
         dt = f"{random.choice(days)} {random.choice(hours)}"
-
+        
         row = f"talk;{title};;{speaker};;;;0;0;0;0;0;{loc};{dt}"
         generated_rows.append(row)
 
@@ -114,7 +115,7 @@ def generate_large_csv(output_filename, num_books, num_talks, num_signings):
         author = random.choice(authors)
         loc = random.choice(locations_signings)
         dt = f"{random.choice(days)} {random.choice(hours)}"
-
+        
         row = f"signing;{title};;{author};;;;0;0;0;0;0;{loc};{dt}"
         generated_rows.append(row)
 
@@ -143,7 +144,7 @@ if __name__ == "__main__":
                "     python3 generate_large_csv.py --help",
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
-
+    
     parser.add_argument(
         "-b", "--books",
         type=int,

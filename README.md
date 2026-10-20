@@ -10,16 +10,34 @@ It is built as a single-page static web app using **HTML5, Tailwind CSS (via CDN
 
 ```text
 test-festival42/
-├── index.html                # Public frontend interface (search, filters, rendering)
-├── data.json                 # Public processed dataset consumed by the web app
-├── data/                     # CSV dataset files (raw inputs & processed data)
+├── index.html                 # Public frontend interface (search, filters, rendering)
+├── data.json                  # Public processed dataset consumed by the web app
+├── data/                      # CSV dataset files (raw inputs & processed data) and PDF files for book covers
 │   └── catalog.csv
-├── scripts/                  # Python development and automation tools
-│   ├── generate_large_csv.py # Script for massive synthetic load testing data
-│   ├── sanitize_csv.py       # Script to clean, fix encoding (cp1252), and normalize raw CSVs
-│   └── csv_to_json.py        # Script to compile CSV into JSON
-├── .gitignore                # Git exclusion rules
-└── README.md                 # Project documentation
+├── assets/                    # Public static assets
+│   └── covers/                # Extracted book cover images (named by EAN)
+├── scripts/                   # Python development and automation tools
+│   ├── generate_large_csv.py  # Script for massive synthetic load testing data
+│   ├── sanitize_csv.py        # Script to clean, fix encoding (cp1252), and normalize raw CSVs
+│   ├── extract_covers.py      # Script to extract unique vertical book covers from official PDF catalogs
+│   └── convert_csv_to_json.py # Script to compile CSV into JSON (verifying local cover files)
+├── requirements.txt           # Python package dependencies
+├── .venv/                     # Python virtual environment (ignored by Git)
+├── .gitignore                 # Git exclusion rules
+└── README.md                  # Project documentation
+
+```
+
+---
+
+## 🐍 Python Environment & Dependencies
+
+Python scripts that interact with PDF documents require an isolated virtual environment and package dependencies:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 
 ```
 
@@ -62,16 +80,26 @@ python3 scripts/generate_large_csv.py --books 500 --talks 20 --signings 30 -o da
 
 ```
 
-3. Run the conversion script from the root directory to compile the clean CSV into the public JSON payload:
+3. **Extract book cover images from the official PDF catalog:** Ensure your virtual environment is active, then run the extractor script (PDF files are ignored by Git):
 
 ```bash
-python3 scripts/convert_csv_to_json.py --input data/catalog.csv --output data.json
+source .venv/bin/activate
+python3 scripts/extract_covers.py data/catalog.pdf data/catalog.csv
 
 ```
 
-*(You can check available input/output arguments by running `python3 scripts/convert_csv_to_json.py --help`).*
+*(You can also check available options using `python3 scripts/extract_covers.py --help`)*.
 
-4. Commit and push the updated `data.json` and frontend files (`index.html`) to deploy changes via GitHub Pages.
+4. Run the conversion script from the root directory to compile the clean CSV into the public JSON payload (automatically verifying physical cover existence on disk):
+
+```bash
+python3 scripts/csv_to_json.py --input data/catalog.csv --output data.json
+
+```
+
+*(You can check available input/output arguments by running `python3 scripts/csv_to_json.py --help`).*
+
+5. Commit and push the updated `data.json`, cover assets (`assets/covers/`), and frontend files (`index.html`) to deploy changes via GitHub Pages.
 
 ---
 
