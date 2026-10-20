@@ -84,10 +84,17 @@ This static prototype is audited locally using **OWASP ZAP** via Docker.
 * Docker
 * Local server running (`python3 -m http.server 8000`)
 
-### Run local scan
+### Run local scan (baseline)
 
 ```bash
 docker run --rm -v $(pwd):/zap/wrk/:rw -t --add-host=host.docker.internal:host-gateway ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://host.docker.internal:8000 -J zap_report.json -r zap_report.html
+
+```
+
+### Run local scan (full)
+
+```bash
+docker run --rm -v $(pwd):/zap/wrk/:rw -t --add-host=host.docker.internal:host-gateway ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py -t http://host.docker.internal:8000 -j -J zap_report.json -r zap_report.html
 
 ```
 
