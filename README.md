@@ -10,21 +10,22 @@ It is built as a single-page static web app using **HTML5, Tailwind CSS (via CDN
 
 ```text
 test-festival42/
-├── index.html                 # Public frontend interface (search, filters, rendering)
-├── data.json                  # Public processed dataset consumed by the web app
-├── data/                      # CSV dataset files (raw inputs & processed data) and PDF files for book covers
-│   └── catalog.csv
-├── assets/                    # Public static assets
-│   └── covers/                # Extracted book cover images (named by EAN)
-├── scripts/                   # Python development and automation tools
-│   ├── generate_large_csv.py  # Script for massive synthetic load testing data
-│   ├── sanitize_csv.py        # Script to clean, fix encoding (cp1252), and normalize raw CSVs
-│   ├── extract_covers.py      # Script to extract unique vertical book covers from official PDF catalogs
-│   └── convert_csv_to_json.py # Script to compile CSV into JSON (verifying local cover files)
-├── requirements.txt           # Python package dependencies
-├── .venv/                     # Python virtual environment (ignored by Git)
-├── .gitignore                 # Git exclusion rules
-└── README.md                  # Project documentation
+├── index.html                     # Public frontend interface (search, filters, rendering)
+├── data.json                      # Public processed dataset consumed by the web app
+├── data/                          # CSV dataset files (raw inputs & processed data) and PDF files for book covers
+│   ├── catalog.csv
+│   └── catalog.pdf                # Git exclusion rules
+├── assets/                        # Public static assets
+│   └── covers/                    # Extracted book cover images (named by EAN)
+├── scripts/                       # Python development and automation tools
+│   ├── generate_large_csv.py      # Script for massive synthetic load testing data
+│   ├── sanitize_csv.py            # Script to clean, fix encoding (cp1252), and normalize raw CSVs
+│   ├── extract_covers_from_pdf.py # Script to extract unique vertical book covers from official PDF catalogs and name them using the EAN found on their right.
+│   └── convert_csv_to_json.py     # Script to compile CSV into JSON (verifying local cover files)
+├── requirements.txt               # Python package dependencies
+├── .venv/                         # Python virtual environment (ignored by Git)
+├── .gitignore                     # Git exclusion rules
+└── README.md                      # Project documentation
 
 ```
 
@@ -84,7 +85,7 @@ python3 scripts/generate_large_csv.py --books 500 --talks 20 --signings 30 -o da
 
 ```bash
 source .venv/bin/activate
-python3 scripts/extract_covers.py data/catalog.pdf data/catalog.csv
+python3 scripts/extract_covers.py data/catalog.pdf
 
 ```
 
