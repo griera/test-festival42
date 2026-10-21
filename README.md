@@ -6,6 +6,24 @@ It is built as a single-page static web app using **HTML5, Tailwind CSS (via CDN
 
 ---
 
+## 📸 Screenshots
+
+Here is a quick look at the user interface and responsive experience across different devices:
+
+### 🖥️ Desktop Experience
+
+| Homepage View | Search & Filter View |
+| :---: | :---: |
+| <img src="screenshots/desktop-home.png" alt="Desktop Homepage" width="100%" style="border-radius: 0.5rem; border: 1px solid #334155;"> | <img src="screenshots/desktop-search.png" alt="Desktop Search" width="100%" style="border-radius: 0.5rem; border: 1px solid #334155;"> |
+
+### 📱 Mobile Experience
+
+| Homepage View | Search & Filter View |
+| :---: | :---: |
+| Coming soon | coming soon |
+
+---
+
 ## 📂 Project Structure
 
 ```text
@@ -13,10 +31,12 @@ test-festival42/
 ├── index.html                     # Public frontend interface (search, filters, rendering)
 ├── data.json                      # Public processed dataset consumed by the web app
 ├── data/                          # CSV dataset files (raw inputs & processed data) and PDF files for book covers
+│   ├── catalog_raw.csv
 │   ├── catalog.csv
 │   └── catalog.pdf                # Git exclusion rules
 ├── assets/                        # Public static assets
 │   └── covers/                    # Extracted optimized WebP book cover images (named by EAN)
+├── screenshots/                   # Documentation screenshots for the README
 ├── scripts/                       # Python development and automation tools
 │   ├── generate_large_csv.py      # Script for massive synthetic load testing data
 │   ├── sanitize_csv.py            # Script to clean, fix encoding (cp1252), and normalize raw CSVs
