@@ -3,17 +3,20 @@ import argparse
 import os
 import re
 import pymupdf  # Modern PyMuPDF API
+from PIL import Image
+import io
 
 # Minimum dimension thresholds to ignore tiny vertical icons or badges
 MIN_COVER_WIDTH = 100
 MIN_COVER_HEIGHT = 150
+WEBP_QUALITY = 85  # Optimal balance between visual quality and small file size
 
 
 def extract_covers_from_pdf(pdf_path, output_dir="assets/covers/"):
     """Extracts unique vertical book cover images from a PDF document,
 
-    filters out tiny graphics and duplicates, extracts the corresponding EAN
-    from the text located to the right of each cover, and saves the image
+    converts them to highly optimized WebP format, extracts the corresponding
+    EAN from the text located to the right of each cover, and saves the image
     named after its EAN.
     """
     os.makedirs(output_dir, exist_ok=True)
@@ -25,12 +28,12 @@ def extract_covers_from_pdf(pdf_path, output_dir="assets/covers/"):
 
     print(f"Processing PDF '{pdf_path}'...")
     print(
-        "Extracting covers and searching for EANs on the right side of each image..."
+        "Extracting covers, converting to WebP, and searching for EANs..."
     )
 
     for page_num in range(len(doc)):
         page = doc[page_num]
-        
+
         # Get detailed image information including page bounding box (bbox) and xref
         image_infos = page.get_image_info(xrefs=True)
 
@@ -64,7 +67,6 @@ def extract_covers_from_pdf(pdf_path, output_dir="assets/covers/"):
                 # Extract the base image using doc.extract_image
                 base_image = doc.extract_image(xref)
                 image_bytes = base_image["image"]
-                image_ext = base_image["ext"]  # e.g., png, jpeg
 
                 # Define a clipping rectangle to the right side of the cover image to find the EAN
                 # bbox[2] is x1 (right edge of image), bbox[1] is y0, bbox[3] is y1
@@ -78,29 +80,39 @@ def extract_covers_from_pdf(pdf_path, output_dir="assets/covers/"):
 
                 if ean_match:
                     current_ean = ean_match.group(0)
-                    image_filename = f"{current_ean}.{image_ext}"
+                    image_filename = f"{current_ean}.webp"
                     image_path = os.path.join(output_dir, image_filename)
 
-                    with open(image_path, "wb") as img_file:
-                        img_file.write(image_bytes)
+                    # Convert image bytes to WebP using Pillow for maximum weight reduction
+                    try:
+                        image = Image.open(io.BytesIO(image_bytes))
 
-                    image_counter += 1
-                    print(
-                        f"Found cover for EAN {current_ean} on page {page_num + 1}"
-                    )
+                        # Convert RGBA to RGB if necessary (WebP handles RGB lossy compression better)
+                        if image.mode in ("RGBA", "P"):
+                            image = image.convert("RGB")
+
+                        image.save(image_path, "WEBP", quality=WEBP_QUALITY)
+                        image_counter += 1
+                        print(
+                            f"Converted & saved cover for EAN {current_ean} (Page {page_num + 1})"
+                        )
+                    except Exception as e:
+                        print(
+                            f"Error converting image for EAN {current_ean}: {e}"
+                        )
                 else:
                     print(
-                        f"Warning: Cover found on page {page_num + 1}, but no valid EAN was detected on its right side."
+                        f"Warning: Cover found on page {page_num + 1}, but no valid EAN detected."
                     )
 
     print(
-        f"Extraction completed! Saved {image_counter} unique cover images to '{output_dir}'."
+        f"Extraction completed! Saved {image_counter} optimized WebP covers to '{output_dir}'."
     )
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Extract unique vertical book cover images from a PDF and name them using the EAN found on their right."
+        description="Extract unique vertical book covers, convert to WebP, and name them using the EAN found on their right."
     )
     parser.add_argument("pdf_file", help="Source PDF catalog file")
     parser.add_argument(

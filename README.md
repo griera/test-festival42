@@ -16,7 +16,7 @@ test-festival42/
 │   ├── catalog.csv
 │   └── catalog.pdf                # Git exclusion rules
 ├── assets/                        # Public static assets
-│   └── covers/                    # Extracted book cover images (named by EAN)
+│   └── covers/                    # Extracted optimized WebP book cover images (named by EAN)
 ├── scripts/                       # Python development and automation tools
 │   ├── generate_large_csv.py      # Script for massive synthetic load testing data
 │   ├── sanitize_csv.py            # Script to clean, fix encoding (cp1252), and normalize raw CSVs
@@ -81,7 +81,7 @@ python3 scripts/generate_large_csv.py --books 500 --talks 20 --signings 30 -o da
 
 ```
 
-3. **Extract book cover images from the official PDF catalog:** Ensure your virtual environment is active, then run the extractor script (PDF files are ignored by Git):
+3. **Extract and optimize book cover images from the official PDF catalog:** Ensure your virtual environment is active, then run the extractor script to automatically crop, extract EANs, and convert covers to high-performance WebP format (PDF files are ignored by Git):
 
 ```bash
 source .venv/bin/activate
