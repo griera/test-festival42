@@ -5,13 +5,12 @@ import json
 import unicodedata
 
 SOURCE_COLUMNS = [
-    "TITULO", "EAN", "AUTOR", "EDITORIAL", "COLECCION", "MATERIA",
-    "CANTIDAD", "PRECIO", "DESCUENTO", "IVA", "TOTALLINEA",
+    "EAN", "LLIBRE", "AUTORI", "EDITORIAL", "DISTRIBUÏDOR", "TIPUS", "PVP", "TEMA", "HORARIS",
 ]
 
 OUTPUT_HEADER = [
-    "type", "title", "ean", "author", "publisher", "collection", "category",
-    "quantity", "price", "discount", "tax", "total", "location", "datetime",
+    "type", "ean", "title", "author", "publisher", "distributor", "category",
+    "price", "theme", "schedule", "quantity", "location", "datetime",
 ]
 
 
@@ -74,7 +73,6 @@ Examples:
                 f"Received: {header}"
             )
 
-        
         with open(
             args.output_file, "w", encoding="utf-8", newline=""
         ) as output_file:
@@ -96,9 +94,34 @@ Examples:
                     )
 
                 row = [clean_text(value, replacements) for value in row]
-                writer.writerow(["book", *row, "", ""])
+
+                ean = row[0]
+                title = row[1]
+                author = row[2]
+                publisher = row[3]
+                distributor = row[4]
+                category = row[5]
+                price = row[6] if row[6].strip() else 0
+                theme = row[7]
+                schedule = row[8]
+                quantity = 0
+
+                writer.writerow([
+                    "book",
+                    ean,
+                    title,
+                    author,
+                    publisher,
+                    distributor,
+                    category,
+                    price,
+                    theme,
+                    schedule,
+                    quantity,
+                    "",
+                    "",
+                ])
 
 
 if __name__ == "__main__":
     main()
-
