@@ -31,17 +31,15 @@ test-festival42/
 ├── index.html                     # Public frontend interface (search, filters, rendering)
 ├── data.json                      # Public processed dataset consumed by the web app
 ├── data/                          # CSV dataset files (raw inputs & processed data) and PDF files for book covers
-│   ├── catalog_raw.csv
 │   ├── catalog.csv
-│   └── catalog.pdf                # Git exclusion rules
+│   └── catalog.pdf                # Official PDF catalog (ignored by Git)
 ├── assets/                        # Public static assets
 │   └── covers/                    # Extracted optimized WebP book cover images (named by EAN)
 ├── screenshots/                   # Documentation screenshots for the README
 ├── scripts/                       # Python development and automation tools
 │   ├── generate_large_csv.py      # Script for massive synthetic load testing data
-│   ├── sanitize_csv.py            # Script to clean, fix encoding (cp1252), and normalize raw CSVs
-│   ├── extract_covers_from_pdf.py # Script to extract unique vertical book covers from official PDF catalogs and name them using the EAN found on their right.
-│   └── convert_csv_to_json.py     # Script to compile CSV into JSON (verifying local cover files)
+│   ├── process_catalog.py         # Script to process raw catalog CSV and convert it directly into a structured JSON payload for the web app (verifying local cover files)
+│   └── extract_covers_from_pdf.py # Script to extract unique vertical book covers from official PDF catalogs and name them using the EAN found on their right
 ├── requirements.txt               # Python package dependencies
 ├── .venv/                         # Python virtual environment (ignored by Git)
 ├── .gitignore                     # Git exclusion rules
@@ -80,24 +78,42 @@ python3 -m http.server 8000
 
 ---
 
-## 🔄 How to Update the Catalog & Test Performance
+## 📋 Raw CSV Schema
 
-1. Place your raw semicolon-delimited CSV source file (exported from booksellers, typically in legacy `cp1252` encoding) inside your workspace.
-2. **Sanitize the raw CSV:** Clean text, fix encoding, normalize Unicode, and map headers using the preprocessing script:
+The source CSV must follow the updated semicolon-delimited structure:
 
-```bash
-python3 scripts/sanitize_csv.py path/to/raw_booksellers_data.csv data/catalog.csv --encoding cp1252
+```text
+EAN;LLIBRE;AUTORI;EDITORIAL;DISTRIBUÏDOR;TIPUS;PVP;TEMA;HORARIS
 
 ```
 
-*(Optional: You can pass `--replacements replacements.json` to handle specific recurring source typos).*
+* **Price (`PVP`)**: Automatically defaults to `0.0` if empty or blank.
+* **Quantity**: Defaults to `0` since it is absent in the raw source.
+* **Text Values**: Cleaned, Unicode-normalized, and stripped of trailing whitespace while preserving original raw text.
 
-*(You can also check available options using `python3 scripts/sanitize_csv.py --help`)*.
+```
+
+---
+
+## 🔄 How to Update the Catalog & Test Performance
+
+1. Place your raw semicolon-delimited CSV source file (exported from booksellers, typically in legacy `cp1252` encoding) inside your workspace.
+2. **Process and convert the catalog:** Clean text, fix encoding, normalize Unicode, map headers, default missing quantities and prices to 0, verify local cover files, and generate the public `data.json` payload.:
+
+```bash
+python3 scripts/process_catalog.py data/catalog_raw.csv data.json --encoding cp1252
+
+```
+
+*(Optional: You can pass `--replacements replacements.json` to handle specific recurring source typos, or `--no-minify` for an indented readable JSON).*
+
+*(You can also check available options using `python3 scripts/process_catalog.py --help`)*.
 
 *(Alternatively, to generate massive synthetic datasets for performance and scalability testing instead of real data, run:)*
 
 ```bash
-python3 scripts/generate_large_csv.py --books 500 --talks 20 --signings 30 -o data/catalog.csv
+python3 scripts/generate_large_csv.py --books 500 --talks 20 --signings 30 -o data/massive_catalog.csv
+python3 scripts/process_catalog.py data/massive_catalog.csv data.json
 
 ```
 
@@ -111,16 +127,7 @@ python3 scripts/extract_covers.py data/catalog.pdf
 
 *(You can also check available options using `python3 scripts/extract_covers.py --help`)*.
 
-4. Run the conversion script from the root directory to compile the clean CSV into the public JSON payload (automatically verifying physical cover existence on disk):
-
-```bash
-python3 scripts/csv_to_json.py --input data/catalog.csv --output data.json
-
-```
-
-*(You can check available input/output arguments by running `python3 scripts/csv_to_json.py --help`).*
-
-5. Commit and push the updated `data.json`, cover assets (`assets/covers/`), and frontend files (`index.html`) to deploy changes via GitHub Pages.
+4. Commit and push the updated `data.json`, cover assets (`assets/covers/`), and frontend files (`index.html`) to deploy changes via GitHub Pages.
 
 ---
 
