@@ -296,6 +296,21 @@
             renderResults(lastFilteredData.length > 0 || query !== '' ? lastFilteredData : fairData, query);
         }
 
+        function renderSchedule(scheduleStr) {
+            if (!scheduleStr) return '';
+
+            // Split multiple entries and trim whitespace
+            const items = scheduleStr.split(',').map(s => s.trim());
+
+            // Return inline if only one entry exists
+            if (items.length === 1) {
+                return ` ${safeValue(items[0])}`;
+            }
+
+            // Format multiple entries into individual lines
+            return `<br>` + items.map(s => `<span class="block pl-2">${safeValue(s)}</span>`).join('');
+        }
+
         // Render results into HTML structure with performance capping
         function renderResults(data, query = '') {
             const container = document.getElementById('resultsContainer');
@@ -359,7 +374,7 @@
                                                 ${book.publisher ? `<p><strong>Editorial:</strong> ${safeValue(book.publisher)}</p>` : ''}
                                                 ${book.distributor ? `<p><strong>Distribuïdor:</strong> ${safeValue(book.distributor)}</p>` : ''}
                                                 ${book.theme ? `<p><strong>Tema:</strong> ${safeValue(book.theme)}</p>` : ''}
-                                                ${book.schedule ? `<p><strong>Horaris:</strong> ${safeValue(book.schedule)}</p>` : ''}
+                                                ${book.schedule ? `<p><strong>Horaris:</strong>${renderSchedule(book.schedule)}</p>` : ''}
                                             </div>
                                         </div>
 
