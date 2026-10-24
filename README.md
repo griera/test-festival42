@@ -91,8 +91,6 @@ EAN;LLIBRE;AUTORI;EDITORIAL;DISTRIBUÏDOR;TIPUS;PVP;TEMA;HORARIS
 * **Quantity**: Defaults to `0` since it is absent in the raw source.
 * **Text Values**: Cleaned, Unicode-normalized, and stripped of trailing whitespace while preserving original raw text.
 
-```
-
 ---
 
 ## 🔄 How to Update the Catalog & Test Performance
