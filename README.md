@@ -37,7 +37,7 @@ test-festival42/
 │   └── covers/                    # Extracted optimized WebP book cover images (named by EAN)
 ├── screenshots/                   # Documentation screenshots for the README
 ├── scripts/                       # Python development and automation tools
-│   ├── generate_large_csv.py      # Script for massive synthetic load testing data
+│   ├── generate_catalog.py        # Script for massive synthetic load testing data
 │   ├── process_catalog.py         # Script to process raw catalog CSV and convert it directly into a structured JSON payload for the web app (verifying local cover files)
 │   └── extract_covers_from_pdf.py # Script to extract unique vertical book covers from official PDF catalogs and name them using the EAN found on their right
 ├── requirements.txt               # Python package dependencies
@@ -110,10 +110,12 @@ python3 scripts/process_catalog.py data/catalog_raw.csv data.json --encoding cp1
 *(Alternatively, to generate massive synthetic datasets for performance and scalability testing instead of real data, run:)*
 
 ```bash
-python3 scripts/generate_large_csv.py --books 500 --talks 20 --signings 30 -o data/massive_catalog.csv
+python3 scripts/generate_catalog.py --books 500 --talks 20 --signings 30 -o data/massive_catalog.csv
 python3 scripts/process_catalog.py data/massive_catalog.csv data.json
 
 ```
+
+*(You can also check available options using `python3 scripts/generate_catalog.py --help`)*.
 
 3. **Extract and optimize book cover images from the official PDF catalog:** Ensure your virtual environment is active, then run the extractor script to automatically crop, extract EANs, and convert covers to high-performance WebP format (PDF files are ignored by Git):
 

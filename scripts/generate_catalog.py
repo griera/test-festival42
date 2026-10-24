@@ -2,6 +2,32 @@
 import random
 import argparse
 
+def generate_random_schedule(days, hours):
+    """
+    Generates schedule strings: 70% empty.
+    If generated: 50% single date, 25% two dates, 25% three dates.
+    """
+    # 70% chance of empty schedule
+    if random.random() < 0.7:
+        return ""
+
+    # Determine number of dates (50% -> 1, 25% -> 2, 25% -> 3)
+    rand_val = random.random()
+    if rand_val < 0.50:
+        num_dates = 1
+    elif rand_val < 0.75:
+        num_dates = 2
+    else:
+        num_dates = 3
+
+    # Select unique day/hour combinations
+    selected_schedules = set()
+    while len(selected_schedules) < num_dates:
+        dt = f"{random.choice(days)} {random.choice(hours)}"
+        selected_schedules.add(dt)
+
+    return ", ".join(selected_schedules)
+
 def generate_large_csv(output_filename, num_books, num_talks, num_signings):
     """
     Generates a synthetic raw festival catalog CSV file containing books, talks, 
@@ -59,7 +85,7 @@ def generate_large_csv(output_filename, num_books, num_talks, num_signings):
 
     generated_rows = []
 
-    # 1. Generate Books
+    # Generate Books
     for i in range(1, num_books + 1):
         ean = f"97884{random.randint(100000000, 999999999)}"
         title = f"{random.choice(adjectives)} {random.choice(nouns)}"
@@ -72,17 +98,14 @@ def generate_large_csv(output_filename, num_books, num_talks, num_signings):
         price_str = "" if random.random() < 0.1 else str(round(random.uniform(10.0, 35.0), 2)).replace('.', ',')
 
         theme = random.choice(themes)
-
-        # 70% chance of empty schedule, 30% chance of assigned date/time
-        schedule = "" if random.random() < 0.7 else f"{random.choice(days)} {random.choice(hours)}"
-
+        schedule = generate_random_schedule(days, hours)
         location = ""
         datetime_val = ""
 
         row = f"book;{ean};{title};{author};{publisher};{distributor};{category};{price_str};{theme};{schedule};{location};{datetime_val}"
         generated_rows.append(row)
 
-    # 2. Generate Talks
+    # Generate Talks
     for i in range(1, num_talks + 1):
         ean = ""
         title = f"TAULA RODONA: EL TERROR CONTEMPORANI #{i}"
@@ -99,7 +122,7 @@ def generate_large_csv(output_filename, num_books, num_talks, num_signings):
         row = f"talk;{ean};{title};{author};{publisher};{distributor};{category};{price_str};{theme};{schedule};{location};{datetime_val}"
         generated_rows.append(row)
 
-    # 3. Generate Signings
+    # Generate Signings
     for i in range(1, num_signings + 1):
         ean = ""
         title = f"SESSIÓ DE SIGNATURES CRONONAUTA #{i}"
