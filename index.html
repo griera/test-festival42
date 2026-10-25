@@ -45,7 +45,7 @@
         <div class="flex flex-wrap justify-center gap-2 mt-4" id="typeFilterContainer"></div>
 
         <!-- Day Filter Chips (dynamically generated) -->
-        <div class="flex flex-wrap justify-center gap-2 mt-6" id="dayFilterContainer"></div>
+        <div class="flex flex-wrap justify-center gap-2 mt-4" id="dayFilterContainer"></div>
 
         <!-- Loading State -->
         <div id="loadingIndicator" class="text-center py-12 text-slate-400">
@@ -91,8 +91,12 @@
         // Stores main application records
         let fairData = [];
 
-        // Controls the initial and progressive book display limit (Result Capping for INP performance optimization)
-        let visibleBooksLimit = 50;
+        // Controls the initial and progressive item display limit (Result Capping for INP performance optimization)
+        let visibleLimits = {
+            book: 30,
+            talk: 30,
+            signing: 30
+        };
 
         // Stores the latest search or filter results to preserve state when loading more items
         let lastFilteredData = [];
@@ -100,7 +104,7 @@
         // Timer reference used for the search input debounce delay (prevents main thread blocking while typing)
         let searchTimeout = null;
 
-        // Active type filter setting: 'all', 'book', 'talk', or 'signing'
+        // Active type filter setting
         let currentTypeFilter = 'all';
 
         // Active day filter setting
@@ -221,9 +225,9 @@
         // Updates active type filter and re-runs the search filtering (by default)
         function setTypeFilter(type, runSearch = true) {
             currentTypeFilter = type;
-            visibleBooksLimit = 50; // Reset limit when switching filter
+            visibleLimits = { book: 30, talk: 30, signing: 30 }; // Reset limits when switching filter
 
-            eventTypesConfig.forEach(typeObj => { // <-- typeObj només existeix aquí dins
+            eventTypesConfig.forEach(typeObj => {
                 const btn = document.getElementById(`btn-filter-${typeObj.id}`);
                 if (btn) {
                     if (typeObj.id === type) {
@@ -282,7 +286,7 @@
         // Updates active day filter and re-runs the search filtering (by default)
         function setDayFilter(dayCode, runSearch = true) {
             currentDayFilter = dayCode;
-            visibleBooksLimit = 50; // Reset limit when switching filter
+            visibleLimits = { book: 30, talk: 30, signing: 30 }; // Reset limits when switching filter
 
             eventDaysConfig.forEach(dayObj => {
                 const btn = document.getElementById(`btn-day-${dayObj.id}`);
@@ -376,14 +380,14 @@
 
             // Delay input handler for performance optimization
             searchTimeout = setTimeout(() => {
-                visibleBooksLimit = 50; // Reset view parameters on update
+                visibleLimits = { book: 30, talk: 30, signing: 30 }; // Reset view parameters on update
                 executeSearch();
             }, 300); // 300 milliseconds delay prevents UI freezing while typing
         }
 
-        // Function triggered when clicking "Load More Books" button
-        function loadMoreBooks() {
-            visibleBooksLimit += 50; // Increase limit by 50
+        // Function triggered when clicking "Load More" button
+        function loadMoreItems(itemType) {
+            visibleLimits[itemType] += 30;
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
             renderResults(lastFilteredData.length > 0 || query !== '' ? lastFilteredData : fairData, query);
         }
@@ -423,12 +427,18 @@
 
             // Separate data into categories based on the 'type' field
             const allBooks = data.filter(item => item.type === 'book');
-            const talks = data.filter(item => item.type === 'talk');
-            const signings = data.filter(item => item.type === 'signing');
+            const allTalks = data.filter(item => item.type === 'talk');
+            const allSignings = data.filter(item => item.type === 'signing');
 
             // Performance optimization: Apply dynamic limit based on state
-            const books = allBooks.slice(0, visibleBooksLimit);
-            const hasMoreBooks = allBooks.length > visibleBooksLimit;
+            const books = allBooks.slice(0, visibleLimits.book);
+            const hasMoreBooks = allBooks.length > visibleLimits.book;
+
+            const talks = allTalks.slice(0, visibleLimits.talk);
+            const hasMoreTalks = allTalks.length > visibleLimits.talk;
+
+            const signings = allSignings.slice(0, visibleLimits.signing);
+            const hasMoreSignings = allSignings.length > visibleLimits.signing;
 
             let htmlContent = '';
 
@@ -481,7 +491,7 @@
 
                         ${hasMoreBooks ? `
                             <div class="text-center mt-6">
-                                <button onclick="loadMoreBooks()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
+                                <button onclick="loadMoreItems('book')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
                                     Carregar més llibres (${allBooks.length - books.length} restants)...
                                 </button>
                             </div>
@@ -494,7 +504,10 @@
             if (talks.length > 0) {
                 htmlContent += `
                     <section class="mt-6">
-                        <h2 class="text-xl font-bold text-teal-400 mb-3 flex items-center gap-2">🎤 Xerrades i Conferències</h2>
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="text-xl font-bold text-teal-400 flex items-center gap-2">🎤 Xerrades i Conferències</h2>
+                            <span class="text-xs text-slate-400">Mostrant ${talks.length} de ${allTalks.length}</span>
+                        </div>
                         <div class="space-y-3">
                             ${talks.map(talk => `
                                 <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 hover:border-teal-500 transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -509,6 +522,14 @@
                                 </div>
                             `).join('')}
                         </div>
+
+                        ${hasMoreTalks ? `
+                            <div class="text-center mt-6">
+                                <button onclick="loadMoreItems('talk')" class="bg-teal-600 hover:bg-teal-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
+                                    Carregar més xerrades i conferències (${allTalks.length - talks.length} restants)...
+                                </button>
+                            </div>
+                        ` : ''}
                     </section>
                 `;
             }
@@ -517,7 +538,10 @@
             if (signings.length > 0) {
                 htmlContent += `
                     <section class="mt-6">
-                        <h2 class="text-xl font-bold text-amber-400 mb-3 flex items-center gap-2">✍️ Sessions de Signatures</h2>
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="text-xl font-bold text-amber-400 flex items-center gap-2">✍️ Sessions de Signatures</h2>
+                            <span class="text-xs text-slate-400">Mostrant ${signings.length} de ${allSignings.length}</span>
+                        </div>
                         <div class="space-y-3">
                             ${signings.map(signing => `
                                 <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 hover:border-amber-500 transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -532,6 +556,14 @@
                                 </div>
                             `).join('')}
                         </div>
+
+                        ${hasMoreSignings ? `
+                            <div class="text-center mt-6">
+                                <button onclick="loadMoreItems('signing')" class="bg-amber-600 hover:bg-amber-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
+                                    Carregar més sessions de signatures (${allSignings.length - signings.length} restants)...
+                                </button>
+                            </div>
+                        ` : ''}
                     </section>
                 `;
             }
