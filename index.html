@@ -34,7 +34,7 @@
             <input
                 type="text"
                 id="searchInput"
-                placeholder="Cerca per llibre, autor, editorial, distribuïdor, EAN..."
+                placeholder="Cerca per Títol, Autor/a, Editorial, Distribuïdor, EAN i Horaris"
                 class="w-full p-4 pl-12 rounded-xl border border-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-800 text-white text-lg transition-all placeholder-slate-400"
                 oninput="handleSearch()"
             >
@@ -265,8 +265,9 @@
                     const matchEan = item.ean && item.ean.toLowerCase().includes(query);
                     const matchLocation = item.location && item.location.toLowerCase().includes(query);
                     const matchDatetime = item.datetime && item.datetime.toLowerCase().includes(query);
+                    const matchSchedule = item.schedule && item.schedule.toLowerCase().includes(query);
 
-                    return matchTitle || matchAuthor || matchPublisher || matchDistributor || matchEan || matchLocation || matchDatetime;
+                    return matchTitle || matchAuthor || matchPublisher || matchDistributor || matchEan || matchLocation || matchDatetime || matchSchedule;
                 });
             }
 
