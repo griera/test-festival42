@@ -134,17 +134,6 @@
                 document.getElementById('loadingIndicator').classList.add('hidden');
                 document.getElementById('resultsContainer').classList.remove('hidden');
 
-                // Read URL location parameters
-                const urlParams = new URLSearchParams(window.location.search);
-                const initialQuery = urlParams.get('search');
-                const initialType = urlParams.get('type');
-                const initialDay = urlParams.get('day');
-
-                // Apply initial type filter if valid
-                if (initialType && ['book', 'talk', 'signing'].includes(initialType)) {
-                    setTypeFilter(initialType);
-                }
-
                 // Programmatically generate date filter controls from configuration
                 const dayContainer = document.getElementById('dayFilterContainer');
                 eventDaysList.forEach(dayCode => {
@@ -159,9 +148,20 @@
                     dayContainer.appendChild(btn);
                 });
 
+                // Read URL location parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                const initialQuery = urlParams.get('search');
+                const initialType = urlParams.get('type');
+                const initialDay = urlParams.get('day');
+
+                // Apply initial type filter if valid
+                if (initialType && ['book', 'talk', 'signing'].includes(initialType)) {
+                    setTypeFilter(initialType, false);
+                }
+
                 // Apply initial day filter if valid
                 if (initialDay && (initialDay === 'all' || eventDaysList.includes(initialDay))) {
-                    setDayFilter(initialDay);
+                    setDayFilter(initialDay, false);
                 }
 
                 // Load initial search parameters (.value is safe against XSS)
@@ -219,8 +219,8 @@
             );
         }
 
-        // Updates active type filter and re-runs the search filtering
-        function setTypeFilter(type) {
+        // Updates active type filter and re-runs the search filtering (by default)
+        function setTypeFilter(type, runSearch = true) {
             currentTypeFilter = type;
             visibleBooksLimit = 50; // Reset limit when switching filter
 
@@ -245,7 +245,9 @@
                 }
             });
 
-            executeSearch();
+            if (runSearch) {
+                executeSearch();
+            }
         }
 
         // Configured event dates array for dynamic selector rendering
@@ -278,8 +280,8 @@
             return `${dayCode.substring(0, 2)}/${dayCode.substring(2, 4)}/${dayCode.substring(4)}`;
         }
 
-        // Updates active day filter and re-runs the search filtering
-        function setDayFilter(dayCode) {
+        // Updates active day filter and re-runs the search filtering (by default)
+        function setDayFilter(dayCode, runSearch = true) {
             currentDayFilter = dayCode;
             visibleBooksLimit = 50; // Reset limit when switching filter
 
@@ -299,7 +301,9 @@
                 }
             });
 
-            executeSearch();
+            if (runSearch) {
+                executeSearch();
+            }
         }
 
         // Modify address bar state dynamically without page refresh
