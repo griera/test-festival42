@@ -403,15 +403,15 @@
             if (talks.length > 0) {
                 htmlContent += `
                     <section class="mt-6">
-                        <h2 class="text-xl font-bold text-indigo-400 mb-3 flex items-center gap-2">🎤 Xerrades i Conferències</h2>
+                        <h2 class="text-xl font-bold text-teal-400 mb-3 flex items-center gap-2">🎤 Xerrades i Conferències</h2>
                         <div class="space-y-3">
                             ${talks.map(talk => `
                                 <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                                     <div>
                                         <h3 class="font-bold text-white">${safeValue(talk.title)}</h3>
-                                        <p class="text-slate-300 text-sm cursor-pointer hover:text-indigo-400" onclick="searchByAuthor('${talk.author}')">Ponent: <span class="underline font-medium">${safeValue(talk.author)}</span></p>
+                                        <p class="text-slate-300 text-sm cursor-pointer hover:text-teal-400" onclick="searchByAuthor('${talk.author}')">Ponent: <span class="underline font-medium">${safeValue(talk.author)}</span></p>
                                     </div>
-                                    <div class="text-right text-sm bg-indigo-950 text-indigo-200 border border-indigo-900 px-3 py-1.5 rounded-lg w-full sm:w-auto">
+                                    <div class="text-right text-sm bg-teal-950 text-teal-200 border border-teal-900 px-3 py-1.5 rounded-lg w-full sm:w-auto">
                                         <p>📍 ${safeValue(talk.location)}</p>
                                         <p class="font-semibold">📅 ${safeValue(talk.datetime)}</p>
                                     </div>
@@ -432,7 +432,7 @@
                                 <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                                     <div>
                                         <h3 class="font-bold text-white">${safeValue(signing.title)}</h3>
-                                        <p class="text-slate-300 text-sm cursor-pointer hover:text-indigo-400" onclick="searchByAuthor('${signing.author}')">Autor/a: <span class="underline font-medium">${safeValue(signing.author)}</span></p>
+                                        <p class="text-slate-300 text-sm cursor-pointer hover:text-amber-400" onclick="searchByAuthor('${signing.author}')">Autor/a: <span class="underline font-medium">${safeValue(signing.author)}</span></p>
                                     </div>
                                     <div class="text-right text-sm bg-amber-950 text-amber-200 border border-amber-900/50 px-3 py-1.5 rounded-lg w-full sm:w-auto">
                                         <p>📍 ${safeValue(signing.location)}</p>
