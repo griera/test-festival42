@@ -138,6 +138,7 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const initialQuery = urlParams.get('search');
                 const initialType = urlParams.get('type');
+                const initialDay = urlParams.get('day');
 
                 // Apply initial type filter if valid
                 if (initialType && ['book', 'talk', 'signing'].includes(initialType)) {
@@ -157,6 +158,11 @@
 
                     dayContainer.appendChild(btn);
                 });
+
+                // Apply initial day filter if valid
+                if (initialDay && (initialDay === 'all' || eventDaysList.includes(initialDay))) {
+                    setDayFilter(initialDay);
+                }
 
                 // Load initial search parameters (.value is safe against XSS)
                 if (initialQuery) {
@@ -297,7 +303,7 @@
         }
 
         // Modify address bar state dynamically without page refresh
-        function updateUrlParams(query, type) {
+        function updateUrlParams(query, type, day) {
             const url = new URL(window.location);
 
             if (query && query.trim() !== '') {
@@ -310,6 +316,12 @@
                 url.searchParams.set('type', type);
             } else {
                 url.searchParams.delete('type');
+            }
+
+           if (day && day !== 'all') {
+                url.searchParams.set('day', day);
+            } else {
+                url.searchParams.delete('day');
             }
 
             window.history.replaceState({}, '', url);
@@ -355,7 +367,7 @@
             lastFilteredData = results;
 
             // Sync state to URL parameters securely (persistence)
-            updateUrlParams(query, currentTypeFilter);
+            updateUrlParams(query, currentTypeFilter, currentDayFilter);
 
             renderResults(results, query);
         }
