@@ -43,7 +43,7 @@
 
         <!-- Type Filter Chips -->
         <div class="flex flex-wrap justify-center gap-2 mt-4" id="typeFilterContainer">
-            <button onclick="setTypeFilter('all')" id="btn-filter-all" class="type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-indigo-600 text-white border-indigo-500">
+            <button onclick="setTypeFilter('all')" id="btn-filter-all" class="type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-100 text-slate-900 border-white shadow-sm">
                 Tots
             </button>
             <button onclick="setTypeFilter('book')" id="btn-filter-book" class="type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
@@ -59,7 +59,7 @@
 
         <!-- Day Filter Chips (dynamically generated) -->
         <div class="flex flex-wrap justify-center gap-2 mt-6" id="dayFilterContainer">
-            <button onclick="setDayFilter('all')" id="btn-day-all" class="day-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-indigo-600 text-white border-indigo-500">
+            <button onclick="setDayFilter('all')" id="btn-day-all" class="day-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-100 text-slate-900 border-white shadow-sm">
                 Tots els dies
             </button>
         </div>
@@ -237,7 +237,15 @@
                 const btn = document.getElementById(`btn-filter-${t}`);
                 if (btn) {
                     if (t === type) {
-                        btn.className = 'type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-indigo-600 text-white border-indigo-500';
+                        if (t === 'all') {
+                            btn.className = 'type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-100 text-slate-900 border-white shadow-sm';
+                        } else if (t === 'book') {
+                            btn.className = 'type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-indigo-600 text-white border-indigo-500';
+			} else if (t === 'talk') {
+                            btn.className = 'type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-teal-600 text-white border-teal-500';
+                        } else if (t === 'signing') {
+                            btn.className = 'type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-amber-600 text-white border-amber-500';
+                        }
                     } else {
                         btn.className = 'type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
                     }
@@ -282,12 +290,16 @@
             currentDayFilter = dayCode;
             visibleBooksLimit = 50; // Reset limit when switching filter
 
-            const days = ['all', '04112026', '05112026', '06112026', '07112026', '08112026'];
+            const days = ['all', ...eventDaysList];
             days.forEach(d => {
                 const btn = document.getElementById(`btn-day-${d}`);
                 if (btn) {
                     if (d === dayCode) {
-                        btn.className = 'day-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-indigo-600 text-white border-indigo-500';
+                        if (d === 'all') {
+                            btn.className = 'day-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-100 text-slate-900 border-white shadow-sm';
+                        } else {
+                            btn.className = 'day-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-blue-700 text-white border-blue-500 shadow-sm';
+                        }
                     } else {
                         btn.className = 'day-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
                     }
