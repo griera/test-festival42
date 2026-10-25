@@ -20,7 +20,7 @@
 
             <div class="mt-4 flex flex-wrap justify-center gap-4 text-sm text-slate-300">
                 <p>📅 <strong>Dates:</strong> 4-8 de novembre de 2026</p>
-                <p>📍 <strong>Lloc:</strong> <a href="https://www.barcelona.cat/fabraicoats/es" target="_blank" class="underline hover:text-indigo-400">Fabra i Coats</a></p>
+                <p>📍 <strong>Lloc:</strong> <a href="https://www.barcelona.cat/fabraicoats/ca" target="_blank" class="underline hover:text-indigo-400">Fabra i Coats</a></p>
                 <p>🌐 <strong>Web oficial:</strong> <a href="https://www.barcelona.cat/festival42/ca" target="_blank" class="underline hover:text-indigo-400">Festival 42</a></p>
             </div>
         </div>
@@ -54,6 +54,28 @@
             </button>
             <button onclick="setTypeFilter('signing')" id="btn-filter-signing" class="type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
                 ✍️ Signatures
+            </button>
+        </div>
+
+        <!-- Day Filter Chips -->
+        <div class="flex flex-wrap justify-center gap-2 mt-6" id="dayFilterContainer">
+            <button onclick="setDayFilter('all')" id="btn-day-all" class="day-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-indigo-600 text-white border-indigo-500">
+                Tots els dies
+            </button>
+            <button onclick="setDayFilter('04112026')" id="btn-day-04112026" class="day-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
+                Dc 04 Nov
+            </button>
+            <button onclick="setDayFilter('05112026')" id="btn-day-05112026" class="day-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
+                Dj 05 Nov
+            </button>
+            <button onclick="setDayFilter('06112026')" id="btn-day-06112026" class="day-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
+                Dv 06 Nov
+            </button>
+            <button onclick="setDayFilter('07112026')" id="btn-day-07112026" class="day-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
+                Ds 07 Nov
+            </button>
+            <button onclick="setDayFilter('08112026')" id="btn-day-08112026" class="day-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
+                Dg 08 Nov
             </button>
         </div>
 
@@ -112,6 +134,9 @@
 
         // Active type filter setting: 'all', 'book', 'talk', or 'signing'
         let currentTypeFilter = 'all';
+
+        // Active day filter setting
+        let currentDayFilter = 'all';
 
         // Fetch JSON data asynchronously when the page loads and securely load initial URL search/filters
         window.addEventListener('DOMContentLoaded', async () => {
@@ -224,6 +249,32 @@
             executeSearch();
         }
 
+        // Converts '04112026' -> '04/11/2026'
+        function formatDayString(dayCode) {
+            if (!dayCode || dayCode === 'all') return 'all';
+            return `${dayCode.substring(0, 2)}/${dayCode.substring(2, 4)}/${dayCode.substring(4)}`;
+        }
+
+        // Updates active day filter and re-runs the search filtering
+        function setDayFilter(dayCode) {
+            currentDayFilter = dayCode;
+            visibleBooksLimit = 50; // Reset limit when switching filter
+
+            const days = ['all', '04112026', '05112026', '06112026', '07112026', '08112026'];
+            days.forEach(d => {
+                const btn = document.getElementById(`btn-day-${d}`);
+                if (btn) {
+                    if (d === dayCode) {
+                        btn.className = 'day-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-indigo-600 text-white border-indigo-500';
+                    } else {
+                        btn.className = 'day-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
+                    }
+                }
+            });
+
+            executeSearch();
+        }
+
         // Modify address bar state dynamically without page refresh
         function updateUrlParams(query, type) {
             const url = new URL(window.location);
@@ -253,6 +304,15 @@
             // Apply category selection criteria
             if (currentTypeFilter !== 'all') {
                 results = results.filter(item => item.type === currentTypeFilter);
+            }
+
+            if (currentDayFilter !== 'all') {
+                const targetDate = formatDayString(currentDayFilter);
+                results = results.filter(item => {
+                    const matchDatetime = item.datetime && item.datetime.includes(targetDate);
+                    const matchSchedule = item.schedule && item.schedule.includes(targetDate);
+                    return matchDatetime || matchSchedule;
+                });
             }
 
             // Apply text search criteria if available
