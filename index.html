@@ -41,21 +41,8 @@
             <span class="absolute left-4 top-4 text-slate-400 text-xl">🔍</span>
         </div>
 
-        <!-- Type Filter Chips -->
-        <div class="flex flex-wrap justify-center gap-2 mt-4" id="typeFilterContainer">
-            <button onclick="setTypeFilter('all')" id="btn-filter-all" class="type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-100 text-slate-900 border-white shadow-sm">
-                Tots
-            </button>
-            <button onclick="setTypeFilter('book')" id="btn-filter-book" class="type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
-                📚 Llibres
-            </button>
-            <button onclick="setTypeFilter('talk')" id="btn-filter-talk" class="type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
-                🎤 Xerrades
-            </button>
-            <button onclick="setTypeFilter('signing')" id="btn-filter-signing" class="type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
-                ✍️ Signatures
-            </button>
-        </div>
+        <!-- Type Filter Chips (dynamically generated) -->
+        <div class="flex flex-wrap justify-center gap-2 mt-4" id="typeFilterContainer"></div>
 
         <!-- Day Filter Chips (dynamically generated) -->
         <div class="flex flex-wrap justify-center gap-2 mt-6" id="dayFilterContainer">
@@ -134,7 +121,18 @@
                 document.getElementById('loadingIndicator').classList.add('hidden');
                 document.getElementById('resultsContainer').classList.remove('hidden');
 
-                // Programmatically generate date filter controls from configuration
+                // Dynamically construct type filter controls
+                const typeContainer = document.getElementById('typeFilterContainer');
+                eventTypesConfig.forEach(typeObj => {
+                    const btn = document.createElement('button');
+                    btn.onclick = () => setTypeFilter(typeObj.id);
+                    btn.id = `btn-filter-${typeObj.id}`;
+                    btn.className = 'type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
+                    btn.textContent = typeObj.label;
+                    typeContainer.appendChild(btn);
+                });
+
+                // Dynamically construct day filter controls
                 const dayContainer = document.getElementById('dayFilterContainer');
                 eventDaysList.forEach(dayCode => {
                     const label = formatDayLabel(dayCode);
@@ -154,15 +152,15 @@
                 const initialType = urlParams.get('type');
                 const initialDay = urlParams.get('day');
 
-                // Apply initial type filter if valid
-                if (initialType && ['book', 'talk', 'signing'].includes(initialType)) {
-                    setTypeFilter(initialType, false);
-                }
+                // Determine and apply initial type state (fallback to 'all' if missing or invalid)
+                const validTypes = eventTypesConfig.map(t => t.id);
+                const activeType = (initialType && validTypes.includes(initialType)) ? initialType : 'all';
+                setTypeFilter(activeType, false);
 
-                // Apply initial day filter if valid
-                if (initialDay && (initialDay === 'all' || eventDaysList.includes(initialDay))) {
-                    setDayFilter(initialDay, false);
-                }
+                // Determine and apply initial day state (fallback to 'all' if missing or invalid)
+                const validDays = ['all', ...eventDaysList];
+                const activeDay = (initialDay && validDays.includes(initialDay)) ? initialDay : 'all';
+                setDayFilter(activeDay, false);
 
                 // Load initial search parameters (.value is safe against XSS)
                 if (initialQuery) {
@@ -219,26 +217,24 @@
             );
         }
 
+        // Content type configuration mapping
+        const eventTypesConfig = [
+            { id: 'all', label: 'Tots', activeClass: 'bg-slate-100 text-slate-900 border-white shadow-sm' },
+            { id: 'book', label: '📚 Llibres', activeClass: 'bg-indigo-600 text-white border-indigo-500' },
+            { id: 'talk', label: '🎤 Xerrades', activeClass: 'bg-teal-600 text-white border-teal-500' },
+            { id: 'signing', label: '✍️ Signatures', activeClass: 'bg-amber-600 text-white border-amber-500' }
+        ];
+
         // Updates active type filter and re-runs the search filtering (by default)
         function setTypeFilter(type, runSearch = true) {
             currentTypeFilter = type;
             visibleBooksLimit = 50; // Reset limit when switching filter
 
-            // Update UI button styles
-            const buttons = ['all', 'book', 'talk', 'signing'];
-            buttons.forEach(t => {
-                const btn = document.getElementById(`btn-filter-${t}`);
+            eventTypesConfig.forEach(typeObj => { // <-- typeObj només existeix aquí dins
+                const btn = document.getElementById(`btn-filter-${typeObj.id}`);
                 if (btn) {
-                    if (t === type) {
-                        if (t === 'all') {
-                            btn.className = 'type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-100 text-slate-900 border-white shadow-sm';
-                        } else if (t === 'book') {
-                            btn.className = 'type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-indigo-600 text-white border-indigo-500';
-			} else if (t === 'talk') {
-                            btn.className = 'type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-teal-600 text-white border-teal-500';
-                        } else if (t === 'signing') {
-                            btn.className = 'type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-amber-600 text-white border-amber-500';
-                        }
+                    if (typeObj.id === type) {
+                        btn.className = `type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${typeObj.activeClass}`;
                     } else {
                         btn.className = 'type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
                     }
