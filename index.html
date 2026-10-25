@@ -47,9 +47,24 @@
         <!-- Day Filter Chips (dynamically generated) -->
         <div class="flex flex-wrap justify-center gap-2 mt-4" id="dayFilterContainer"></div>
 
-        <!-- Loading State -->
-        <div id="loadingIndicator" class="text-center py-12 text-slate-400">
-            Carregant el catàleg del festival...
+        <!-- Loading State (Responsive Skeleton Screen for CLS Optimization) -->
+        <div id="loadingIndicator" class="space-y-6 mt-6">
+            <div class="text-center py-4 text-slate-400">
+                Carregant el catàleg del festival...
+            </div>
+            <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 animate-pulse">
+                <!-- 10 skeleton cards (5 rows on PC) -->
+                <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
+                <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
+                <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
+                <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
+                <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
+                <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
+                <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
+                <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
+                <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
+                <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
+            </div>
         </div>
 
         <!-- Results Container -->
@@ -92,10 +107,11 @@
         let fairData = [];
 
         // Controls the initial and progressive item display limit (Result Capping for INP performance optimization)
+        // Initial limits perfectly matched to viewport capacity (5 rows x 2 columns = 10 items)
         let visibleLimits = {
-            book: 30,
-            talk: 30,
-            signing: 30
+            book: 10,
+            talk: 10,
+            signing: 10
         };
 
         // Stores the latest search or filter results to preserve state when loading more items
