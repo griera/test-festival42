@@ -141,20 +141,7 @@
 
                 // Apply initial type filter if valid
                 if (initialType && ['book', 'talk', 'signing'].includes(initialType)) {
-                    currentTypeFilter = initialType;
-
-                    // Update UI buttons visually
-                    const buttons = ['all', 'book', 'talk', 'signing'];
-                    buttons.forEach(t => {
-                        const btn = document.getElementById(`btn-filter-${t}`);
-                        if (btn) {
-                            if (t === initialType) {
-                                btn.className = 'type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-indigo-600 text-white border-indigo-500';
-                            } else {
-                                btn.className = 'type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
-                            }
-                        }
-                    });
+                    setTypeFilter(initialType);
                 }
 
                 // Programmatically generate date filter controls from configuration
