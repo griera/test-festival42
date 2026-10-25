@@ -57,25 +57,10 @@
             </button>
         </div>
 
-        <!-- Day Filter Chips -->
+        <!-- Day Filter Chips (dynamically generated) -->
         <div class="flex flex-wrap justify-center gap-2 mt-6" id="dayFilterContainer">
             <button onclick="setDayFilter('all')" id="btn-day-all" class="day-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-indigo-600 text-white border-indigo-500">
                 Tots els dies
-            </button>
-            <button onclick="setDayFilter('04112026')" id="btn-day-04112026" class="day-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
-                Dc 04 Nov
-            </button>
-            <button onclick="setDayFilter('05112026')" id="btn-day-05112026" class="day-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
-                Dj 05 Nov
-            </button>
-            <button onclick="setDayFilter('06112026')" id="btn-day-06112026" class="day-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
-                Dv 06 Nov
-            </button>
-            <button onclick="setDayFilter('07112026')" id="btn-day-07112026" class="day-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
-                Ds 07 Nov
-            </button>
-            <button onclick="setDayFilter('08112026')" id="btn-day-08112026" class="day-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
-                Dg 08 Nov
             </button>
         </div>
 
@@ -172,6 +157,20 @@
                     });
                 }
 
+                // Programmatically generate date filter controls from configuration
+                const dayContainer = document.getElementById('dayFilterContainer');
+                eventDaysList.forEach(dayCode => {
+                    const label = formatDayLabel(dayCode);
+
+                    const btn = document.createElement('button');
+                    btn.onclick = () => setDayFilter(dayCode);
+                    btn.id = `btn-day-${dayCode}`;
+                    btn.className = 'day-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
+                    btn.textContent = label;
+
+                    dayContainer.appendChild(btn);
+                });
+
                 // Load initial search parameters (.value is safe against XSS)
                 if (initialQuery) {
                     document.getElementById('searchInput').value = initialQuery;
@@ -245,11 +244,34 @@
                 }
             });
 
-            // Trigger search with updated filter type immediately
             executeSearch();
         }
 
-        // Converts '04112026' -> '04/11/2026'
+        // Configured event dates array for dynamic selector rendering
+        const eventDaysList = ['04112026', '05112026', '06112026', '07112026', '08112026'];
+
+        // Utility function to resolve localized display labels from standard date inputs
+        function formatDayLabel(dayCode) {
+            const day = dayCode.substring(0, 2);
+            const month = dayCode.substring(2, 4);
+            const year = dayCode.substring(4, 8);
+
+            // Construct standard ISO date format string for Date parsing
+            const date = new Date(`${year}-${month}-${day}`);
+
+            // Localized weekday abbreviations index mapping
+            const weekdays = ['Dg', 'Dl', 'Dm', 'Dc', 'Dj', 'Dv', 'Ds'];
+
+            // Localized month name abbreviations index mapping (1-indexed for direct matching)
+            const months = ['', 'Gen', 'Feb', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Des'];
+
+            const weekday = weekdays[date.getDay()];
+            const monthName = months[parseInt(month, 10)];
+
+            return `${weekday} ${day} ${monthName}`;
+        }
+
+        // Convert compact date representations into standard delimiter format for query matching
         function formatDayString(dayCode) {
             if (!dayCode || dayCode === 'all') return 'all';
             return `${dayCode.substring(0, 2)}/${dayCode.substring(2, 4)}/${dayCode.substring(4)}`;
