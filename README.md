@@ -28,22 +28,22 @@ Here is a quick look at the user interface and responsive experience across diff
 
 ```text
 test-festival42/
-├── index.html                     # Public frontend interface (search, filters, rendering)
-├── data.json                      # Public processed dataset consumed by the web app
-├── data/                          # CSV dataset files (raw inputs & processed data) and PDF files for book covers
+├── index.html               # Public frontend interface (search, filters, rendering)
+├── data.json                # Public processed dataset consumed by the web app
+├── data/                    # CSV dataset files (raw inputs & processed data) and PDF files for book covers
 │   ├── catalog.csv
-│   └── catalog.pdf                # Official PDF catalog (ignored by Git)
-├── assets/                        # Public static assets
-│   └── covers/                    # Extracted optimized WebP book cover images (named by EAN)
-├── screenshots/                   # Documentation screenshots for the README
-├── scripts/                       # Python development and automation tools
-│   ├── generate_catalog.py        # Script for massive synthetic load testing data
-│   ├── process_catalog.py         # Script to process raw catalog CSV and convert it directly into a structured JSON payload for the web app (verifying local cover files)
-│   └── extract_covers_from_pdf.py # Script to extract unique vertical book covers from official PDF catalogs and name them using the EAN found on their right
-├── requirements.txt               # Python package dependencies
-├── .venv/                         # Python virtual environment (ignored by Git)
-├── .gitignore                     # Git exclusion rules
-└── README.md                      # Project documentation
+│   └── catalog.pdf          # Official PDF catalog (ignored by Git)
+├── assets/                  # Public static assets
+│   └── covers/              # Extracted optimized WebP book cover images (named by EAN)
+├── screenshots/             # Documentation screenshots for the README
+├── scripts/                 # Python development and automation tools
+│   ├── generate_catalog.py  # Script for massive synthetic load testing data
+│   ├── process_catalog.py   # Script to process raw catalog CSV and convert it directly into a structured JSON payload for the web app (verifying local cover files)
+│   └── extract_covers.py    # Script to extract unique vertical book covers from official PDF catalogs and name them using the EAN found on their right
+├── requirements.txt         # Python package dependencies
+├── .venv/                   # Python virtual environment (ignored by Git)
+├── .gitignore               # Git exclusion rules
+└── README.md                # Project documentation
 
 ```
 
