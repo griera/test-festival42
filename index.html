@@ -20,7 +20,7 @@
 
             <div class="mt-4 flex flex-wrap justify-center gap-4 text-sm text-slate-300">
                 <p>📅 <strong>Dates:</strong> 4-8 de novembre de 2026</p>
-                <p>📍 <strong>Lloc:</strong> <a href="https://www.barcelona.cat/fabraicoats/es" target="_blank" class="underline hover:text-indigo-400">Fabra i Coats</a></p>
+                <p>📍 <strong>Lloc:</strong> <a href="https://www.barcelona.cat/fabraicoats/ca" target="_blank" class="underline hover:text-indigo-400">Fabra i Coats</a></p>
                 <p>🌐 <strong>Web oficial:</strong> <a href="https://www.barcelona.cat/festival42/ca" target="_blank" class="underline hover:text-indigo-400">Festival 42</a></p>
             </div>
         </div>
@@ -34,36 +34,41 @@
             <input
                 type="text"
                 id="searchInput"
-                placeholder="Cerca per llibre, autor, editorial, matèria, EAN..."
+                placeholder="Cerca per Títol, Autor/a, Editorial, Distribuïdor, EAN i Horaris"
                 class="w-full p-4 pl-12 rounded-xl border border-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-800 text-white text-lg transition-all placeholder-slate-400"
                 oninput="handleSearch()"
             >
             <span class="absolute left-4 top-4 text-slate-400 text-xl">🔍</span>
         </div>
 
-        <!-- Type Filter Chips -->
-        <div class="flex flex-wrap justify-center gap-2 mt-4" id="typeFilterContainer">
-            <button onclick="setTypeFilter('all')" id="btn-filter-all" class="type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-indigo-600 text-white border-indigo-500">
-                Tots
-            </button>
-            <button onclick="setTypeFilter('book')" id="btn-filter-book" class="type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
-                📚 Llibres
-            </button>
-            <button onclick="setTypeFilter('talk')" id="btn-filter-talk" class="type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
-                🎤 Xerrades
-            </button>
-            <button onclick="setTypeFilter('signing')" id="btn-filter-signing" class="type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
-                ✍️ Signatures
-            </button>
-        </div>
+        <!-- Type Filter Chips (dynamically generated) -->
+        <div class="flex flex-wrap justify-center gap-2 mt-4" id="typeFilterContainer"></div>
 
-        <!-- Loading State -->
-        <div id="loadingIndicator" class="text-center py-12 text-slate-400">
-            Carregant el catàleg del festival...
+        <!-- Day Filter Chips (dynamically generated) -->
+        <div class="flex flex-wrap justify-center gap-2 mt-4" id="dayFilterContainer"></div>
+
+        <!-- Loading State (Responsive Skeleton Screen for CLS Optimization) -->
+        <div id="loadingIndicator" class="space-y-6 mt-6">
+            <div class="text-center py-4 text-slate-400">
+                Carregant el catàleg del festival...
+            </div>
+            <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 animate-pulse">
+                <!-- 10 skeleton cards (5 rows on PC) -->
+                <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
+                <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
+                <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
+                <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
+                <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
+                <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
+                <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
+                <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
+                <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
+                <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
+            </div>
         </div>
 
         <!-- Results Container -->
-        <div id="resultsContainer" class="space-y-6 hidden">
+        <div id="resultsContainer" class="space-y-6 hidden mt-6">
             <!-- Dynamic results will be injected here via JavaScript -->
         </div>
 
@@ -101,8 +106,13 @@
         // Stores main application records
         let fairData = [];
 
-        // Controls the initial and progressive book display limit (Result Capping for INP performance optimization)
-        let visibleBooksLimit = 50;
+        // Controls the initial and progressive item display limit (Result Capping for INP performance optimization)
+        // Initial limits perfectly matched to viewport capacity (5 rows x 2 columns = 10 items)
+        let visibleLimits = {
+            book: 10,
+            talk: 10,
+            signing: 10
+        };
 
         // Stores the latest search or filter results to preserve state when loading more items
         let lastFilteredData = [];
@@ -110,8 +120,11 @@
         // Timer reference used for the search input debounce delay (prevents main thread blocking while typing)
         let searchTimeout = null;
 
-        // Active type filter setting: 'all', 'book', 'talk', or 'signing'
+        // Active type filter setting
         let currentTypeFilter = 'all';
+
+        // Active day filter setting
+        let currentDayFilter = 'all';
 
         // Fetch JSON data asynchronously when the page loads and securely load initial URL search/filters
         window.addEventListener('DOMContentLoaded', async () => {
@@ -124,28 +137,43 @@
                 document.getElementById('loadingIndicator').classList.add('hidden');
                 document.getElementById('resultsContainer').classList.remove('hidden');
 
+                // Dynamically construct type filter controls
+                const typeContainer = document.getElementById('typeFilterContainer');
+                eventTypesConfig.forEach(typeObj => {
+                    const btn = document.createElement('button');
+                    btn.onclick = () => setTypeFilter(typeObj.id);
+                    btn.id = `btn-filter-${typeObj.id}`;
+                    btn.className = 'type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
+                    btn.textContent = typeObj.label;
+                    typeContainer.appendChild(btn);
+                });
+
+                // Dynamically construct day filter controls
+                const dayContainer = document.getElementById('dayFilterContainer');
+                eventDaysConfig.forEach(dayObj => {
+                    const btn = document.createElement('button');
+                    btn.onclick = () => setDayFilter(dayObj.id);
+                    btn.id = `btn-day-${dayObj.id}`;
+                    btn.className = 'day-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
+                    btn.textContent = dayObj.label;
+                    dayContainer.appendChild(btn);
+                });
+
                 // Read URL location parameters
                 const urlParams = new URLSearchParams(window.location.search);
                 const initialQuery = urlParams.get('search');
                 const initialType = urlParams.get('type');
+                const initialDay = urlParams.get('day');
 
-                // Apply initial type filter if valid
-                if (initialType && ['book', 'talk', 'signing'].includes(initialType)) {
-                    currentTypeFilter = initialType;
+                // Determine and apply initial type state (fallback to 'all' if missing or invalid)
+                const validTypes = eventTypesConfig.map(t => t.id);
+                const activeType = (initialType && validTypes.includes(initialType)) ? initialType : 'all';
+                setTypeFilter(activeType, false);
 
-                    // Update UI buttons visually
-                    const buttons = ['all', 'book', 'talk', 'signing'];
-                    buttons.forEach(t => {
-                        const btn = document.getElementById(`btn-filter-${t}`);
-                        if (btn) {
-                            if (t === initialType) {
-                                btn.className = 'type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-indigo-600 text-white border-indigo-500';
-                            } else {
-                                btn.className = 'type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
-                            }
-                        }
-                    });
-                }
+                // Determine and apply initial day state (fallback to 'all' if missing or invalid)
+                const validDays = eventDaysConfig.map(d => d.id);
+                const activeDay = (initialDay && validDays.includes(initialDay)) ? initialDay : 'all';
+                setDayFilter(activeDay, false);
 
                 // Load initial search parameters (.value is safe against XSS)
                 if (initialQuery) {
@@ -175,20 +203,23 @@
             }
         });
 
+        // Global event delegation for author clicking (prevents quote breaking and XSS issues)
+        document.getElementById('resultsContainer').addEventListener('click', (e) => {
+            const authorTrigger = e.target.closest('.author-filter-trigger');
+            if (authorTrigger) {
+                const authorName = authorTrigger.getAttribute('data-author');
+                if (authorName) {
+                    searchByAuthor(authorName);
+                }
+            }
+        });
+
         // Smooth scroll window back to top
         function scrollToTop() {
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
             });
-        }
-
-        // Utility function to return '-' if a field is null, undefined, or empty string
-        function safeValue(val) {
-            if (!val || val === 'null' || String(val).trim() === '') {
-                return '-';
-            }
-            return val;
         }
 
         // Utility function to sanitize input strings before rendering
@@ -199,30 +230,118 @@
             );
         }
 
-        // Updates active type filter and re-runs the search filtering
-        function setTypeFilter(type) {
-            currentTypeFilter = type;
-            visibleBooksLimit = 50; // Reset limit when switching filter
+        // Utility function to return '-' if a field is null, undefined, or empty string, but allowing 0 and 0.0
+        function safeValue(val) {
+            if (val === null || val === undefined || val === 'null' || val === '') {
+                return '-';
+            }
+            if (typeof val === 'string' && val.trim() === '') {
+                return '-';
+            }
+            return escapeHTML(val);
+        }
 
-            // Update UI button styles
-            const buttons = ['all', 'book', 'talk', 'signing'];
-            buttons.forEach(t => {
-                const btn = document.getElementById(`btn-filter-${t}`);
+        // Utility function to format prices securely, ensuring 0 and decimals are properly displayed
+        function formatPrice(price) {
+            if (price === null || price === undefined || price === '' || price === 'null') {
+                return '0,00';
+            }
+            const num = Number(price);
+            return isNaN(num) ? escapeHTML(price) : num.toFixed(2).replace('.', ',');
+        }
+
+        // Content type configuration mapping
+        const eventTypesConfig = [
+            { id: 'all', label: 'Tots', activeClass: 'bg-slate-100 text-slate-900 border-white shadow-sm' },
+            { id: 'book', label: '📚 Llibres', activeClass: 'bg-indigo-600 text-white border-indigo-500' },
+            { id: 'talk', label: '🎤 Xerrades', activeClass: 'bg-teal-600 text-white border-teal-500' },
+            { id: 'signing', label: '✍️ Signatures', activeClass: 'bg-amber-600 text-white border-amber-500' }
+        ];
+
+        // Updates active type filter and re-runs the search filtering (by default)
+        function setTypeFilter(type, runSearch = true) {
+            currentTypeFilter = type;
+            visibleLimits = { book: 30, talk: 30, signing: 30 }; // Reset limits when switching filter
+
+            eventTypesConfig.forEach(typeObj => {
+                const btn = document.getElementById(`btn-filter-${typeObj.id}`);
                 if (btn) {
-                    if (t === type) {
-                        btn.className = 'type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-indigo-600 text-white border-indigo-500';
+                    if (typeObj.id === type) {
+                        btn.className = `type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${typeObj.activeClass}`;
                     } else {
                         btn.className = 'type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
                     }
                 }
             });
 
-            // Trigger search with updated filter type immediately
-            executeSearch();
+            if (runSearch) {
+                executeSearch();
+            }
+        }
+
+        // Configured event dates array for dynamic selector rendering
+        const eventDaysList = ['04112026', '05112026', '06112026', '07112026', '08112026'];
+
+        // Content day configuration mapping
+        const eventDaysConfig = [
+            { id: 'all', label: 'Tots els dies', activeClass: 'bg-slate-100 text-slate-900 border-white shadow-sm' },
+            ...eventDaysList.map(dayCode => ({
+                id: dayCode,
+                label: formatDayLabel(dayCode),
+                activeClass: 'bg-blue-600 text-white border-blue-400 shadow-md'
+            }))
+        ];
+
+        // Utility function to resolve localized display labels from standard date inputs
+        function formatDayLabel(dayCode) {
+            const day = dayCode.substring(0, 2);
+            const month = dayCode.substring(2, 4);
+            const year = dayCode.substring(4, 8);
+
+            // Construct standard ISO date format string for Date parsing
+            const date = new Date(`${year}-${month}-${day}`);
+
+            // Localized weekday abbreviations index mapping
+            const weekdays = ['Dg', 'Dl', 'Dm', 'Dc', 'Dj', 'Dv', 'Ds'];
+
+            // Localized month name abbreviations index mapping (1-indexed for direct matching)
+            const months = ['', 'Gen', 'Feb', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Des'];
+
+            const weekday = weekdays[date.getDay()];
+            const monthName = months[parseInt(month, 10)];
+
+            return `${weekday} ${day} ${monthName}`;
+        }
+
+        // Convert compact date representations into standard delimiter format for query matching
+        function formatDayString(dayCode) {
+            if (!dayCode || dayCode === 'all') return 'all';
+            return `${dayCode.substring(0, 2)}/${dayCode.substring(2, 4)}/${dayCode.substring(4)}`;
+        }
+
+        // Updates active day filter and re-runs the search filtering (by default)
+        function setDayFilter(dayCode, runSearch = true) {
+            currentDayFilter = dayCode;
+            visibleLimits = { book: 30, talk: 30, signing: 30 }; // Reset limits when switching filter
+
+            eventDaysConfig.forEach(dayObj => {
+                const btn = document.getElementById(`btn-day-${dayObj.id}`);
+                if (btn) {
+                    if (dayObj.id === dayCode) {
+                        btn.className = `day-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${dayObj.activeClass}`;
+                    } else {
+                        btn.className = 'day-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
+                    }
+                }
+            });
+
+            if (runSearch) {
+                executeSearch();
+            }
         }
 
         // Modify address bar state dynamically without page refresh
-        function updateUrlParams(query, type) {
+        function updateUrlParams(query, type, day) {
             const url = new URL(window.location);
 
             if (query && query.trim() !== '') {
@@ -235,6 +354,12 @@
                 url.searchParams.set('type', type);
             } else {
                 url.searchParams.delete('type');
+            }
+
+           if (day && day !== 'all') {
+                url.searchParams.set('day', day);
+            } else {
+                url.searchParams.delete('day');
             }
 
             window.history.replaceState({}, '', url);
@@ -252,26 +377,35 @@
                 results = results.filter(item => item.type === currentTypeFilter);
             }
 
+            if (currentDayFilter !== 'all') {
+                const targetDate = formatDayString(currentDayFilter);
+                results = results.filter(item => {
+                    const matchDatetime = item.datetime && item.datetime.includes(targetDate);
+                    const matchSchedule = item.schedule && item.schedule.includes(targetDate);
+                    return matchDatetime || matchSchedule;
+                });
+            }
+
             // Apply text search criteria if available
             if (query !== '') {
                 results = results.filter(item => {
                     const matchTitle = item.title && item.title.toLowerCase().includes(query);
                     const matchAuthor = item.author && item.author.toLowerCase().includes(query);
                     const matchPublisher = item.publisher && item.publisher.toLowerCase().includes(query);
-                    const matchCollection = item.collection && item.collection.toLowerCase().includes(query);
-                    const matchCategory = item.category && item.category.toLowerCase().includes(query);
+                    const matchDistributor = item.distributor && item.distributor.toLowerCase().includes(query);
                     const matchEan = item.ean && item.ean.toLowerCase().includes(query);
                     const matchLocation = item.location && item.location.toLowerCase().includes(query);
                     const matchDatetime = item.datetime && item.datetime.toLowerCase().includes(query);
+                    const matchSchedule = item.schedule && item.schedule.toLowerCase().includes(query);
 
-                    return matchTitle || matchAuthor || matchPublisher || matchCollection || matchCategory || matchEan || matchLocation || matchDatetime;
+                    return matchTitle || matchAuthor || matchPublisher || matchDistributor || matchEan || matchLocation || matchDatetime || matchSchedule;
                 });
             }
 
             lastFilteredData = results;
 
             // Sync state to URL parameters securely (persistence)
-            updateUrlParams(query, currentTypeFilter);
+            updateUrlParams(query, currentTypeFilter, currentDayFilter);
 
             renderResults(results, query);
         }
@@ -282,16 +416,31 @@
 
             // Delay input handler for performance optimization
             searchTimeout = setTimeout(() => {
-                visibleBooksLimit = 50; // Reset view parameters on update
+                visibleLimits = { book: 30, talk: 30, signing: 30 }; // Reset view parameters on update
                 executeSearch();
             }, 300); // 300 milliseconds delay prevents UI freezing while typing
         }
 
-        // Function triggered when clicking "Load More Books" button
-        function loadMoreBooks() {
-            visibleBooksLimit += 50; // Increase limit by 50
+        // Function triggered when clicking "Load More" button
+        function loadMoreItems(itemType) {
+            visibleLimits[itemType] += 30;
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
             renderResults(lastFilteredData.length > 0 || query !== '' ? lastFilteredData : fairData, query);
+        }
+
+        function renderSchedule(scheduleStr) {
+            if (!scheduleStr) return '';
+
+            // Split multiple entries and trim whitespace
+            const items = scheduleStr.split(',').map(s => s.trim());
+
+            // Return inline if only one entry exists
+            if (items.length === 1) {
+                return ` ${safeValue(items[0])}`;
+            }
+
+            // Format multiple entries into individual lines
+            return `<br>` + items.map(s => `<span class="block pl-2">${safeValue(s)}</span>`).join('');
         }
 
         // Render results into HTML structure with performance capping
@@ -314,12 +463,18 @@
 
             // Separate data into categories based on the 'type' field
             const allBooks = data.filter(item => item.type === 'book');
-            const talks = data.filter(item => item.type === 'talk');
-            const signings = data.filter(item => item.type === 'signing');
+            const allTalks = data.filter(item => item.type === 'talk');
+            const allSignings = data.filter(item => item.type === 'signing');
 
             // Performance optimization: Apply dynamic limit based on state
-            const books = allBooks.slice(0, visibleBooksLimit);
-            const hasMoreBooks = allBooks.length > visibleBooksLimit;
+            const books = allBooks.slice(0, visibleLimits.book);
+            const hasMoreBooks = allBooks.length > visibleLimits.book;
+
+            const talks = allTalks.slice(0, visibleLimits.talk);
+            const hasMoreTalks = allTalks.length > visibleLimits.talk;
+
+            const signings = allSignings.slice(0, visibleLimits.signing);
+            const hasMoreSignings = allSignings.length > visibleLimits.signing;
 
             let htmlContent = '';
 
@@ -349,14 +504,17 @@
                                         <div>
                                             <div class="flex justify-between items-start gap-2">
                                                 <h3 class="font-bold text-lg text-white">${safeValue(book.title)}</h3>
-                                                <span class="bg-indigo-950 text-indigo-300 text-xs font-semibold px-2 py-1 rounded border border-indigo-900">${safeValue(book.price)} €</span>
+                                                <span class="bg-indigo-950 text-indigo-300 text-xs font-semibold px-2 py-1 rounded border border-indigo-900">${formatPrice(book.price)} €</span>
                                             </div>
-                                            <p class="text-slate-300 font-medium cursor-pointer hover:text-indigo-400 mt-1" onclick="searchByAuthor('${book.author}')">Autor/a: <span class="underline">${safeValue(book.author)}</span></p>
+                                            <p class="text-slate-300 font-medium cursor-pointer hover:text-indigo-400 mt-1 author-filter-trigger" data-author="${escapeHTML(book.author)}">
+                                                Autor/a: <span class="underline">${safeValue(book.author)}</span>
+                                            </p>
 
                                             <div class="mt-3 text-sm text-slate-400 space-y-1 border-t border-slate-700/60 pt-2">
-                                                <p><strong>Editorial:</strong> ${safeValue(book.publisher)}</p>
-                                                <p><strong>Col·lecció:</strong> ${safeValue(book.collection)}</p>
-                                                <p><strong>Matèria:</strong> ${safeValue(book.category)}</p>
+                                                ${book.publisher ? `<p><strong>Editorial:</strong> ${safeValue(book.publisher)}</p>` : ''}
+                                                ${book.distributor ? `<p><strong>Distribuïdor:</strong> ${safeValue(book.distributor)}</p>` : ''}
+                                                ${book.theme ? `<p><strong>Tema:</strong> ${safeValue(book.theme)}</p>` : ''}
+                                                ${book.schedule ? `<p><strong>Horaris:</strong>${renderSchedule(book.schedule)}</p>` : ''}
                                             </div>
                                         </div>
 
@@ -371,7 +529,7 @@
 
                         ${hasMoreBooks ? `
                             <div class="text-center mt-6">
-                                <button onclick="loadMoreBooks()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
+                                <button onclick="loadMoreItems('book')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
                                     Carregar més llibres (${allBooks.length - books.length} restants)...
                                 </button>
                             </div>
@@ -384,21 +542,34 @@
             if (talks.length > 0) {
                 htmlContent += `
                     <section class="mt-6">
-                        <h2 class="text-xl font-bold text-indigo-400 mb-3 flex items-center gap-2">🎤 Xerrades i Conferències</h2>
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="text-xl font-bold text-teal-400 flex items-center gap-2">🎤 Xerrades i Conferències</h2>
+                            <span class="text-xs text-slate-400">Mostrant ${talks.length} de ${allTalks.length}</span>
+                        </div>
                         <div class="space-y-3">
                             ${talks.map(talk => `
-                                <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                                <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 hover:border-teal-500 transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                                     <div>
                                         <h3 class="font-bold text-white">${safeValue(talk.title)}</h3>
-                                        <p class="text-slate-300 text-sm cursor-pointer hover:text-indigo-400" onclick="searchByAuthor('${talk.author}')">Ponent: <span class="underline font-medium">${safeValue(talk.author)}</span></p>
+                                        <p class="text-slate-300 text-sm cursor-pointer hover:text-teal-400 author-filter-trigger" data-author="${escapeHTML(talk.author)}">
+                                            Ponent: <span class="underline">${safeValue(talk.author)}</span>
+                                        </p>
                                     </div>
-                                    <div class="text-right text-sm bg-indigo-950 text-indigo-200 border border-indigo-900 px-3 py-1.5 rounded-lg w-full sm:w-auto">
+                                    <div class="text-right text-sm bg-teal-950 text-teal-200 border border-teal-900 px-3 py-1.5 rounded-lg w-full sm:w-auto">
                                         <p>📍 ${safeValue(talk.location)}</p>
                                         <p class="font-semibold">📅 ${safeValue(talk.datetime)}</p>
                                     </div>
                                 </div>
                             `).join('')}
                         </div>
+
+                        ${hasMoreTalks ? `
+                            <div class="text-center mt-6">
+                                <button onclick="loadMoreItems('talk')" class="bg-teal-600 hover:bg-teal-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
+                                    Carregar més xerrades i conferències (${allTalks.length - talks.length} restants)...
+                                </button>
+                            </div>
+                        ` : ''}
                     </section>
                 `;
             }
@@ -407,13 +578,18 @@
             if (signings.length > 0) {
                 htmlContent += `
                     <section class="mt-6">
-                        <h2 class="text-xl font-bold text-amber-400 mb-3 flex items-center gap-2">✍️ Sessions de Signatures</h2>
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="text-xl font-bold text-amber-400 flex items-center gap-2">✍️ Sessions de Signatures</h2>
+                            <span class="text-xs text-slate-400">Mostrant ${signings.length} de ${allSignings.length}</span>
+                        </div>
                         <div class="space-y-3">
                             ${signings.map(signing => `
-                                <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                                <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 hover:border-amber-500 transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                                     <div>
                                         <h3 class="font-bold text-white">${safeValue(signing.title)}</h3>
-                                        <p class="text-slate-300 text-sm cursor-pointer hover:text-indigo-400" onclick="searchByAuthor('${signing.author}')">Autor/a: <span class="underline font-medium">${safeValue(signing.author)}</span></p>
+                                        <p class="text-slate-300 text-sm cursor-pointer hover:text-amber-400 author-filter-trigger" data-author="${escapeHTML(signing.author)}">
+                                            Autor/a: <span class="underline">${safeValue(signing.author)}</span>
+                                        </p>
                                     </div>
                                     <div class="text-right text-sm bg-amber-950 text-amber-200 border border-amber-900/50 px-3 py-1.5 rounded-lg w-full sm:w-auto">
                                         <p>📍 ${safeValue(signing.location)}</p>
@@ -422,6 +598,14 @@
                                 </div>
                             `).join('')}
                         </div>
+
+                        ${hasMoreSignings ? `
+                            <div class="text-center mt-6">
+                                <button onclick="loadMoreItems('signing')" class="bg-amber-600 hover:bg-amber-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
+                                    Carregar més sessions de signatures (${allSignings.length - signings.length} restants)...
+                                </button>
+                            </div>
+                        ` : ''}
                     </section>
                 `;
             }

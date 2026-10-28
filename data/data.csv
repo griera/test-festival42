@@ -1,20 +1,856 @@
-type;title;ean;author;publisher;collection;category;quantity;price;discount;tax;total;location;datetime
-book;ACCELERANDO;9788498891621;CHARLES STROSS;ALAMUT;FONDO;FICCION MODERNA Y CONTEMPORANEA, CIENCIA FICCION, Ciencia ficci¬¢n;10;28,80;0;4;299,52;;
-book;MOIRAS;9786316541369;VILAR MADRUGA,ELAINE;FERA EDICIONES;MUJERES QUE LEEN MUJERES;CUENTOS DE TERROR Y FANTASMAS, CUENTOS;20;22,02;0;4;458,02;;
-book;DANTESCAS;9786316541079;AMPUERO,MARIA FERNANDA;FERA EDICIONES;MUJERES QUE LEEN MUJERES;ANTOLOGIAS (NO POETICAS), FICCION MODERNA Y CONTEMPORANEA, CUENTOS DE TERROR Y FANTASMAS, CUENTOS CLASICOS DE TERROR Y FANTASMAS;20;22,02;0;4;458,02;;
-book;VERTIGO EN LA BOCA;9791399034868;SARMIENTO,CAROLINA;BAJAMAR EDITORES;AMARILLA;POESIA, POESIA DE POETAS INDIVIDUALES;2;11,54;0;4;24,00;;
-book;GOTICO DIVINO;9791399023626;ARRABAL,MARINA/FAE,ANNA/G MORA,ALBA/GOM;HORROR VACUI;HORROR VACUI;CUENTOS DE TERROR Y FANTASMAS, FICCION RELIGIOSA Y ESPIRITUAL, MENTE, CUERPO Y ESPIRITU, Terror contempor neo e historias de fantasmas, Ficci¬¢n de lo oculto (ocultismo);3;18,17;0;4;56,69;;
-book;LA ROSA DE LAS NIEBLAS;9788412931426;ROBLES,LOLA;CRONONAUTA;CIENCIA FICCION;FICCION MODERNA Y CONTEMPORANEA, CIENCIA FICCION, CIENCIA FICCION CLASICA, Ficci¬¢n moderna y contempor nea: general y literar, Ciencia ficci¬¢n, Ciencia ficci¬¢n cl sica;8;19,23;0;4;159,99;;
-book;REGRESO A GAOZU;9788412571776;GONZALEZ, ISA J,;CRONONAUTA;CIENCIA FICCION;FICCION MODERNA Y CONTEMPORANEA, CIENCIA FICCION, Ficci¬¢n moderna y contempor nea: general y literar, Ciencia ficci¬¢n: exploraci¬¢n espacial;3;20,67;0;4;64,49;;
-book;ULTIMA LUZ DE TRALIA,LA;9788412059953;GONZALEZ,ISA J;CRONONAUTA;CIENCIA FICCION;FICCION MODERNA Y CONTEMPORANEA, CIENCIA FICCION, ESTUDIOS HOMOSEXUALES, FEMINISMO Y TEORIA FEMINISTA, Ficci¬¢n moderna y contempor nea: general y literar, Ciencia ficci¬¢n, Estudios / temas sobre la comunidad LGBTQ+;3;14,42;0;4;44,99;;
-book;CONSECUENCIAS NATURALES;9788494795862;BARCELO,ELIA;CRONONAUTA;CIENCIA FICCION;FICCION MODERNA Y CONTEMPORANEA, CIENCIA FICCION, FEMINISMO Y TEORIA FEMINISTA, Ficci¬¢n moderna y contempor nea: general y literar, Ciencia ficci¬¢n, Feminismo y teor¬°a feminista;2;15,38;0;4;31,99;;
-book;LO QUE CUENTAN LOS MONSTRUOS;9788419293435;SOLSONA ASENSIO,GEMMA;APACHE;ANTOLOGIAS LUJO;CUENTOS DE TERROR Y FANTASMAS, CUENTOS CLASICOS DE TERROR Y FANTASMAS, FANTASIA, MITOS Y LEYENDAS NARRADOS COMO FICCION;6;20,67;0;4;128,98;;
-book;HISTORIA DE LO FANTASTICO EN LAS NARRATIVAS LATINOAMERICANA;9788491923060;AA,VV;IBEROAMERICANA VERVUERT;AMERICANA EYSTETTENSIA;LITERATURA: HISTORIA Y CRITICA, HISTORIA, LATINOAMERICA, M,xico, Centroam,rica, Sudam,rica, Latinoam,rica, Literatura: historia y cr¬°tica;3;34,62;0;4;108,01;;
-book;EL ANACRONOPETE;9788494890833;ENRIQUE GASPAR Y RIMBAU/FRANCISCO GOMEZ;EDITORIAL INLIBRIS;RECUERDOS DEL FUTURO;CIENCIA FICCION, CIENCIA FICCION CLASICA, ESPA√ëA;3;19,23;0;4;60,00;;
-book;CUENTOS ILUSTRADOS COMPLETOS;9788494890826;FABRA Y DEAS, NILO MARIA;GASPAR & RIMBAU;RECUERDOS DEL FUTURO;FANTASIA, EUROPA DEL SUR;3;15,38;0;4;47,99;;
-book;CUENTOS EN EL ESPACIO Y EL TIEMPO;9788412119367;GARCIA GUTIERREZ,ALBERTO;GASPAR & RIMBAU;RECUERDOS DEL FUTURO;CIENCIA FICCION, FANTASIA;8;15,38;0;4;127,96;;
-book;BRUJAS EN EL ARTE, LAS;9789464991086;PARE, ALIX;ILUS BOOKS S L;GENERAL;HISTORIA DEL ARTE / ESTILOS DE ARTE Y DISE√ëO, FORMAS DE EXPRESION ARTISTICA, BRUJERIA, BRUJERIA Y WICCA, Artes: formas de expresi¬¢n art¬°stica;20;12,45;0;4;258,96;;
-book;DIABLO EN EL ARTE, EL;9789464991055;PARE, ALIX;ILUS BOOKS S L;GENERAL;HISTORIA DEL ARTE / ESTILOS DE ARTE Y DISE√ëO, FORMAS DE EXPRESION ARTISTICA, MENTE, CUERPO Y ESPIRITU, LIBROS DE REGALO, Artes: formas de expresi¬¢n art¬°stica;20;12,45;0;4;258,96;;
-book;HORROTURISMO CO(S)MICO;9791399057638;SANCHEZ MACANAS,IBAN M;LITERUP;FANTASIA;FANTASIA, HUMOR;8;16,34;0;4;135,95;;
-talk;TAULA RODONA: EL TERROR CONTEMPORANI;;MAR√çA FERNANDA AMPUERO, ELAINE VILAR MADRUGA;;;;0;0;0;0;0;Escenari 1 (Fabra i Coats);06/11/2026 17:00
-signing;SESSI√ì DE SIGNATURES CRONONAUTA;;ISA J. GONZ√ÅLEZ, LOLA ROBLES;;;;0;0;0;0;0;M√≤dul de Signatures A;07/11/2026 18:30
+EAN;LLIBRE;AUTORI;EDITORIAL;DISTRIBUœDOR;TIPUS;PVP;TEMA;HORARIS
+9788445019610;ParÌs celestial;A.Y. Chao;Minotauro;LOGISTA;Festival;21,95;CreaciÛ de mons;
+9788445016947;Shangh·i inmortal;A.Y. Chao;Minotauro;LOGISTA;Festival;21,95;CreaciÛ de mons;
+9788429783681;L'antropÚloga;Ada Castells;Edicions 62;LOGISTA;Participant;18,5;Alternatives polÌtiques;07/11/2026 18:30
+9788412570656;Historia ilustrada de los fantasmas;Adam Allsuch Boardman;Libros del zorro rojo;LES PUNXES;Fons Carbo;19,9;Pors at‡viques;Tots els dies
+9788412314311;Historia ilustrada de los ovnis;Adam Allsuch Boardman;Libros del zorro rojo;LES PUNXES;Fons Carbo;21,9;Pors at‡viques;Tots els dies
+9791399153323;Historia ilustrada de la magia;Adam Allsuch Boardman;Libros del zorro rojo;LES PUNXES;Fons Carbo;21,9;Pors at‡viques;Tots els dies
+9788412980363;Argila alienÌgena;Adrian Tchaikovsky;Chronos;UDL;Fons Carbo;23,5;CreaciÛ de mons;Tots els dies
+9791399138825;Punt de saturaciÛ;Adrian Tchaikovsky;Chronos;UDL;Fons Carbo;19;CreaciÛ de mons;Tots els dies
+9788412119572;Un dia tot aixÚ ser‡ teu;Adrian Tchaikovsky;Chronos;UDL;Fons Carbo;19,95;CreaciÛ de mons;Tots els dies
+9788412761603;Gossos de guerra;Adrian Tchaikovsky;Chronos;UDL;Fons Carbo;21;CreaciÛ de mons;Tots els dies
+9788412761689;Meldecaps;Adrian Tchaikovsky;Chronos;UDL;Fons Carbo;23,5;CreaciÛ de mons;Tots els dies
+9788412119541;Trescafocs;Adrian Tchaikovsky;Chronos;UDL;Fons Carbo;20,95;CreaciÛ de mons;Tots els dies
+9788412119596;Antic llinatge;Adrian Tchaikovsky;Chronos;UDL;Fons Carbo;20;CreaciÛ de mons;Tots els dies
+9791387749019;Ciudad caÌda;Adrienne Young;Umbriel;URANO;Festival;21,5;Romantasy;
+9788410085336;La maldiciÛn de June Farrow;Adrienne Young;Umbriel;URANO;Festival;19,9;Romantasy;
+9789689700517;Un mar de secretos enterrados;Adrienne Young;Umbriel;URANO;Festival;;Romantasy;
+9788491225881;El valle de la bruja (Leyendas de los Dos Reinos II);¡frica V·zquez;Loqueleo;ACL;Participant;14,3;CreaciÛ de mons;07/11/2026 11:00
+9788445021453;La sombra del loto negro;¡frica V·zquez;Minotauro;LOGISTA;Participant;22,95;CreaciÛ de mons;07/11/2026 11:00
+9788491225850;El abismo del dragÛn (Leyendas de los Dos Reinos I);¡frica V·zquez;Loqueleo;ACL;Participant;14,3;CreaciÛ de mons;07/11/2026 11:00
+9788491428121;La conjura del plomo;¡frica V·zquez;Algar Joven;ACL;Participant;11,5;CreaciÛ de mons;07/11/2026 11:00
+9791387605919;El ·ngel de la Inteligencia Artificial;AgustÌn Fern·ndez Mallo;Galaxia Gutenberg;LES PUNXES;Participant;22;Intel∑ligËncia artificial;05/11/2026 16:00
+9788419392503;La forma de la multitud;AgustÌn Fern·ndez Mallo;Galaxia Gutenberg;LES PUNXES;Participant;21,5;Alternatives polÌtiques;05/11/2026 16:00
+9788432239649;El libro de todos los amores;AgustÌn Fern·ndez Mallo;Seix Barral;LOGISTA;Participant;19;;05/11/2026 16:00
+9788412166057;La mirada imposible;AgustÌn Fern·ndez Mallo;Wunderkammer;UDL;Participant;12;;05/11/2026 16:00
+9788420433424;Cad·ver exquisito;Agustina Bazterrica;Alfaguara;PENGUIN;Fons Carbo;19,9;;
+9788412732788;Las raÌces recuerdan tu nombre;Aitziber Saldias;Obscura Editorial;ACL;Festival;18,9;Pors at‡viques;
+9788416188338;Ran y el mundo gris, vol. 1;Aki Irie;Ediciones Tomodomo;UDL;Festival;8;Manga;05/11/2026 18:30
+9788416188369;Ran y el mundo gris, vol. 2;Aki Irie;Ediciones Tomodomo;UDL;Festival;8;Manga;05/11/2026 18:30
+9788419206886;Mascota;Akwaeke Emezi;IndÚmita;UDL;Fons Carbo;18,95;;
+9788432251436;Cosamala;Alana S. Portero;Seix Barral;LOGISTA;Festival;20,9;Pors at‡viques;Tots els dies
+9788412980332;Titans;Albert Font;Chronos;UDL;Fons Carbo;21;CreaciÛ de mons;
+9791387927141;La conjura de los necios;Albert Monteys;Astiberri;UDL;Participant;28;Fantasia i art;05/11/2026 17:15
+9788410254213;Univers 2;Albert Monteys;Mai MÈs;LES PUNXES;Participant;19;Fantasia i art;05/11/2026 17:15
+9788412738650;Univers!;Albert Monteys;Mai MÈs;LES PUNXES;Participant;19,5;Fantasia i art;05/11/2026 17:15
+9788419670847;°Universo!;Albert Monteys;Astiberri;UDL;Participant;20;Fantasia i art;05/11/2026 17:15
+9788410332010;Universo 2;Albert Monteys;Astiberri;UDL;Participant;19;Fantasia i art;05/11/2026 17:15
+9788418215285;Matadero Cinco o La cruzada de los niÒos;Albert Monteys;Astiberri;UDL;Participant;18;Fantasia i art;05/11/2026 17:15
+9788418909559;Calavera Lunar. Especial 25 aniversario;Albert Monteys;Astiberri;UDL;Participant;18;Fantasia i art;05/11/2026 17:15
+9788493930684;Ser un hombre. CÛmo y por quÈ;Albert Monteys;Astiberri;UDL;Participant;6;Fantasia i art;05/11/2026 17:15
+9788461697496;23 fotogramas por segundo;Albert Monteys;Astiberri;UDL;Participant;6;Fantasia i art;05/11/2026 17:15
+9788415685715;Misterios comestibles. Ratas, fast food y otras delicatessen;Albert Monteys;Astiberri;UDL;Participant;10;Fantasia i art;05/11/2026 17:15
+9788416251742;Carlitos Fax;Albert Monteys;Astiberri;UDL;Participant;22;Fantasia i art;05/11/2026 17:15
+9788412119367;Cuentos en el espacio y el tiempo;Alberto GarcÌa GutiÈrrez;Gaspar y Rimbau;AZETA;Participant;16;CreaciÛ de mons;5/11/2026 16:00:00, 05/11/2026 18:00
+9788494890833;El AnacronÛpete;Alberto GarcÌa GutiÈrrez;Gaspar y Rimbau;AZETA;Participant;20;CreaciÛ de mons;5/11/2026 16:00:00, 05/11/2026 18:00
+9788494890826;Cuentos ilustrados completos;Alberto GarcÌa GutiÈrrez;Gaspar y Rimbau;AZETA;Participant;16;CreaciÛ de mons;5/11/2026 16:00:00, 05/11/2026 18:00
+9788412782059;Un mundo feliz;Aldous Huxley;Libros del zorro rojo;LES PUNXES;Festival;24,9;Alternatives polÌtiques;
+9788417417925;Dugongo;Ale Oseguera;Yegua de troya;PENGUIN;Participant;15,9;;
+9788416698820;Estrella Roja;Aleksandr Bogd‡nov;Sembra Llibres;MADE;Fons Carbo;19;;
+9788410487369;Jero[glÌf]ic;Ali Smith;Raig Verd;UDL;Fons Carbo;21,95;;
+9788410487697;Gliff;Ali Smith;Raig Verd;UDL;Fons Carbo;21,95;;
+9791388306174;Glifo;Ali Smith;NÛrdica;UDL;Fons Carbo;20,95;;
+9791387563769;Gliff - ESP;Ali Smith;NÛrdica;UDL;Fons Carbo;21,95;;
+9788412980301;MÈs enll‡ dels murs del mÛn;Alice B. Sheldon;Chronos;UDL;PREMIAT;23;;
+9788412838558;Houston, Houston, ens rebeu?;Alice B. Sheldon;Duna Llibres;UDL;Fons Carbo;19,95;;
+9788412968705;Les dones que els homes no veuen;Alice B. Sheldon;Duna Llibres;UDL;Fons Carbo;21,9;;
+9791387672300;MemÚria díEco;Alicia Kopf;L'Altra Editorial;LES PUNXES;Participant;20,9;;05/11/2026 17:15
+9788494508516;Germ‡ de gel;Alicia Kopf;L'Altra Editorial;LES PUNXES;Participant;18;;05/11/2026 17:15
+9788410469594;El libro de las sombras;Alix ParÈ;Blume;IXORAI;Participant;65;;05/11/2026 18:30
+9788419094827;Fant·stico. Gustave DorÈ;Alix ParÈ;Blume;IXORAI;Participant;65;;05/11/2026 18:30
+9789464991086;Las brujas en el arte;Alix ParÈ;Ilus Books;AZETA;Participant;12,95;;05/11/2026 18:30
+9789464991055;El diablo en el arte;Alix ParÈ;Ilus Books;AZETA;Participant;12,95;;05/11/2026 18:30
+9788410025813;Beetle aprenent de bruixa;Aliza Layne;Blackie Books;LES PUNXES;Fons Carbo;17,9;;
+9788412526394;A propÛsito de Lovecraft;¡lvaro Aparicio (H.P. Lovecraft);El Transbordador;MAIDHISA;Festival;20;Pors at‡viques;Tots els dies
+9788412823189;M·s all· de Lovecraft;¡lvaro Aparicio (H.P. Lovecraft);El Transbordador;MAIDHISA;Festival;20;Pors at‡viques;Tots els dies
+9788412057676;AixÌ es perd la guerra contra el temps;Amal El-Mohtar;Mai MÈs;LES PUNXES;Fons Carbo;18,95;;
+9788410254220;El riu tÈ arrels;Amal El-Mohtar;Mai MÈs;LES PUNXES;Fons Carbo;18,5;;
+9788419523396;Realitat zero;Ana GalvaÒ;Finestres;LES PUNXES;Festival;22;Alternatives polÌtiques;Tots els dies
+9788492615575;Realidad Cer0;Ana GalvaÒ;Apa-apa;UDL;Festival;23,9;Alternatives polÌtiques;Tots els dies
+9788410483583;TrabÈcula;Ana Pizarro;Plasson & Bartleboom;UDL;Festival;19,9;Pors at‡viques;
+9786316599728;Un trazo de oscuridad;Ana Segarra;Puck;URANO;Participant;;;06/11/2026 16:00
+9788412541595;El guardi·n de la memoria;Ana Segarra;Munyx Editorial;ACL;Participant;18,9;;06/11/2026 16:00
+9788412955385;N·ufragos del abismo;Ana Segarra;Munyx Editorial;ACL;Participant;19,9;;06/11/2026 16:00
+9788410983366;Malenfant;Andrea Izquierdo;RBA;LES PUNXES;Participant;23,9;;05/11/2026 19:45
+9788410085916;La sociedad de las almas malditas;AndrÈs Astasio;Umbriel;URANO;Participant;19,9;;05/11/2026 19:45
+9786075928913;Ruinas y sombras;AndrÈs Astasio;Puck;URANO;Participant;;;05/11/2026 19:45
+9788410254305;Project Hail Mary - R˙stega;Andy Weir;Mai MÈs;LES PUNXES;Fons Carbo;24,5;;
+9788410254275;Project Hail Mary - ED. Especial;Andy Weir;Mai MÈs;LES PUNXES;Fons Carbo;28,9;;
+9788419590527;La companyia dels llops;Angela Carter;Comanegra;LES PUNXES;Fons Carbo;19,9;;
+9788416677450;La c·mara sangrienta;Angela Carter;Sexto Piso;UDL;Fons Carbo;20;;
+9788412761672;La innocencia dels mosquits;Aniol Florensa;Chronos;UDL;Participant;20;;07/11/2026 11:00
+9788419836724;L'illa de les barretines;Aniol Florensa;La Campana;PENGUIN;Participant;23,9;;07/11/2026 11:00
+9788419415004;Lladruc a les estrelles;Aniol Florensa;Llibres del Delicte;UDL;Participant;17,5;;07/11/2026 11:00
+9791399014686;Sumer Ès aquÌ;Anna Pantinat;Males Herbes;LES PUNXES;Fons Carbo;15;;
+9788418431173;La casa del sacrificio;Anna Smith Spark;OZ Editorial;UDL;Festival;23,95;Alta fantasia;
+9788418431159;La torre de los vivos y de los muertos;Anna Smith Spark;OZ Editorial;UDL;Festival;22,95;Alta fantasia;
+9788418431135;La corte de los cuchillos rotos;Anna Smith Spark;OZ Editorial;UDL;Festival;22,95;Alta fantasia;
+9791388412042;El Vivo;Anna Starobinets;Impedimenta;UDL;Participant;25,95;;Tots els dies
+9788410254169;El Gual de la Guilla;Anna Starobinets;Mai MÈs;LES PUNXES;Participant;28,95;;Tots els dies
+9788412614435;La gl‡ndula d'Õcar;Anna Starobinets;Mai MÈs;LES PUNXES;Participant;20,5;;Tots els dies
+9788419581631;El Vado de los Zorros;Anna Starobinets;Impedimenta;UDL;Participant;34,95;;Tots els dies
+9788419581020;La gl·ndula de Õcaro;Anna Starobinets;Impedimenta;UDL;Participant;22,8;;Tots els dies
+9788417553906;Tienes que mirar;Anna Starobinets;Impedimenta;UDL;Participant;21,5;;Tots els dies
+9788418510946;Gatl·ntida;Anna Starobinets;Plan B Publicaciones;UDL;Participant;14,9;;Tots els dies
+9788410249387;Dura una eternidad y en un instante se acaba;Anne de Marcken;Sexto Piso;UDL;Fons Carbo;18,9;;
+9788445021477;SuprAdalid;Antonio Runa;Minotauro;LOGISTA;Participant;19,95;;08/11/2026 12:00
+9788445014752;La chica gris;Antonio Runa;Minotauro;LOGISTA;Participant;21,95;;08/11/2026 12:00
+9788445016800;La materia de las sombras;Antonio Runa;Minotauro;LOGISTA;Participant;20,95;;08/11/2026 12:00
+9788445019573;El Foso de los Olvidados;Antonio Runa;Minotauro;LOGISTA;Participant;21,95;;08/11/2026 12:00
+9788419490988;Katona;AntxiÒe Mendizabal;Consonni;UDL;Participant;21,9;Pors at‡viques;06/11/2026 16:00
+9788416205882;VÌnculos;AntxiÒe Mendizabal;Consonni;UDL;Participant;23,5;Pors at‡viques;06/11/2026 16:00
+9788401037368;Todo sobre Stephen King;Ariel Bosi;Plaza & JanÈs;PENGUIN;Festival;25,9;Pors at‡viques;Tots els dies
+9788410249684;PÌcnic extraterrestre;Arkadi i Boris Strugatski;Sexto Piso;UDL;Fons Carbo;21,9;;
+9788419676399;Gran Deu Pan;Arthur Machen;Laertes;ACL;Fons Carbo;16;;
+9788410249202;Negro tal vez;Attila Veres;Sexto Piso;UDL;Fons Carbo;23,9;;
+9789878272436;AmigdalatrÛpolis;B.R. Yeager;Caja Negra;IXORAI;Fons Carbo;20;;
+9789874862396;Espacio negativo;B.R. Yeager;Caja Negra;IXORAI;Fons Carbo;29,9;;
+9788412927320;Jonathan Royce y las tortugas ninfÛmanas del espacio exterior;Beatriz Aguilar Gallo;Cetus Editorial;CETUS EDITORIAL;Fons Carbo;;;
+9788410254350;Quan et despertis, trenca la closca;Becky Chambers;Mai MÈs;LES PUNXES;Festival;22,5;Alternatives polÌtiques;06/11/2026 16:00
+9791370092429;El largo viaje a un pequeÒo planeta iracundo;Becky Chambers;Runas;ACL;Festival;19,95;Alternatives polÌtiques;06/11/2026 16:00
+9788410254022;Aprendre, si tenim sort;Becky Chambers;Mai MÈs;LES PUNXES;Fons Carbo;19,5;Alternatives polÌtiques;06/11/2026 16:00
+9788491016120;Les bruixes d'arlet;Bel Olid Baez;Combel;CASALS;Fons Carbo;13,9;;
+9786316947024;Noches oscuras;BelÈn MartÌnez;Umbriel;URANO;Festival;;Romantasy;
+9788410487635;La cinquena extinciÛ;Bernat RomanÌ;IndÚmita;UDL;Participant;21,95;;07/11/2026 13:00
+9788483439760;Temps de fronteres;Bernat RomanÌ;Bamb˙;CASALS;Participant;13,9;;07/11/2026 13:00
+9791399156973;Mons on trobar-te;Berta Creus;Males Herbes;LES PUNXES;Fons Carbo;20,95;;
+9788410860612;Nettle;Bex Hogan;Bamb˙;CASALS;Participant;19,95;;Tots els dies
+9788410860629;Nettle;Bex Hogan;Bamb˙;CASALS;Participant;19,95;;Tots els dies
+9788419676702;El Wendigo;Blackwood, Algernon;Laertes;ACL;Fons Carbo;22;;Tots els dies
+9788412478785;Conejo maldito;Bora Chung;Alpha Decay;UDL;Fons Carbo;19,9;;Tots els dies
+9788419437662;La reina de otoÒo;Borja Gonz·lez;Reservoir Books;PENGUIN;Festival;24,9;Fantasia i art;Tots els dies
+9788418908644;Dr‡cula;Bram Stoker;Viena;LOGIS PRGHE;Fons Carbo;24;;
+9791399105629;Rull del Mar Maragda;Brandon Sanderson;Duna Llibres;UDL;Fons Carbo;29,9;CreaciÛ de mons;Tots els dies
+9788412968798;Illes del Caliufosc;Brandon Sanderson;Duna Llibres;UDL;Fons Carbo;29,9;CreaciÛ de mons;Tots els dies
+9788412838572;L'‡nima de l'Emperador;Brandon Sanderson;Duna Llibres;UDL;Fons Carbo;19,95;CreaciÛ de mons;Tots els dies
+9788418037818;Trenza del mar esmeralda;Brandon Sanderson;Nova;PENGUIN;Festival;26,9;CreaciÛ de mons;Tots els dies
+9788412968736;Elantris;Brandon Sanderson;Duna Llibres;UDL;Fons Carbo;27,5;CreaciÛ de mons;Tots els dies
+9788410254268;L'heroi de l'eternitat - Mistborn 3;Brandon Sanderson;Mai MÈs;LES PUNXES;Fons Carbo;28,5;CreaciÛ de mons;Tots els dies
+9788410254190;El pou de l'ascensiÛ - Mistborn 2;Brandon Sanderson;Mai MÈs;LES PUNXES;Fons Carbo;28,5;CreaciÛ de mons;Tots els dies
+9788410254121;Els fills de la boira - Mistborn 1;Brandon Sanderson;Mai MÈs;LES PUNXES;Fons Carbo;27,5;CreaciÛ de mons;Tots els dies
+9788490708910;Mistborn - TrilogÌa original (ediciÛn limitada especial estuche);Brandon Sanderson;Penguin Bolsillo;ACL;Festival;50,95;CreaciÛ de mons;Tots els dies
+9788484648482;Dins del bosc;Browne, Anthony;Kalandraka;MADE;Fons Carbo;16,5;;
+9788412738612;Friday 1;Brubaker, Martin, Vicente;Mai MÈs;LES PUNXES;Fons Carbo;17,95;;Tots els dies
+9788410254015;Friday 2;Brubaker, Martin, Vicente;Mai MÈs;LES PUNXES;Fons Carbo;17,95;;Tots els dies
+9788410254107;Friday 3;Brubaker, Martin, Vicente;Mai MÈs;LES PUNXES;Fons Carbo;17,95;;Tots els dies
+9788412968781;Contacte;Carl Sagan;Duna Llibres;UDL;Fons Carbo;22,95;;Tots els dies
+9791399062007;Enjambre;Carla de la Fuente;Dilantado mentes;ACL;Participant;18,95;;08/11/2026 12:00
+9788412881394;Salitre y Cenizas;Carlos Di Urarte;El Transbordador;MAIDHISA;PREMIAT;20;;
+9788412987058;H·bito y mortaja;Carlos Di Urarte;El Transbordador;MAIDHISA;PREMIAT;20;;
+9788494674495;Aura;Carlos Fuentes;Libros del zorro rojo;LES PUNXES;Participant;17,9;Pors at‡viques;07/11/2026 17:15
+9791399254419;El caballero de la capa negra;Carlos J. S·nchez;Obscura Editorial;ACL;Participant;19,9;;08/11/2026 11:00
+9788412990652;No haureu de plorar els morts;Carlos J. S·nchez;Obscura Editorial;ACL;Participant;19,9;;08/11/2026 11:00
+9788433915634;El seu cos i altres festes;Carmen Maria Machado;Anagrama;LES PUNXES;Fons Carbo;19,9;;Tots els dies
+9788417353773;La Selva;Carolina Montoto;MÈs Llibres;ACL;Participant;20,95;;
+9791387688783;Las fronteras;Carolina Sarmiento;Siruela;LES PUNXES;Participant;15,95;;
+9788412508369;VrÎsno;Carolina Sarmiento;Pez de plata;UDL;Participant;18,9;;
+9788412289824;Tarada;Carolina Sarmiento;Pez de plata;UDL;Participant;16,9;;
+9788412078404;Animales urticantes;Carolina Sarmiento;Pez de plata;UDL;Participant;15,9;;
+9791399034868;VÈrtigo en la boca;Carolina Sarmiento;Bajamar editores;AZETA;Participant;12;;
+9791370091729;Llamas en nuncanada;Catriona Ward;Runas;ACL;Festival;22,5;Pors at‡viques;Tots els dies
+9791399127836;Enlloc en flames;Catriona Ward;Obscura Editorial;ACL;Festival;22,9;Pors at‡viques;Tots els dies
+9791399063431;El Memorando Fuller;Charles Stross;InsÛlita Ed.;UDL;Participant;22,95;;
+9788494702006;El archivo de atrocidades;Charles Stross;InsÛlita Ed.;UDL;Participant;22,95;;
+9788494898624;Jennifer Morgue;Charles Stross;InsÛlita Ed.;UDL;Participant;22,95;;
+9788498891621;Accelerando;Charles Stross;Alamut;AZETA;Participant;29,95;;
+9788415156390;Brecha nuclear;Charles Stross;Grupo Ajecu;UDL;Participant;14,96;;
+9791387949068;Reap & Sow 1;Charlotte B. Plumb;Alfaguara;PENGUIN;Participant;24,95;;
+9791388397004;Terra d'elles;Charlotte Perkins Gilman;Laertes;ACL;Fons Carbo;19,5;;
+9788412577754;El papel pintado amarillo;Charlotte Perkins Gilman;Alpha Decay;UDL;Fons Carbo;15,9;;
+9791387688752;Tama Puia;Chiki Fabregat;Siruela;LES PUNXES;Participant;17,95;CreaciÛ de mons;07/11/2026 11:00
+9788412057645;La ciutat i la ciutat;China MiÈville;Mai MÈs;LES PUNXES;Fons Carbo;23,95;;
+9788419260192;Embassytown;China MiÈville;Nova;PENGUIN;Festival;22,9;Alternatives polÌtiques;Tots els dies
+9788445022009;La masacre del vendedor de gominolas del New Seoul Park;Cho Yeeun;Minotauro;LOGISTA;Festival;21,95;Pors at‡viques;
+9788418431197;Entre dos fuegos;Christopher Buehlman;OZ Editorial;UDL;Participant;21,95;;
+9788418431463;Los del otro lado;Christopher Buehlman;OZ Editorial;UDL;Participant;19,95;;
+9788418711527;El ladrÛn de lengua negra;Christopher Buehlman;Gamon;ARNOIA;Participant;23;;
+9788412551983;Muertos de segunda;Christopher Buehlman;Herminda Editores;UDL;Participant;24;;
+9788418431357;El aullido de la oscuridad;Christopher Ruocchio;Oz Editorial;UDL;Festival;27,96;Grim dark;Tots els dies
+9788418431111;El Imperio del Silencio;Christopher Ruocchio;Oz Editorial;ACL;Festival;26,95;Grim dark;Tots els dies
+9788412683226;El problema dels tres cossos;Cixin Liu;Duna Llibres;UDL;Fons Carbo;21,9;;Tots els dies
+9788412838596;El bosc de la foscor;Cixin Liu;Duna Llibres;UDL;Fons Carbo;24,9;;Tots els dies
+9791399105605;La mort eterna;Cixin Liu;Duna Llibres;UDL;Fons Carbo;25,9;;Tots els dies
+9788412761696;Notes de l'edat ardent;Claire North;Chronos;UDL;PREMIAT;24;;
+9791370091682;Altasangre;Claudia Amador;Alianza Editorial;ACL;Participant;19,5;;
+9788418431227;The Raven Scholar;Claudia Casanova;Oz Editorial;UDL;Festival;26,95;CreaciÛ de mons;
+9788419676221;El cor condemnat;Clive Barker;Laertes;ACL;Fons Carbo;18,5;;
+9788411076555;Lo que no se ve;Cristina Fern·ndez Cubas;Tusquets;LOGISTA;Participant;18,9;;07/11/2026 13:00
+9788411074520;La habitaciÛn de Nona;Cristina Fern·ndez Cubas;Tusquets;LOGISTA;Participant;19;;07/11/2026 13:00
+9788411075213;El ·ngulo del horror;Cristina Fern·ndez Cubas;Tusquets;LOGISTA;Participant;18;;07/11/2026 13:00
+9788411075220;Cosas que ya no existen;Cristina Fern·ndez Cubas;Tusquets;LOGISTA;Participant;21;;07/11/2026 13:00
+9788411076012;Con Agatha en Estambul;Cristina Fern·ndez Cubas;Tusquets;LOGISTA;Participant;19;;07/11/2026 13:00
+9788411076159;Parientes pobres del diablo;Cristina Fern·ndez Cubas;Tusquets;LOGISTA;Participant;19;;07/11/2026 13:00
+9788412778526;LimÌtrofes;Cristina Jurado;Obscura Editorial;ACL;Participant;17,9;CreaciÛ de mons;7/11/2026 11:00:00, 7/11/2026 13:00:00, 7/11/2026 17:15:00
+9788418718816;Mil desiertos;Cristina Jurado;Eolas Ediciones;IXORAI;Participant;16;CreaciÛ de mons;7/11/2026 11:00:00, 7/11/2026 13:00:00, 7/11/2026 17:15:00
+9788412910919;El dÈu de les falgueres;Daniel Galera;Males Herbes;LES PUNXES;Fons Carbo;19,9;;Tots els dies
+9791399014617;El dimoni abans de nosaltres;Daniel GenÌs Mas;Males Herbes;LES PUNXES;Fons Carbo;19,9;;Tots els dies
+9788419206626;Elatsoe;Darcie Little Badger;IndÚmita;UDL;Fons Carbo;21,9;;Tots els dies
+9791388299025;Agrohorror. Nuevas formas de lo insÛlito rural;David Roas;Eolas Ediciones;IXORAI;Participant;21;;
+9788491923060;Historia de lo fant·stico en las narrativas latinoamericanas I;David Roas;Ediciones de Iberoamericana;AZETA;Participant;36;;
+9788483933831;Territorios;David Roas;P·ginas de espuma;LES PUNXES;Participant;16;;
+9788483933268;NiÒos;David Roas;P·ginas de espuma;LES PUNXES;Participant;15;;
+9788419293800;TodavÌa vivimos en el castillo;David Roas + Gemma Solsona;Apache Libros;ACL;Participant;16,5;;
+9791387927578;Frankestein - cÚmic;David Sala;Astiberri;UDL;Festival;39;;
+9791399165852;La profecia;David Seltzer;Obscura Editorial;ACL;Festival;20,9;Pors at‡viques;
+9788410323742;No la dejes sola;DesirÈe de Fez;Blackie Books;LES PUNXES;Fons Carbo;22;;Tots els dies
+9788419206923;El castell ambulant;Diana Wynne Jones;IndÚmita;UDL;Fons Carbo;24,9;;Tots els dies
+9791387554507;Noche de difuntos;Diverses autores;Hoja de lata;UDL;Festival;19,9;Pors at‡viques;Tots els dies
+9788419490100;Borradores de futuro;Diverses autores;Consonni;UDL;Fons Carbo;21,5;;Tots els dies
+9788419581761;GÛtico Bot·nico;Diverses autores;Impedimenta;UDL;Fons Carbo;25,95;;Tots els dies
+9788477029694;El Ceremonial;Diverses autores;Valdemar;MACHADO;Festival;19;Pors at‡viques;
+9791399162431;Espantoso;Diverses autores;La Felguera;UDL;Festival;29,5;;
+9788412881301;Historias phantasticas II;Diverses autores;El Transbordador;MAIDHISA;Festival;16;;Tots els dies
+9788412572629;Mundo weird;Diverses autores (AgustÌn Fern·ndez Mallo);Holobionte;MACHADO;Participant;22,9;;Tots els dies
+9788416205752;Hijas del futuro;Diverses autores (Cristina Jurado, Lola Robles);Consonni;UDL;Participant;19,9;Alternatives polÌtiques;07/11/2026 11:00
+9788412165418;Obscura;Diverses autores (Cristina Jurado, Sofia Rhei);Obscura Editorial;ACL;Participant;21,86;;Tots els dies
+9788412070569;Extraordin‡ries;Diverses autores (Cristina Xifra, Laura Tom‡s, InÈs MacPherson, Muntsa MimÛ);Males Herbes;LES PUNXES;Participant;18;;
+9786316541079;Dantescas;Diverses autores (Elain Vilar Madruga);Fera Ediciones;AZETA;Participant;22,9;;
+9791399081336;Cad·ver;Diverses autores (Elaine Vilar, Mafe Moscoso);Lava;MACHADO;Participant;20,9;;
+9788412692471;Historias Phantasticas;Diverses autores (Elia BarcelÛ);El Transbordador;MAIDHISA;Participant;16;;Tots els dies
+9788412256765;Obscura 2;Diverses autores (Emilio Bueso, Elia BarcelÛ, Lola Robles));Obscura Editorial;ACL;Participant;21,9;;Tots els dies
+9788412987065;Historias phantasticas III;Diverses autores (Emilio Bueso);El Transbordador;MAIDHISA;Participant;16;;
+9791399023626;GÛtico divino;Diverses autores (Gemma Solsona);Horror Vacui;AZETA;Participant;18,9;;
+9788412928402;Obscura 4;Diverses autores (Isabel del RÌo, Gemma Solsona, Iv·n ledesma);Obscura Editorial;ACL;Participant;22,9;;
+9788412235685;Barcelona 2059;Diverses autores (Ivan Ledesma, Ricard Ruiz GarzÛn, Laura Tom‡s, Susana Vallejo);Mai MÈs;LES PUNXES;Participant;18,95;;
+9788412914580;Mundo Weird vol, 2;Diverses autores (Ramiro Sanchiz);Holobionte;MACHADO;Participant;22,6;;
+9788412608328;Obscura 3;Diverses autores (Ricard Ruiz GarzÛn, Susana Vallejo);Obscura Editorial;ACL;Participant;22,9;;
+9788419202277;Vampirs;Diverses autores (Rosa Olsa, Edgar Cotes, Laura Tom‡s);Medusa;UDL;Participant;20;;
+9788445018361;Cuentos victorianos de fantasmas para Navidad;Diverses autores (trad. Loredana Volpe);Minotauro;LOGISTA;Participant;21;;06/11/2026 18:00
+9788445021156;Cuentos victorianos de fantasmas para Navidad 2;Diverses autores (trad. Loredana Volpe);Minotauro;LOGISTA;Participant;21;;06/11/2026 18:00
+9788418431234;Todo el mundo quiere ser el SeÒor Oscuro menos yo;Django Wexler;OZ Editorial;UDL;Participant;20,95;;
+9788418431098;CÛmo convertirse en el SeÒor Oscuro y morir en el intento;Django Wexler;OZ Editorial;UDL;Participant;22,95;;
+9788445021903;Contrapeso;Djuna;Minotauro;LOGISTA;Festival;20,95;Alternatives polÌtiques;
+9788419521491;El barco de Teseo;Doug Dorst, JJ Abrams;Duomo;UDL;Festival;49;Pors at‡viques;05/11/2026 19:00
+9788418292453;Guia Galactica Per A Autoestopistes;Douglas Adams;Laertes;ACL;Fons Carbo;17,5;;Tots els dies
+9788418292880;El Restaurant Del Final De L'Univers;Douglas Adams;Laertes;ACL;Fons Carbo;17,5;;Tots els dies
+9788419676214;La Vida, L'Univers I Tot;Douglas Adams;Laertes;ACL;Fons Carbo;;;Tots els dies
+9788433959560;Los autoestopistas gal·cticos;Douglas Adams;Anagrama;LES PUNXES;Fons Carbo;26,9;;Tots els dies
+9791399119794;Immortalis;E. H. Vane;Gribaudo;LES PUNXES;Festival;24,9;Romantasy;
+9791387969110;Contes foscos;Edgar Allan Poe;Comanegra;LES PUNXES;Festival;15;Pors at‡viques;Tots els dies
+9788477028949;Narraciones extraordinarias;Edgar Allan Poe;Valdemar;MACHADO;Festival;11,5;Pors at‡viques;Tots els dies
+9788475849973;El corb & La caiguda de la casa Usher;Edgar Allan Poe;Laertes;ACL;Festival;10;Pors at‡viques;Tots els dies
+9788419415462;Etern, com el laberint;Edgar Cotes;Specula;UDL;Participant;19,5;;
+9788419415172;Un ‡ngel cruel;Edgar Cotes;Specula;UDL;Participant;18,5;;
+9788412159240;Cordegel;Edgar Cotes;Edicions Secc;IXORAI;Participant;;;
+9788412761641;Fam! / L'˙nic amic del foc;Edgar Cotes / Iv·n Ledesma;Chronos;UDL;Participant;17;;04/11/2026 17:15, 05/11/2026 16:00, 06/11/2026 12:30
+9788412927351;Ressuscitar Ès una merda;Eduard MartÌ;Cetus Editorial;CETUS EDITORIAL;Participant;;;
+9788412980349;"L'efecte taca d'oli ; InfestaciÛ";Eduard MartÌ;Chronos;UDL;Participant;19;;
+9788412987041;La sombra de Tir na? Lyr;Eduardo Iriarte Gahete;El Transbordador;MAIDHISA;Participant;16;;
+9788418504907;El paisaje es un grito;Eduardo Ruiz Sosa;Candaya;UDL;Participant;21;Pors at‡viques;06/11/2026 16:00
+9788418504471;El libro de nuestras ausencias;Eduardo Ruiz Sosa;Candaya;UDL;Participant;20;Pors at‡viques;06/11/2026 16:00
+9788415934639;Cu·ntos de los tuyos han muerto;Eduardo Ruiz Sosa;Candaya;UDL;Participant;16;Pors at‡viques;06/11/2026 16:00
+9788415934059;AnatomÌa de la memoria;Eduardo Ruiz Sosa;Candaya;UDL;Participant;21;Pors at‡viques;06/11/2026 16:00
+9788418690594;La piel hembra;Elaine Vilar Madruga;Barrett;MACHADO;Participant;32,9;Pors at‡viques;6/11/2026 16:00:00, 7/11/2026 10:00:00, 8/11/2026 11:00:00
+9791399081312;El cielo de la selva;Elaine Vilar Madruga;Lava;MACHADO;Participant;22,9;Pors at‡viques;6/11/2026 16:00:00, 7/11/2026 10:00:00, 8/11/2026 11:00:00
+9786316541369;Moiras (antologia);Elaine Vilar Madruga;Fera Ediciones;AZETA;Participant;22,9;Pors at‡viques;6/11/2026 16:00:00, 7/11/2026 10:00:00, 8/11/2026 11:00:00
+9788412236576;La tiranÌa de las moscas;Elaine Vilar Madruga;Barrett;MACHADO;Participant;19,9;Pors at‡viques;6/11/2026 16:00:00, 7/11/2026 10:00:00, 8/11/2026 11:00:00
+9791399098419;Las tar·ntulas;Elaine Vilar Madruga;Letraversal;LES PUNXES;Participant;14,9;Pors at‡viques;6/11/2026 16:00:00, 7/11/2026 10:00:00, 8/11/2026 11:00:00
+9788412316544;FÚrvid;Elena Bartomeu;Males Herbes;LES PUNXES;Fons Carbo;18;;Tots els dies
+9791387761172;La vida secreta de los vampiros;Elia BarcelÛ;Lunwerg;LOGISTA;Participant;23,9;;Tots els dies
+9788494795862;Consecuencias naturales;Elia BarcelÛ;Crononauta;AZETA;Participant;16;;Tots els dies
+9788412782479;Mammalia;Elisenda Solsona;Males Herbes;LES PUNXES;Fons Carbo;19;;Tots els dies
+9788412582093;Mammalia;Elisenda Solsona;Lava;MACHADO;Fons Carbo;22,9;;Tots els dies
+9788445018774;Fathomfolk n∫ 01/02;Eliza Chan;Minotauro;LOGISTA;Festival;21,95;CreaciÛ de mons;
+9788415307167;La bruixa Lois;Elizabeth Gaskell;Angle;ACL;Fons Carbo;14;;Tots els dies
+9788466677448;Naturaleza muerta;Emilio Bueso;Ediciones B;PENGUIN;Participant;21,9;;
+9788477029380;Ahora intenta dormir;Emilio Bueso;Valdemar;MACHADO;Participant;16;;
+9788477029366;Cenital;Emilio Bueso;Valdemar;MACHADO;Participant;14;;
+9788477029625;ExtraÒos eones;Emilio Bueso;Valdemar;MACHADO;Participant;15;;
+9788412498035;El mar de la traquil∑litat;Emily St. John Mandel;Chronos;UDL;Fons Carbo;20;;Tots els dies
+9788419415400;Capitpota;Enric Herce;Specula;UDL;Fons Carbo;19,5;;Tots els dies
+9789878272177;La vida espectral;…ric Sadin;Caja Negra;IXORAI;Festival;22;Intel∑ligËncia artificial;
+9788412927344;El cazador de shinigamis;Erik Reenberg;Cetus Editorial;CETUS EDITORIAL;Fons Carbo;;;
+9791399047196;El hijo de la oscuridad - El despertar de Osharan V;Eva Amuedo;Obscura Editorial;ACL;Participant;22,9;CreaciÛ de mons;07/11/2026 11:00
+9788412382785;El d·rico gris - El despertar de Osharan I;Eva Amuedo;Obscura Editorial;ACL;Participant;22,9;CreaciÛ de mons;07/11/2026 11:00
+9791399047172;Las cenizas del mundo - El despertar de Osharan IV;Eva Amuedo;Obscura Editorial;ACL;Participant;22,9;CreaciÛ de mons;07/11/2026 11:00
+9788412666243;La CanciÛn de los soÒadores - El despertar de Osharan II;Eva Amuedo;Obscura Editorial;ACL;Participant;22,9;CreaciÛ de mons;07/11/2026 11:00
+9788412839630;La sangre maldita - El despertar de Osharan III;Eva Amuedo;Obscura Editorial;ACL;Participant;22,9;CreaciÛ de mons;07/11/2026 11:00
+9788419293428;AsimilaciÛn;Eva GarcÌa Guerrero;Apache Libros;ACL;Participant;15,5;;
+9788419293138;Planeta Olvido;Eva GarcÌa Guerrero;Apache Libros;ACL;Participant;23,5;;
+9788412253085;Huella 12;Eva GarcÌa Guerrero;Apache Libros;ACL;Participant;19,5;;
+9788427054691;Academia Z;F. M. Wylde;Ediciones MartÌnez Roca;LOGISTA;Participant;18,9;;08/11/2026 10:00
+9788418504433;Sulfuro;Fernanda GarcÌa Lao;Candaya;UDL;Participant;16;Pors at‡viques;07/11/2026 10:00, 07/11/2026 12:00
+9788418504846;EstaciÛn Saturno;Fernanda GarcÌa Lao;Candaya;UDL;Participant;18;Pors at‡viques;07/11/2026 10:00, 07/11/2026 12:00
+9788418504648;TeorÌa del tacto;Fernanda GarcÌa Lao;Candaya;UDL;Participant;16;Pors at‡viques;07/11/2026 10:00, 07/11/2026 12:00
+9788412863451;(No) me acuerdo;Fernanda GarcÌa Lao;Krillet71;LES PUNXES;Participant;15,9;Pors at‡viques;07/11/2026 10:00, 07/11/2026 12:00
+9788420477619;La sangre;Fernando GarcÌa Ballesteros;Alfaguara;PENGUIN;Participant;20,9;;
+9788445022061;HÈroes de ceniza;Fernando J. MuÒez;Minotauro;LOGISTA;Participant;21,95;;
+9788419581891;Cris·lida;Fernando Navarro;Impedimenta;UDL;PREMIAT;21,95;;
+9788418668340;Malaventura;Fernando Navarro;Impedimenta;UDL;PREMIAT;21,5;;
+9791399063448;L˙ltim contracte d'Isako;Fonda Lee;InsÛlita Ed.;UDL;Festival;20;CreaciÛ de mons;
+9791399063400;Esquirlas de Jade;Fonda Lee;Insolita;UDL;Festival;17,5;CreaciÛ de mons;
+9791387614201;L'escola diabÚlica;Fran Pintadera;Flamboyant;MADE;Fons Carbo;16,95;;
+9791387614195;El colegio diabÛlico;Fran Pintadera;Flamboyant;MADE;Fons Carbo;16,95;;
+9791387614225;El pop assassÌ;Fran Pintadera;Flamboyant;MADE;Fons Carbo;16,95;;
+9791387614218;El pulpo asesino;Fran Pintadera;Flamboyant;MADE;Fons Carbo;16,95;;
+9791399056877;Terrible Monstruo Enorme;Fran Pintadera, Simone Spelucci;Libre albedrÌo;UDL;Festival;16,5;;
+9788410860001;El bosc dels mil ulls;Frances Hardinge;Bamb˙;CASALS;Festival;14,9;CreaciÛ de mons;
+9788483436035;La llum de les fond‡ries;Frances Hardinge;Bamb˙;CASALS;Festival;16,9;CreaciÛ de mons;
+9788410860018;El bosque de los mil ojos;Frances Hardinge;Bamb˙;CASALS;Festival;14,9;CreaciÛ de mons;
+9788483436042;La luz de las profundidades;Frances Hardinge;Bamb˙;CASALS;Festival;16,9;CreaciÛ de mons;
+9788417496548;Contra la distopÌa;Francisco Martorell Campos;La caja books;MACHADO;Festival;18,9;Alternatives polÌtiques;
+9788410086777;DistopÌas;Lucia Hellin Nistal;Taugenit;UDL;Festival;9,9;Alternatives polÌtiques;
+9788445021729;La sombra sobre Innsmouth;FranÁois Baranger, H. P. Lovecraft;Minotauro;LOGISTA;Festival;23;Grans noms del 42;Tots els dies
+9788412234862;Los perros de tÌndalos;Frank Belknap Long - Javier Calvo (trad.);Aristas MartÌnez;MACHADO;Festival;22,5;;Tots els dies
+9788412363371;Dune;Frank Herbert;Duna Llibres;UDL;Fons Carbo;23,9;;
+9788412968767;El messies de Dune;Frank Herbert;Duna Llibres;UDL;Fons Carbo;21,5;;
+9788412838534;Els fills de Dune;Frank Herbert;Duna Llibres;UDL;Fons Carbo;24,95;;
+9788467957440;CHAINSAW MAN 01 CATAL¿;Fujimoto, Tatsuki;Norma Editorial;ACL;Festival;9;Manga;05/11/2026 18:30
+9788467957457;CHAINSAW MAN 02 CATAL¿;Fujimoto, Tatsuki;Norma Editorial;ACL;Festival;9;Manga;05/11/2026 18:30
+9788418739484;Ooku: Los Aposentos Privados, vol. 1;Fumi Yoshinaga;Ediciones Tomodomo;UDL;Festival;16;Manga;05/11/2026 18:30
+9788418739576;Ooku: Los Aposentos Privados, vol. 2;Fumi Yoshinaga;Ediciones Tomodomo;UDL;Festival;16;Manga;05/11/2026 18:30
+9788418739989;Ooku: Los Aposentos Privados, vol. 9;Fumi Yoshinaga;Tomodomo;UDL;Festival;18;Manga;05/11/2026 18:30
+9788432242540;Delta;Gabi MartÌnez;Seix Barral;LOGISTA;Participant;20,9;;07/11/2026 11:00
+9788410009189;Si sabessis el mar com Ès bonic;Gemma Calduch;La Magrana;PENGUIN;Festival;20,9;CreaciÛ de mons;Tots els dies
+9788419293435;LO QUE CUENTAN LOS MONSTRUOS;Gemma Solsona;Apache Editorial;AZETA;Participant;21,5;;
+9788410057333;Lo que se esconde al final de la escalera;Gemma Solsona;Eolas;IXORAI;Participant;19;;
+9791387801038;La revoluciÛ inevitable;GenÌs Roca;Capsula;LOGIS PRGHE;Participant;12,95;;
+9791387801045;La revoluciÛn inevitable;GenÌs Roca;Capsula;LOGIS PRGHE;Participant;12,95;;
+9788423365050;1984 - ESP;George Orwell;Destino;LOGISTA;Festival;19,9;Alternatives polÌtiques;Tots els dies
+9788419013194;1984;George Orwell;La Magrana;PENGUIN;Fons Carbo;21,9;;
+9788410028739;Els rebels d'AntÌgona;Georgina Dalmau;fanbooks;LOGISTA;Participant;11,95;;04/11/2026 17:15
+9788418327964;Gossos salvatges;Georgina Dalmau;fanbooks;LOGISTA;Participant;11,95;;04/11/2026 17:15
+9788416427819;El meu pare Ès un home llop;Gonz·lez, Javier / LluÔsot;Pastel de Luna;LES PUNXES;Fons Carbo;16,5;;
+9788412608373;Ens hem venut l'‡nima;Grady Hendrix;Obscura Editorial;ACL;Festival;22,9;Pors at‡viques;
+9788423370115;La casa de las diosas caÌdas;Greta Thompson (Ariadna Castellarnau y Facundo Piperno);Destino;LOGISTA;Participant;23,9;;04/11/2026 18:30
+9791399138801;Challenger;Guillem LÛpez;Chronos;UDL;Fons Carbo;23;;
+9788412881370;La polilla en la casa del humo;Guillem LÛpez;El Transbordador;MAIDHISA;Festival;18;CreaciÛ de mons;
+9788418197406;L'Illa Del Doctor Moreau;H.G. Wells;Angle;ACL;Fons Carbo;14;;
+9791387969530;Contes abismals;H.P. Lovecraft;Comanegra;LES PUNXES;Festival;19,5;;Tots els dies
+9788419676863;Líombra sobre Innsmouth;H.P. Lovecraft;Laertes;ACL;Festival;15;;Tots els dies
+9788418292873;A les muntanyes de la follia;H.P. Lovecraft;Laertes;ACL;Festival;14;;Tots els dies
+9788418292644;Líhorror de Dunwich;H.P. Lovecraft;Laertes;ACL;Festival;12;;Tots els dies
+9788419676856;La biblioteca díArkham. El cicle onÌric vol.1;H.P. Lovecraft;Laertes;ACL;Festival;18;;Tots els dies
+9791388397035;La biblioteca díArkham. El cicle onÌric vol.2;H.P. Lovecraft;Laertes;ACL;Festival;19;;Tots els dies
+9788419676153;La biblioteca díArkham. Mites de Cthulhu vol.1;H.P. Lovecraft;Laertes;ACL;Festival;17;;Tots els dies
+9788419676481;La biblioteca díArkham. Mites de Cthulhu vol.2;H.P. Lovecraft;Laertes;ACL;Festival;17,5;;Tots els dies
+9788419676764;La biblioteca díArkham. Mites de Cthulhu vol.3;H.P. Lovecraft;Laertes;ACL;Festival;18;;Tots els dies
+9788419676382;El Cas De Charles Dexter Ward;H.P. Lovecraft;Laertes;ACL;Festival;17;;Tots els dies
+9788412662443;Gats i gossos;H.P. Lovecraft;Males Herbes;LES PUNXES;Festival;15;;Tots els dies
+9791387574536;NecronomicÛn;H.P. Lovecraft;Duomo;UDL;Festival;24,9;;Tots els dies
+9788412295511;La llamada de Cthulhu;H.P. Lovecraft;Alpha Decay;UDL;Festival;11;;Tots els dies
+9788419017086;Relats Onirics De Randolph Carter;H.P. Lovecraft;Angle;ACL;Festival;13,9;;Tots els dies
+9788477028680;Cuentos de los Mitos de Cthulhu 1;H.P. Lovecraft;Valdemar;MACHADO;Festival;13;;Tots els dies
+9788412229356;El color que cayÛ del cielo;H.P. Lovecraft;Libros del zorro rojo;LES PUNXES;Festival;16,9;;Tots els dies
+9788477026181;En las montaÒas de la locura;H.P. Lovecraft;Valdemar;MACHADO;Festival;8,4;;Tots els dies
+9788418067976;El color que cayÛ del espacio;H.P. Lovecraft;NÛrdica;UDL;Festival;18;;Tots els dies
+9788416783953;Líhorror sobrenatural en la literatura;H.P. Lovecraft;Laertes;ACL;Festival;17,5;;Tots els dies
+9788477025290;Narrativa completa (Vol. I);H.P. Lovecraft;Valdemar;MACHADO;Festival;34,7;;Tots els dies
+9788477025870;Narrativa completa (Vol. II);H.P. Lovecraft;Valdemar;MACHADO;Festival;36,8;;Tots els dies
+9788477026617;Hongos de Yuggoth;H.P. Lovecraft;Valdemar;MACHADO;Festival;8,4;;Tots els dies
+9788477027706;El que susurra en la oscuridad;H.P. Lovecraft;Valdemar;MACHADO;Festival;17,9;;Tots els dies
+9791388397059;La Crida De Cthulhu;H.P. Lovecraft - Albert Monteys;Laertes;ACL;Festival;16,5;;05/11/2026 17:15
+9788419550118;Diario de sueÒos. Cartas II;H.P. Lovecraft - Javier Calvo (trad.);Aristas MartÌnez;MACHADO;Festival;27,9;;Tots els dies
+9788419550194;El terror de la razÛn. Cartas III;H.P. Lovecraft - Javier Calvo (trad.);Aristas MartÌnez;MACHADO;Festival;32,9;;Tots els dies
+9788418431432;Pensad en Flebas;Iain M. Banks;Oz Editorial;UDL;Festival;22,95;Intel∑ligËncia artificial;
+9788433915726;M‡quines com jo;Ian McEwan;Anagrama;LES PUNXES;Festival;21,9;Intel∑ligËncia artificial;
+9788433915931;La Klara i el Sol;Ian McEwan;Anagrama;LES PUNXES;Festival;21,9;Intel∑ligËncia artificial;
+9788433980465;M·quinas como yo;Ian McEwan;Anagrama;LES PUNXES;Festival;21,9;Intel∑ligËncia artificial;
+9791399057638;HORROTURISMO C”(S)MICO;Ib·n S·nchez;Literup;AZETA;Participant;16,99;;
+9791370092610;Las chicas de ayer;InÈs Galiano;Runas;ACL;Participant;17,95;Pors at‡viques;6/11/2026 16:00:00, 7/11/2026 17:15:00
+9788412473490;Proyecto KÈtchup;InÈs Galiano;Obscura Editorial;ACL;Participant;17,9;Pors at‡viques;6/11/2026 16:00:00, 7/11/2026 17:15:00
+9788412928495;Proyecto Mostaza;InÈs Galiano;Obscura Editorial;ACL;Participant;18,9;Pors at‡viques;06/11/2026 16:00
+9788419415028;Els fils del mar;InÈs MacPherson;Specula;UDL;Participant;17,5;;
+9791388019685;Una teorÌa crÌtica de la inteligencia artificial- r˙stica;Innerarity , Daniel;Galaxia Gutenberg;LES PUNXES;Festival;24;Intel∑ligËncia artificial;
+9791388019494;El futuro de la democracia;Innerarity , Daniel;Galaxia Gutenberg;LES PUNXES;Festival;24;Intel∑ligËncia artificial;
+9788413037462;La rebel∑liÛ de l'oblit;Irene Casellas;PagËs Editors;NUS DE LLIBRES;Participant;20;;
+9788433905130;Et vaig donar els ulls i vas mirar les tenebres;Irene Sol‡;Anagrama;LES PUNXES;Fons Carbo;18,9;;
+9788427249516;La muerte del tiempo (Time Keeper 3);Iria G. Parente y Selene (Iria y Selene);Molino;PENGUIN;Participant;22,95;;06/11/2026 18:30
+9788427257863;Estuche Time Keeper. La saga completa (Time Keeper);Iria G. Parente y Selene (Iria y Selene);Molino;PENGUIN;Participant;65,95;;06/11/2026 18:30
+9788427240759;El eco del destino (Time Keeper 1);Iria G. Parente y Selene (Iria y Selene);Molino;PENGUIN;Participant;19,95;;06/11/2026 18:30
+9788427242197;El imperio del caos (Time Keeper 2);Iria G. Parente y Selene (Iria y Selene);Molino;PENGUIN;Participant;22,95;;06/11/2026 18:30
+9788427256934;Rojo y Oro;Iria G. Parente y Selene (Iria y Selene);Molino;PENGUIN;Participant;20,95;;06/11/2026 18:30
+9788410381322;Seremos el hurac·n;Iria G. Parente y Selene (Iria y Selene);B de Bolsillo;PENGUIN;Participant;12,95;;06/11/2026 18:30
+9788427224674;Anne sin filtros;Iria G. Parente y Selene (Iria y Selene);Molino;PENGUIN;Participant;18,95;;06/11/2026 18:30
+9788417605575;Alma y los siete monstruos;Iria G. Parente y Selene (Iria y Selene);Nube de tinta;PENGUIN;Participant;16,95;;06/11/2026 18:30
+9788419415349;Rere les esquerdes;Isa J. Gonz·lez (Isa Janis);Specula;UDL;Participant;19,5;;
+9788410479746;El legado de la reina cuervo;Isa J. Gonz·lez (Isa Janis);Ediciones Kiwi;ACL;Participant;16,9;;
+9788412059953;La ˙ltima luz de Tralia;Isa J. Gonz·lez (Isa Janis);Crononauta;AZETA;Participant;15;;
+9788412571776;Regreso a Gaozu;Isa J. Gonz·lez (Isa Janis);Crononauta;AZETA;Participant;21,5;;
+9788435021340;Yo, robot;Isaac Asimov;hispano americana;ACL;Festival;13;Intel∑ligËncia artificial;
+9788412683202;FundaciÛ;Isaac Asimov;Duna Llibres;UDL;Fons Carbo;21,9;;
+9788412683288;FundaciÛ i Imperi;Isaac Asimov;Duna Llibres;UDL;Fons Carbo;21,95;;
+9788412968712;Segona FundaciÛ;Isaac Asimov;Duna Llibres;UDL;Fons Carbo;21,95;;
+9788468377834;La m‡ esquerra;Isaac Palmiola;EdebÈ;ARNOIA;Participant;13,5;;
+9788468377025;La mano izquierda;Isaac Palmiola;EdebÈ;ARNOIA;Participant;13,5;;
+9791387672607;Els fills del volc‡;Isaac Sastre Boquet;L'Altra Editorial;LES PUNXES;Festival;16,95;;
+9791370092757;Lo que no veo en el bosque;Isabel del RÌo;Alianza;ACL;Participant;17,5;;
+9788410254091;No albiro el bosc;Isabel del RÌo;Mai MÈs;LES PUNXES;Participant;18,5;;
+9788412692433;Madre;Isabel del RÌo;El Transbordador;MAIDHISA;Participant;16;;
+9788419415035;Mare;Isabel del RÌo;Specula;UDL;Fons Carbo;14,9;;
+9788419550330;La noche en equilibrio;Ismael MartÌnez Biurrun;Aristas MartÌnez;MACHADO;Participant;22,9;Pors at‡viques;07/11/2026 10:00, 07/11/2026 12:00
+9788419550149;DuraciÛn de un fantasma;Ismael MartÌnez Biurrun;Aristas MartÌnez;MACHADO;Participant;22;Pors at‡viques;07/11/2026 10:00, 07/11/2026 12:00
+9788412435320;Solo los vivos perdonan;Ismael MartÌnez Biurrun;Aristas MartÌnez;MACHADO;Participant;23;Pors at‡viques;07/11/2026 10:00, 07/11/2026 12:00
+9788477028604;Invasiones;Ismael MartÌnez Biurrun;Valdemar;MACHADO;Participant;14,5;Pors at‡viques;07/11/2026 10:00, 07/11/2026 12:00
+9788419415547;Ella Ès al gorg;Ivan Belzunce;Specula;UDL;Participant;19,5;;
+9788412329674;Negorith;Iv·n Ledesma;El Transbordador;MAIDHISA;Participant;22;;04/11/2026 17:15, 05/11/2026 16:00, 06/11/2026 12:30
+9791388074813;Aquelarre en frÌo;Iv·n Ledesma;Plan B Publicaciones;UDL;Participant;17,95;;04/11/2026 17:15, 05/11/2026 16:00, 06/11/2026 12:30
+9788419415257;L'altre costat;Iv·n Ledesma;Specula;UDL;Participant;18,5;;04/11/2026 17:15, 05/11/2026 16:00, 06/11/2026 12:30
+9788412692457;Negorith: sueÒos y pesadillas;Iv·n Ledesma;El Transbordador;MAIDHISA;Participant;22;;04/11/2026 17:15, 05/11/2026 16:00, 06/11/2026 12:30
+9788410031777;Davant dÈus indiferents;Iv·n Ledesma;Plan B Publicaciones;ACL;Participant;18,5;;04/11/2026 17:15, 05/11/2026 16:00, 06/11/2026 12:30
+9791387689346;El llanto del cuco;Iv·n Ledesma;Plan B Publicaciones;ACL;Participant;17,95;;04/11/2026 17:15, 05/11/2026 16:00, 06/11/2026 12:30
+9791387689797;El plor del cucut;Iv·n Ledesma;Plan B Publicaciones;ACL;Participant;17,95;;04/11/2026 17:15, 05/11/2026 16:00, 06/11/2026 12:30
+9788412493085;Compte! ContÈ contes!;Iv·n Ledesma;Mai MÈs;LES PUNXES;Participant;19,5;;04/11/2026 17:15, 05/11/2026 16:00, 06/11/2026 12:30
+9788412732733;A ambos lados del espejo;Iv·n Ledesma;Obscura Editorial;ACL;Participant;16,9;;04/11/2026 17:15, 05/11/2026 16:00, 06/11/2026 12:30
+9788418292910;AviÛ en vol ras;J.G. Ballard;Laertes;ACL;Fons Carbo;20;;
+9791399008685;Progenie;Jack Ketchum;Biblioteca de C·rfax;UDL;Festival;22,5;Pors at‡viques;Tots els dies
+9788494923296;La chica de al lado;Jack Ketchum;Biblioteca de C·rfax;UDL;Festival;22,7;Pors at‡viques;Tots els dies
+9788417339593;Jo, que no he conegut els homes;Jacqueline Harpman;Edicions del Periscopi;UDL;Fons Carbo;18;;
+9788413037042;Un dia assaltarem la ciutat amb cavalls de ferro;Jaume Oliver;PagËs Editors;ACL;Participant;20;;
+9788419415011;Les causes invisibles;Jaume Valor;Specula;UDL;Fons Carbo;18,5;;
+9791387927387;Encara Viva;Javi de Castro;Astiberri;UDL;Festival;19;;Tots els dies
+9788410332539;Villanueva;Javi de Castro;Astiberri;UDL;Festival;20;;Tots els dies
+9791399247602;Lluna nova;Javi Fern·ndez;Chronos;UDL;Participant;19;;
+9788419415486;L'˙ltim dip;Javi Fern·ndez;Specula;UDL;Participant;19,5;;
+9788432209581;El jardÌn colgante;Javier Calvo;Seix Barral;LOGISTA;Participant;19,9;;06/11/2026 12:30
+9788432235436;Piel de plata;Javier Calvo;Seix Barral;LOGISTA;Participant;19;;06/11/2026 12:30
+9788439713524;Mundo maravilloso;Javier Calvo;Random House;PENGUIN;Participant;21,9;;06/11/2026 12:30
+9788439722458;Corona de flores;Javier Calvo;Random House;PENGUIN;Participant;21,9;;06/11/2026 12:30
+9791399119787;Arcanos 1;Javier Santolobo;Gribaudo;LES PUNXES;Festival;25,9;Romantasy;
+9788418762321;Hi ha un fantasma en aquesta casa;Jeffers, Oliver;Andana;MADE;Fons Carbo;19,9;;
+9788445021880;El rÌo sabe tu nombre;Jihyun Yun;Minotauro;LOGISTA;Festival;17,95;Pors at‡viques;
+9788410009967;La nit de les marfantes;Joan Roca Navarro;La Magrana;PENGUIN;Participant;20,9;;
+9788425376238;La noche de las marfantas;Joan Roca Navarro;Grijalbo;PENGUIN;Participant;20,9;;
+9788419013453;Sota el fang;Joan Roca Navarro;La Magrana;PENGUIN;Participant;20,9;;
+9788473294638;Una canÁÛ de pluja;Joan-LluÌs LluÌs;Club Editor;LES PUNXES;PREMIAT;19;;
+9788412894394;La muerte y el meteoro;Joca Reiners Terron;Las afueras;UDL;Fons Carbo;17,95;;
+9791370092689;Los diablos - Ed. Coleccionista;Joe Abercrombie;Runas;ACL;Festival;26,95;Grim dark;Tots els dies
+9788466341165;MEDIO REY (TRILOGIA EL MAR QUEBRADO 1);Joe Abercrombie;Penguin;PENGUIN;Festival;12,95;CreaciÛ de mons;Tots els dies
+9788413625782;La voz de las espadas;Joe Abercrombie;Runas;ACL;Festival;31,5;Grim dark;Tots els dies
+9788466341172;MEDIO MUNDO (TRILOGIA EL MAR QUEBRADO 2);Joe Abercrombie;Penguin;PENGUIN;Festival;12,95;CreaciÛ de mons;Tots els dies
+9788466341189;MEDIA GUERRA (TRILOGIA EL MAR QUEBRADO 3);Joe Abercrombie;Penguin;PENGUIN;Festival;12,95;CreaciÛ de mons;Tots els dies
+9788411488310;Los HÈroes;Joe Abercrombie;Runas;ACL;Festival;29,95;Grim dark;Tots els dies
+9791387690595;El rey dolor;Joe Hill;Nocturna;UDL;Festival;25,95;Pors at‡viques;Tots els dies
+9788445021637;La sombra de los dioses;John Gwynne;Minotauro;LOGISTA;Festival;25;CreaciÛ de mons;
+9791399008661;Perdidos en la oscuridad y otras excursiones;John Langan;Biblioteca de C·rfax;UDL;Festival;23,5;Pors at‡viques;Tots els dies
+9788494923203;El Pescador;John Langan;Biblioteca de C·rfax;UDL;Festival;22,5;Pors at‡viques;Tots els dies
+9788415695318;El vampir;John William Polidori;Angle;ACL;Fons Carbo;9,8;;
+9791370091408;Alguien en quien anidar;John Wiswell;Runas;ACL;Festival;20,5;CreaciÛ de mons;
+9791399071962;La casa sense ning˙ a dins;Jon Klassen;Corimbo;LES PUNXES;Fons Carbo;16;;
+9788410025875;Calavera (CAT);Jon Klassen;Blackie Books;LES PUNXES;Fons Carbo;18,9;;
+9786075842011;La casa sin nadie dentro;Jon Klassen;OcÈano Travesia;LES PUNXES;Fons Carbo;15;;
+9788418733789;Cendra;Jonathan Auxier;Blackie Books;LES PUNXES;Fons Carbo;23;;
+9791399156911;Jo aixÚ ja no ho veurÈ;Jordi MasÛ;Males Herbes;LES PUNXES;Fons Carbo;19,9;;
+9788410256620;Catalunya misteriosa;Jorge RÌos;Rosa del vents;PENGUIN;Participant;21,9;;
+9791387975265;La Rep˙blica;Jorge Volpi;Alfaguara;PENGUIN;Participant;20,9;;
+9791387904708;InvasiÛn alienÌgena;Jorge Volpi;Debate;PENGUIN;Participant;12,9;;
+9788420479200;La invenciÛn de todas las cosas;Jorge Volpi;Alfaguara;PENGUIN;Participant;24,9;;
+9788483933312;Enrabiados;Jorge Volpi;P·ginas de espuma;LES PUNXES;Participant;18;;
+9788412252064;La doctrina del fuego;Toni Cifuentes;El Transbordador;MAIDHISA;Fons Carbo;20;;
+9791399108705;JapÛ. El llibre dels otakus;Josep Rodriguez;Lapislatzuli;MACHADO;Participant;16;Manga;05/11/2026 18:30
+9789878272504;La naciÛn de los sueÒos diurnos;Juan Mattio;Caja Negra;IXORAI;Fons Carbo;29,9;;
+9789878272306;Materiales para una pesadilla;Juan Mattio;Caja Negra;IXORAI;Fons Carbo;26;;
+9788412511161;Nuestras esposas bajo el mar;Julia Armfield;Sigilo;MACHADO;Festival;19,95;Pors at‡viques;Tots els dies
+9788410399327;Una tempestad para matar un beso;Julia Dippel;Inlov;LES PUNXES;Participant;25;;
+9788410399297;Una canciÛn para invocar una tempestad;Julia Dippel;Inlov;LES PUNXES;Participant;25;;
+9788412681468;El misterio de Salem's Lot. Bajo el signo del vampiro;Julio ¡ngel Olivares;AsociaciÛn Shangrila Textos Aparte;AZETA;Participant;26;;
+9788446050445;Fantasmas. Relatos victorianos y eduardianos;Julio ¡ngel Olivares;Akal;AZETA;Participant;49,95;;
+9788494043925;Sonambulia;Julio ¡ngel Olivares;Bandaaparte Editores;UDL;Participant;15;;
+9791399029321;R. U. R. Robots Universales Rossum;Karel Capek;RosamerÛn;MACHADO;Festival;22;Intel∑ligËncia artificial;Tots els dies
+9788412435245;La guerra de les salamandres;Karel ?apek;Males Herbes;LES PUNXES;Fons Carbo;19,9;;
+9788419059093;De nou centaura;Katixa Agirre;La segona perifËria;UDL;Fons Carbo;19,95;;
+9788416308736;El nuevo Lobo solitario y su cachorro n∫ 01;Kazuo Koike;Planeta comic;LOGISTA;Festival;15,95;Manga;
+9791388024856;ISEKAI SAMURAI 1;Keigo Saito;Ivrea;ACL;Festival;9;Manga;05/11/2026 18:30
+9791399119770;Noche p˙rpura;Keiz Noyers;Gribaudo;LES PUNXES;Participant;24,9;;04/11/2026 18:30
+9788408274230;Alma de cazadora;Keiz Noyers;Crossbooks;LOGISTA;Participant;17,95;;04/11/2026 18:30
+9791370091965;Cuanto vemos o parecemos;Ken Liu;Alianza Editorial;ACL;Participant;24,95;;
+9788413627700;DinastÌa del Diente de LeÛn II .El Muro de las Tormentas;Ken Liu;Alianza Editorial;ACL;Participant;15,5;;
+9788411482332;DinastÌa del Diente de LeÛn III .El trono velado;Ken Liu;Alianza Editorial;ACL;Participant;35,5;;
+9788411485760;DinastÌa del Diente de LeÛn IV. Huesos que hablan;Ken Liu;Alianza Editorial;ACL;Participant;35,5;;
+9788491046875;El zoo de papel y otros relatos;Ken Liu;Runas;ACL;Participant;27,5;;
+9788418187742;Matadero 5;Kurt Vonnegut;Blackie Books;LES PUNXES;Fons Carbo;22;;
+9788412782462;Salt en el temps;Kurt Vonnegut;Males Herbes;LES PUNXES;Fons Carbo;19,9;;
+9788412538427;Esmorzar de campions;Kurt Vonnegut;Males Herbes;LES PUNXES;Fons Carbo;20,9;;
+9788412316575;Bressol de gat;Kurt Vonnegut;Males Herbes;LES PUNXES;Fons Carbo;19,9;;
+9788412435283;Les Gal·pagos;Kurt Vonnegut;Males Herbes;LES PUNXES;Fons Carbo;19,9;;
+9788418733512;Desayuno de campeones;Kurt Vonnegut;Blackie Books;LES PUNXES;Fons Carbo;23;;
+9788419172563;Cuna de gato;Kurt Vonnegut;Blackie Books;LES PUNXES;Fons Carbo;23;;
+9788410028708;La fuga;Laia Aguilar;fanbooks;LOGISTA;Participant;14,95;;07/11/2026 18:30
+9791388051098;El hotel de los sueÒos;Laila Lalami;Sexto Piso;UDL;Participant;24,9;;
+9788466160803;Quatre Llunes 4. Ombres de plata;Laura Gallego;CruÔlla;ACL;PREMIAT;10,95;;
+9788410557703;Cuatro lunas 4: Sombras de plata;Laura Gallego;SM;ACL;PREMIAT;10,95;;
+9788466129350;All‡ on els arbres canten;Laura Gallego;CruÔlla;ACL;PREMIAT;14,94;;
+9788466110112;MemÚries d'Idh˙n I. La ResistËncia;Laura Gallego;CruÔlla;ACL;PREMIAT;22,95;;
+9788466112697;MemÚries d'Idh˙n II. TrÌada;Laura Gallego;CruÔlla;ACL;PREMIAT;22,95;;
+9788466114349;MemÚries d'Idh˙n III. PanteÛ;Laura Gallego;CruÔlla;ACL;PREMIAT;22,95;;
+9788466158602;Quatre llunes 1. Marees de m‡gia;Laura Gallego;CruÔlla;ACL;PREMIAT;10,95;;
+9788466159821;Quatre Llunes 2. C˙pules de vidre;Laura Gallego;CruÔlla;ACL;PREMIAT;10,95;;
+9788466160353;Quatre llunes 3. Vots de sang;Laura Gallego;CruÔlla;ACL;PREMIAT;10,95;;
+9788411829434;Cuatro lunas 1: Mareas de magia;Laura Gallego;SM;ACL;PREMIAT;10,95;;
+9788410550698;Cuatro lunas 2: C˙pulas de cristal;Laura Gallego;SM;ACL;PREMIAT;10,95;;
+9788410553774;Cuatro lunas 3: Votos de sangre;Laura Gallego;SM;ACL;PREMIAT;10,95;;
+9788467550030;Donde los ·rboles cantan;Laura Gallego;SM;ACL;PREMIAT;14,94;;
+9788467502695;Memorias de Idh˙n I. La Resistencia;Laura Gallego;SM;ACL;PREMIAT;22,95;;
+9788467505597;Memorias de Idh˙n II. TrÌada;Laura Gallego;SM;ACL;PREMIAT;22,95;;
+9788467511482;Memorias de Idh˙n III. PanteÛn;Laura Gallego;SM;ACL;PREMIAT;22,95;;
+9788419241047;Stravag‡ntia;Laura Gallego;Montena;PENGUIN;PREMIAT;17,95;;
+9788418949371;Stravagantia;Laura Gallego;Montena;PENGUIN;PREMIAT;17,95;;
+9788418483547;El cicle de l'etern emperador;Laura Gallego;Montena;PENGUIN;PREMIAT;;;
+9788418483547;El ciclo del eterno emperador;Laura Gallego;Montena;PENGUIN;PREMIAT;;;
+9788418798108;TrilogÌa Guardianes de la Ciudadela;Laura Gallego;Montena;PENGUIN;PREMIAT;55,95;;
+9791388369001;El preu de nÈixer;Laura Gost;Proa;LOGISTA;Participant;19,9;;05/11/2026 17:15
+9788419202253;Matermorfosis;Laura Tom‡s;Medusa;UDL;Participant;20;;
+9791387876128;Quan el mort torna i mossega;Laura Torres BauÁ‡;El Cep i la Nansa;ACL;Participant;19;;
+9788412235692;Les lluminoses;Lauren Beukes;Mai MÈs;LES PUNXES;Fons Carbo;20,95;;
+9788494704376;Carcoma;Layla MartÌnez;Amor de madre;AZETA;Fons Carbo;18;;
+9788419523303;La maledicciÛ de Castelmaure;Lewis Trondheim i Alfred;Finestres;LES PUNXES;Fons Carbo;24;;
+9788494742392;El libro de Joan;Lidia Yuknavitch;Alpha Decay;UDL;Festival;23,9;Alternatives polÌtiques;Tots els dies
+9791399156980;La meva mort;Lisa Tuttle;Males Herbes;LES PUNXES;Participant;18;;
+9788412817171;Mi muerte;Lisa Tuttle;MuÒeca infinita;UDL;Participant;18,95;;
+9791399074673;Nido de pesadillas;Lisa Tuttle;MuÒeca infinita;UDL;Participant;22,95;;
+9788416035540;Futuros perdidos;Lisa Tuttle;Gigamesh;LA MEM“RIA;Participant;;;
+9788419747754;Leviatans contra Franco;Lluc Casals i Perpiny‡;El Cep i la Nansa;ACL;Participant;19;;
+9791399081350;Me perdono la vida;Lola Ancira;Lava;MACHADO;Festival;22,9;Pors at‡viques;
+9788412931426;La rosa de las nieblas;Lola Robles;Crononauta;AZETA;Participant;20;;07/11/2026 11:00, 07/11/2026 16:00
+9788419490117;M·s all· de Concordia;Lola Robles;Consonni;UDL;Participant;15;;07/11/2026 11:00, 07/11/2026 16:00
+9788417181345;A pesar de tu santa cÛlera;Loredana Volpe;Navona;ACL;Participant;19;;
+9788410086777;DistopÌas;LucÌa Hellin;Taugenit;UDL;Festival;9,9;Alternatives polÌtiques;Tots els dies
+9788412782424;Deimos;Lucia Pietrelli;Males Herbes;LES PUNXES;Festival;17;CreaciÛ de mons;Tots els dies
+9789878272191;Par·sitos Perfectos;Luis Carlos Barrag·n Castro;Caja Negra;IXORAI;Fons Carbo;23;;
+9788410352094;Calabobos;Luis Mario;Reservoir Books;PENGUIN;Participant;19,9;Pors at‡viques;07/11/2026 12:00
+9791387740696;Libro azul con mosca;Luis Mario;Reservoir Books;PENGUIN;Participant;18,9;Pors at‡viques;07/11/2026 12:00
+9788412523874;Bello trozo redondo de mar;Luis Mario;Sr. Scott;UDL;Participant;16;Pors at‡viques;07/11/2026 12:00
+9788413899589;Hilda & Twig . Hilda i Twig busquen aixopluc;Luke Pearson;Estrella polar;LOGISTA;Fons Carbo;13,95;;
+9791387782696;Hilda & Twig 2. Hilda i Twig desperten l'Home de Gel;Luke Pearson;Estrella polar;LOGISTA;Fons Carbo;13,95;;
+9788408294344;Hilda & Twig. Hilda y Twig se refugian de la lluvia;Luke Pearson;Estrella polar;LOGISTA;Fons Carbo;13,95;;
+9788445018699;Hijas de la niebla;Lydia Gregovic;Minotauro;LOGISTA;Festival;21,95;CreaciÛ de mons;
+9788419676900;Histories De Fantasmes D'Un Antiquari;M.R. James;Laertes;ACL;Fons Carbo;18,5;;
+9788419490223;La santita;Mafe Moscoso;Consonni;UDL;Participant;17;;
+9791387656232;La rep˙blica de la memÚria;Mahmud El Sayed;Jande Editorial;UDL;Participant;25,95;;
+9788417417901;Nuclear;Maielis Gonz·lez;Llegua de troya;PENGUIN;Participant;15,9;;
+9788412707694;Palenque;Maielis Gonz·lez;Cuatro Lunas;MADE;Participant;19;;
+9788468369761;El clan de la lloba;Maite Carranza;EdebÈ;ARNOIA;Participant;18;;
+9788468369754;El clan de la loba;Maite Carranza;EdebÈ;ARNOIA;Participant;18;;
+9788468369778;El desierto de hielo;Maite Carranza;EdebÈ;ARNOIA;Participant;18;;
+9788468369785;El desert de gel;Maite Carranza;EdebÈ;ARNOIA;Participant;18;;
+9788411520720;L'Ocell de Foc. Terres de LAC 1;Maite Carranza/ J˙lia Prats;Jollibre;ACL;Participant;14,2;;
+9788491225904;El P·jaro de Fuego. Tierras de LAC 1;Maite Carranza/ J˙lia Prats;Loqueleo;ACL;Participant;14,2;;
+9788417339654;El llibre blau de Nebo;Manon Steffan Ros;Edicions del Periscopi;UDL;Fons Carbo;18;;
+9791399156935;Amat amat;Mar M·rquez;Males Herbes;LES PUNXES;Participant;22;;
+9788412927375;Si em dessagno, quedaít amb mi fins que em refredi;Marc Catal·n;Cetus Editorial;CETUS EDITORIAL;Fons Carbo;;;
+9791387847678;R‡dio Kosmos;Marc Tinent;Animallibres;ACL;Participant;13,95;;
+9788419729668;El gat ens espera al marge;Marc VintrÛ;Emp˙ries;LOGISTA;Participant;19,9;;05/11/2026 18:30
+9791387736491;Un sol mal dibuixat;Marc VintrÛ;Emp˙ries;LOGISTA;Participant;19,9;;05/11/2026 18:30
+9788475889962;Unes ganes salvatges de cridar;Marc VintrÛ;Proa;LOGISTA;Participant;20;;05/11/2026 18:30
+9788419523389;Droga a la lluna;Marcos Prior;Finestres;LES PUNXES;Participant;24;;06/11/2026 16:00
+9788416251476;Gran Hotel Abismo;Marcos Prior;Astiberri;UDL;Participant;24;;06/11/2026 16:00
+9788418215384;Tito AndrÛnico;Marcos Prior;Astiberri;UDL;Participant;16;;06/11/2026 16:00
+9788419920669;Potlatch;Marcos Prior;Astiberri;UDL;Participant;;;06/11/2026 16:00
+9788417575014;La noche polar;Marcos Prior;Astiberri;UDL;Participant;15;;06/11/2026 16:00
+9788477275886;El conte de la serventa;Margaret Atwood;Quaderns Crema;LES PUNXES;Festival;24;Alternatives polÌtiques;Tots els dies
+9788498389074;El cuento de la criada;Margaret Atwood;Salamandra;PENGUIN;Festival;24;Alternatives polÌtiques;Tots els dies
+9788419550347;El retrato;Margaret Oliphant (trad. Loredana Volpe);Aristas MartÌnez;MACHADO;Festival;13,5;Pors at‡viques;
+9788412408614;Encara hi ha flors;Margarida Aritzeta;Capital Books;ACL;Participant;18,5;;
+9788419627643;L'Hort de les ¿nimes;Margarida Aritzeta;Clandestina;UDL;Participant;20;;
+9788416205547;Mujer al borde del tiempo;Marge Piercy;Consonni;UDL;Fons Carbo;23,5;;
+9788412833492;Les petites vampires;Maria Guasch;L'Altra Editorial;LES PUNXES;Festival;19;Intel∑ligËncia artificial;
+9791387741662;AquÌ arden las flores;MarÌa J. Viana / Aiguadevalencia;Alfaguara IJC;PENGUIN;Participant;22,95;;
+9791387949228;Bruja de andar por casa;MarÌa J. Viana / Aiguadevalencia;Alfaguara IJC;PENGUIN;Participant;21,95;;
+9788419982438;AÒo de brujas;MarÌa J. Viana / Aiguadevalencia;Alfaguara IJC;PENGUIN;Participant;22,95;;
+9788419688194;Bruja de noche;MarÌa J. Viana / Aiguadevalencia;Alfaguara IJC;PENGUIN;Participant;22,95;;
+9788419191281;Manual de la bruja novata;MarÌa J. Viana / Aiguadevalencia;Alfaguara IJC;PENGUIN;Participant;22,95;;
+9788411611145;La calle del cerezo;MarÌa Sagrera;Planeta CÛmic;LOGISTA;Participant;20;;04/11/2026 17:15
+9788483933916;ConversaciÛn con la oscuridad;Mariana EnrÌquez;P·ginas de espuma;LES PUNXES;Festival;20;;Tots els dies
+9788433998859;Nuestra parte de noche;Mariana EnrÌquez;Anagrama;LES PUNXES;Fons Carbo;24,9;;
+9788433998248;Los peligros de fumar en la cama;Mariana EnrÌquez;Anagrama;LES PUNXES;Fons Carbo;18,9;;
+9788433998064;Las cosas que perdimos en el fuego;Mariana EnrÌquez;Anagrama;LES PUNXES;Fons Carbo;18,9;;
+9788433922861;Un lugar soleado para gente sombrÌa;Mariana EnrÌquez;Anagrama;LES PUNXES;Fons Carbo;19,9;;
+9788418504877;Caer bajo tierra;Mariana Orantes;Candaya;UDL;Participant;19;Pors at‡viques;06/11/2026 16:00
+9791388074530;Nana de sombras;Marina Tena Tena;Plan B;UDL;Festival;21,9;Fantasia fosca;
+9788410031913;La novia roja;Marina Tena Tena;Plan B;UDL;Festival;18,9;Fantasia fosca;
+9788494742385;Lo raro y lo espeluznante;Mark Fisher;Alpha Decay;UDL;Festival;17,9;Pors at‡viques;Tots els dies
+9788412144277;Casa de hojas;Mark Z. Danielewski;Duomo;UDL;Festival;;Pors at‡viques;05/11/2026 19:00
+9788419017864;La paret;Marlen Haushofer;Angle;ACL;Fons Carbo;19,9;;
+9788412166088;Misa de amor;Marosa Di Giorgio;Wunderkammer;LES PUNXES;Festival;23;Pors at‡viques;
+9788491018230;Quina por!;Marta ComÌn PÈrez;Combel;CASALS;Fons Carbo;3,9;;
+9788491018247;°QuÈ miedo!;Marta ComÌn PÈrez;Combel;CASALS;Fons Carbo;3,9;;
+9791399165890;Hijas de la Sierpe;Marta Gradi·n;Obscura Editorial;ACL;Participant;21,9;;
+9788412968774;Tots els sistemes en vermell;Martha Wells;Duna Llibres;UDL;Fons Carbo;19,95;;
+9791399105650;Protocol Rebel;Martha Wells;Duna Llibres;UDL;Fons Carbo;19,95;;
+9791399105636;CondiciÛ artificial;Martha Wells;Duna Llibres;UDL;Fons Carbo;19,95;;
+9791387711139;Los diarios de Matabot: Sistemas crÌticos;Martha Wells;Hidra;UDL;Festival;17,5;Intel∑ligËncia artificial;Tots els dies
+9791387711146;Los diarios de Matabot: CondiciÛn artificial;Martha Wells;Hidra;UDL;Festival;17,5;Intel∑ligËncia artificial;Tots els dies
+9791387711153;Los diarios de Matabot: Protocolo rebelde;Martha Wells;Hidra;UDL;Festival;17,5;Intel∑ligËncia artificial;Tots els dies
+9791387711801;Los diarios de Matabot: Estrategia de salida;Martha Wells;Hidra;UDL;Festival;17,5;Intel∑ligËncia artificial;Tots els dies
+9788466435598;MalaveÔna;MartÌ Gironell;Columna;LOGISTA;Participant;22,9;;07/11/2026 12:00
+9791387903336;L'˙ltima pantalla;MartÌ Gironell;Estrella Polar;LOGISTA;Participant;15,95;;07/11/2026 12:00
+9788466427036;El pont dels jueus;MartÌ Gironell;Columna;LOGISTA;Participant;20;;07/11/2026 12:00
+9788466432580;La muntanya del tresor;MartÌ Gironell;Columna;LOGISTA;Participant;21,9;;07/11/2026 12:00
+9788419478795;Ciutat de vampirs 2. La lliga de la llum;MartÌn PiÒol;Elastic Books;LOGIS PRGHE;Participant;17,9;;
+9788424670665;Ciutat de vampirs 1. El club de les ombres;MartÌn PiÒol;La Galera;LOGIS PRGHE;Participant;17,9;;
+9791399244618;El rostre al mirall i altres contes gÚtics;Mary Elizabeth Braddon;Edicions de la Ela Geminada;LES PUNXES;Festival;19,9;Pors at‡viques;Tots els dies
+9788419474506;Frankenstein;Mary Shelley;Viena;LOGIS PRGHE;Fons Carbo;25;;
+9791387922108;Frankenstein o el moderno Prometeo;Mary Shelley;NÛrdica;UDL;Fons Carbo;22,5;;
+9791399254228;CrÚnica d'un viatge de sis setmanes;Mary Shelley;Veus prÚpies;MACHADO;Festival;13,95;Pors at‡viques;Tots els dies
+9788410466135;Carl el Mazmorrero (Carl el Mazmorrero 1);Matt Dinniman;Nova;PENGUIN;Fons Carbo;22,9;;
+9788410466081;El Juicio Final de Carl (Carl el Mazmorrero 2);Matt Dinniman;Nova;PENGUIN;Fons Carbo;22,9;;
+9788410466166;El libro de cocina del anarquista de la mazmorra (Carl el Mazmorrero 3);Matt Dinniman;Nova;PENGUIN;Fons Carbo;23,9;;
+9788410466364;El portal de los dioses ferales (Carl el Mazmorrero 4);Matt Dinniman;Nova;PENGUIN;Fons Carbo;24,9;;
+9788410466388;La mascarada del carnicero (Carl el Mazmorrero 5);Matt Dinniman;Nova;PENGUIN;Fons Carbo;24,9;;
+9788410466470;El ojo de la novia frenop·tica (Carl el Mazmorrero 6);Matt Dinniman;Nova;PENGUIN;Fons Carbo;25,9;;
+9788412761658;Xina Muntanya Zhang;Maureen F. McHugh;Chronos;UDL;Fons Carbo;23;;
+9788445021828;El Sauce Oscuro . Los sueÒos de Elenda n∫ 01/02;Mauro Caffaratto Grandes;Minotauro;LOGISTA;Participant;21,95;;08/11/2026 10:00
+9791399120424;Secuestros americanos;Mauro Javier C·rdenas;GÛlem;UDL;Festival;22;Intel∑ligËncia artificial;Tots els dies
+9789874822659;Miles de ojos;Maximiliano Barrientos;Caja Negra;IXORAI;Fons Carbo;20;;
+9788412582086;El horizonte del grito;Maximiliano Barrientos;Lava;MACHADO;Fons Carbo;21,9;;
+9788411584135;Ticnics 4 - Katua (CAT);Meritxell MartÌ Orriols;Combel;CASALS;Fons Carbo;14,9;;
+9788418304453;Sunakay (CAT);Meritxell MartÌ Orriols;Flamboyant;MADE;Fons Carbo;22,9;;
+9788491016779;La meravellosa i horripilant casa de la iaia;Meritxell MartÌ Orriols;Combel;CASALS;Fons Carbo;19,9;;
+9788411581653;Ticniks 1 - Dina (CAT);Meritxell MartÌ Orriols;Combel;CASALS;Fons Carbo;14,9;;
+9788411584142;Ticnics 4 - Kat˙a (CAST);Meritxell MartÌ Orriols;Combel;CASALS;Fons Carbo;14,9;;
+9788491016786;La maravillosa y horripilante casa de la abuela;Meritxell MartÌ Orriols;Combel;CASALS;Fons Carbo;19,9;;
+9788411581660;Ticniks 1 - Dina (CAST);Meritxell MartÌ Orriols;Combel;CASALS;Fons Carbo;14,9;;
+9788433964663;H. P. Lovecraft;Michel Houellebecq;Anagrama;LES PUNXES;Festival;17,9;Pors at‡viques;Tots els dies
+9788433901781;La infancia del mundo;Michel Nieva;Anagrama;LES PUNXES;Fons Carbo;18,9;;
+9789878272368;Ficciones Gauchopunks;Michel Nieva;Caja Negra;IXORAI;Fons Carbo;19;;
+9788433998903;Malasangre;Michelle Roche RodrÌguez;Anagrama;LES PUNXES;Fons Carbo;18,9;;
+9788419415424;La nova realitat;Mida Porta;Specula;UDL;Fons Carbo;19,5;;
+9791387810887;El Umbral;Miguel Aute;Contraluz;ACL;Participant;21,95;;
+9788483933794;La noche lÌquida;Miguel Garrido;P·ginas de espuma;LES PUNXES;Participant;17;Pors at‡viques;07/11/2026 12:00
+9791387878238;Marionetta;MÌriam Bonastre;Entredos;LES PUNXES;Fons Carbo;21,9;;
+9788415934493;MandÌbula;MÛnica Ojeda;Candaya;UDL;Fons Carbo;17;;
+9788415934233;Nefando;MÛnica Ojeda;Candaya;UDL;Fons Carbo;16;;
+9788412493009;La cinquena estaciÛ;N. K. Jemisin;Mai MÈs;LES PUNXES;Fons Carbo;24,5;;
+9791387749040;Los huÈrfanos de RainShadow;Naomi Ishiguro;Umbriel;URANO;Participant;23;;
+9788412320596;Trajiste contigo el viento;Natalia GarcÌa Freire;La Navaja Suiza;MACHADO;Participant;18;Pors at‡viques;07/11/2026 12:00
+9788412008937;Nuestra piel muerta;Natalia GarcÌa Freire;La Navaja Suiza;MACHADO;Participant;17,5;Pors at‡viques;07/11/2026 12:00
+9788483933589;La m·quina de hacer p·jaros;Natalia GarcÌa Freire;P·ginas de espuma;LES PUNXES;Participant;16;Pors at‡viques;07/11/2026 12:00
+9788419290083;Ranger Reject 1;Negi Haruba;Distrito Manga;PENGUIN;Festival;9,95;Manga;05/11/2026 18:30
+9791387810757;Morgana;Nerea Riesco;Contraluz;ACL;Participant;22,5;;
+9788410323131;Lily i les criatures de la nit;Nick Lake;Blackie Books;LES PUNXES;Fons Carbo;16,9;;
+9789878272597;Imperios de silicio;Nick Srnicek;Caja Negra;IXORAI;Festival;23;Intel∑ligËncia artificial;
+9788408324843;La profecÌa olvidada;Niloa Gray;Esencia;LOGISTA;Festival;22,9;Romantasy;
+9788410487970;Binti;Nnedi Okorafor;Raig Verd;UDL;Fons Carbo;14;;
+9788419490568;Semilla Salvaje;Octavia E. Butler;Consonni;UDL;Festival;23,5;;Tots els dies
+9788416205516;Hija de sangre y otros relatos;Octavia E. Butler;Consonni;UDL;Fons Carbo;19,5;;
+9788412493092;La par‡bola del sembrador;Octavia E. Butler;Mai MÈs;LES PUNXES;Fons Carbo;27,5;;
+9788410254244;La par‡bola dels talents;Octavia E. Butler;Mai MÈs;LES PUNXES;Fons Carbo;27,5;;
+9788410254138;Alba;Octavia E. Butler;Mai MÈs;LES PUNXES;Fons Carbo;20,5;;
+9791387596316;ExtraÒa;Olga Osorio;Adn Anaya;ACL;Participant;19,95;;
+9788433901637;La plantilla;Olga Ravn;Anagrama;LES PUNXES;Fons Carbo;18,9;;
+9788412231151;Cultura manga;Oriol Estrada;Ma Non Troppo;ACL;Participant;23,7;;
+9788411581615;Malvats amagats;Oriol Garcia Molsosa;Combel;CASALS;Fons Carbo;15,9;;
+9788410254329;Soc un gat;Oriol Vlak;Mai MÈs;LES PUNXES;Participant;19,96;Fantasia i art;06/11/2026 16:00
+9788467983227;Soy un gato;Oriol Vlak;Norma Editorial;ACL;Participant;29,5;Fantasia i art;06/11/2026 16:00
+9788412235661;Ring shout;P. DjËlÌ Clark;Mai MÈs;LES PUNXES;Fons Carbo;17,95;;
+9788410407466;Hay monstruos en mi habitaciÛn;Pageaud, Fanny;MTM;MTM;Fons Carbo;14,9;Infantil;Tots els dies
+9788417552534;Thornhill;Pam Smy;Blackie Books;LES PUNXES;Fons Carbo;22,9;;
+9788419415578;Escafandre de vidre;Pat Ubach;Specula;UDL;Participant;19,5;;
+9788483933893;ExtraÒas;Patricia Esteban ErlÈs;P·ginas de espuma;LES PUNXES;Participant;17;;
+9788417088828;Las madres negras;Patricia Esteban ErlÈs;Galaxia Gutenberg;LES PUNXES;Participant;19,9;;
+9788483933046;Ni aquÌ ni en ning˙n otro lugar;Patricia Esteban ErlÈs;P·ginas de espuma;LES PUNXES;Participant;27;;
+9788483932629;Manderley en venta y otros cuentos;Patricia Esteban ErlÈs;P·ginas de espuma;LES PUNXES;Participant;15;;
+9788494547881;Fondo de armario;Patricia Esteban ErlÈs;ContraseÒa;MACHADO;Participant;16;;
+9788410085923;Reina de rostros;Petra Lord;Umbriel;URANO;Participant;20;;
+9788418558498;L'home del castell;Philip K. Dick;Kalandraka;MADE;Fons Carbo;18;;
+9788412538465;A Scanner Darkly;Philip K. Dick;Males Herbes;LES PUNXES;Fons Carbo;21,9;;
+9788412316568;Els tres estigmes de Palmer Eldritch;Philip K. Dick;Males Herbes;LES PUNXES;Fons Carbo;19,9;;
+9791388174049;Spina;Quim GÛmez;Clandestina;UDL;Participant;20;;
+9788412271805;L'esguard de la bËstia;Quim GÛmez;Llibres del delicte;UDL;Participant;17,5;;
+9788410163850;Una ventana a la oscuridad;Rachel Gillig;Hidra Editorial;UDL;Festival;24,95;Romantasy;
+9788437508559;Los acontecimientos;Ramiro Sanchiz;Fondo de Cultura EsconÚmica EspaÒa;ACL;Participant;16;;
+9788439742272;Un pianista de provincias;Ramiro Sanchiz;Random House;PENGUIN;Participant;18,9;;
+9788412317077;Matrix acelerada;Ramiro Sanchiz;Holobionte;MACHADO;Participant;13,4;;
+9788412925784;Lí˙ltima nit abans de perdreíns;Ramon Mas;L'Altra Editorial;LES PUNXES;PREMIAT;14,9;;
+9791387672669;Sempre Ès massa tard;Ramon Mas;L'Altra Editorial;LES PUNXES;PREMIAT;20;;
+9791399156942;Un llibre per parlar amb fantasmes;Ramon Mas;Males Herbes;LES PUNXES;PREMIAT;12,9;;
+9788412793017;Els murs invisibles;Ramon Mas;L'Altra Editorial;LES PUNXES;PREMIAT;16,9;;
+9788419523334;La senyora Marga i els vampirs;Raquel Gu i Javier PÈrez And˙jar;Finestres;LES PUNXES;Fons Carbo;25;;
+9791388306051;Un sonido atronador;Ray Bradbury;NÛrdica;UDL;Festival;16,5;;Tots els dies
+9788412537109;Otras crÛnicas marcianas;Ray Bradbury;Libros del zorro rojo;LES PUNXES;Festival;19,9;;Tots els dies
+9788412070552;L'home il∑lustrat;Ray Bradbury;Males Herbes;LES PUNXES;Fons Carbo;19,9;;
+9788466435673;El dia de la Trilla (Empiri);Rebecca Yarros;Columna;LOGISTA;Festival;22,9;;Tots els dies
+9788408326847;El dÌa de la Trilla (EmpÌreo);Rebecca Yarros;Planeta;LOGISTA;Festival;22,9;Romantasy;Tots els dies
+9788410254053;Stella Signata 1: Els confins i la tenebra;Ricard Efa;Mai MÈs;LES PUNXES;Participant;20,5;;
+9788410254299;Stella Signata 5: La nostra mort Ès una tempesta;Ricard Efa;Mai MÈs;LES PUNXES;Participant;20,5;;
+9788412363319;Les m‡quines del caos;Ricard Efa;Mai MÈs;LES PUNXES;Participant;18,95;;
+9788410254060;Stella Signata 2: Des de sempre fins a l'infinit;Ricard Efa;Mai MÈs;LES PUNXES;Participant;20,5;;
+9788410254152;Stella Signata 3: La sÌndrome de sol terra;Ricard Efa;Mai MÈs;LES PUNXES;Participant;20,5;;
+9788410254237;Stella Signata 4: Una quimera per a la humanitat;Ricard Efa;Mai MÈs;LES PUNXES;Participant;20,5;;
+9788412614411;Noce‡ 1;Ricard Efa;Mai MÈs;LES PUNXES;Participant;17,95;;
+9788412614497;Noce‡ 2;Ricard Efa;Mai MÈs;LES PUNXES;Participant;17,95;;
+9788410254077;Noce‡ 3;Ricard Efa;Mai MÈs;LES PUNXES;Participant;17,95;;
+9788410254176;Wollstonecraft CAT;Ricard Ruiz GarzÛn;Mai MÈs;LES PUNXES;Participant;19,5;;Tots els dies
+9788412928419;Wollstonecraft ESP;Ricard Ruiz GarzÛn;Obscura Editorial;ACL;Participant;17,9;;Tots els dies
+9788418327384;Janowitz CAT;Ricard Ruiz GarzÛn / Salvador Macip;fanbooks;LOGISTA;Participant;13,95;;Tots els dies
+9788412256703;Janowitz ESP;Ricard Ruiz GarzÛn / Salvador Macip;Obscura Editorial;ACL;Participant;15,9;;Tots els dies
+9791399151312;Las chicas del final;Ricardo Carrasco;Dimensiones ocultas;MAIDHISA;Participant;23,95;;
+9788412435337;Inglaterra Salvaje;Richard Jefferies - Javier Calvo (trad.);Aristas MartÌnez;MACHADO;Festival;24,9;;Tots els dies
+9788419676146;L'home minvant;Richard Matheson;Laertes;ACL;Festival;20;;05/11/2026 16:00
+9788418292637;La casa infernal - CAT;Richard Matheson;Laertes;ACL;Festival;20;;05/11/2026 16:00
+9788419676009;La dimensiÛ desconeguda;Richard Matheson;Laertes;ACL;Festival;18,5;;05/11/2026 16:00
+9788418292361;Quins somnis vindran;Richard Matheson;Laertes;ACL;Festival;22;;05/11/2026 16:00
+9788418292255;Soc llegenda;Richard Matheson;Laertes;ACL;Festival;18;;05/11/2026 16:00
+9788412736557;Soy leyenda - Il∑lustrat;Richard Matheson;Libros del zorro rojo;LES PUNXES;Festival;18,9;;05/11/2026 16:00
+9788445006818;La casa infernal - ESP;Richard Matheson;Minotauro;LOGISTA;Festival;19,95;;05/11/2026 16:00
+9788412551921;En alg˙n rincÛn del tiempo;Richard Matheson;Hermida;UDL;Festival;22;;05/11/2026 16:00
+9788435021357;Las playas del espacio;Richard Matheson;Hispano Americana;ACL;Festival;14;;05/11/2026 16:00
+9788412228052;Diario de los aÒos del plomo;Richard Matheson;Hermida;UDL;Festival;19;;05/11/2026 16:00
+9788445006764;Soy leyenda;Richard Matheson;Minotauro;LOGISTA;Festival;17,95;;05/11/2026 16:00
+9788418701009;Shock 1;Richard Matheson;Gigamesh;ACL;Festival;6;;05/11/2026 16:00
+9788418701016;Shock 2;Richard Matheson;Gigamesh;ACL;Festival;6;;05/11/2026 16:00
+9788418701023;Shock 3;Richard Matheson;Gigamesh;ACL;Festival;6;;05/11/2026 16:00
+9788418701009;Shock 4;Richard Matheson;Gigamesh;ACL;Festival;6;;05/11/2026 16:00
+9788410254367;El calze emmetzinat;Robert Jackson Bennett;Mai MÈs;LES PUNXES;Festival;22,5;CreaciÛ de mons;20/11/2026 16:00
+9791387961435;El misteriÛs cas del Dr. Jekyll i Mr. Hyde;Robert Louis Stevenson;Viena;LOGIS PRGHE;Fons Carbo;16;;
+9788417998073;Olalla;Robert Louis Stevenson;Viena;LOGIS PRGHE;Fons Carbo;13;;
+9791399167696;El extraÒo caso del Dr. Jekyll y Mr. Hyde;Robert Louis Stevenson;Viena;LOGIS PRGHE;Fons Carbo;16;;
+9788416139293;El rei de groc;Robert W. Chambers;Angle;ACL;Fons Carbo;13;;
+9788419415318;Les terres dels cossos que es desfan;Roger Coch;Specula;UDL;Fons Carbo;19,5;;
+9788413037059;Fatum;Roger GalofrÈ;PagËs editors;ACL;Participant;20;;
+9788410028890;Ll‡grimes de Vidre 1. El Ritual del Sol;Roger TarrÈs;fanbooks;LOGISTA;Participant;20,95;;07/11/2026 13:00
+9788419150141;Fills d'»odhum 1. L'amenaÁa verda;Roger TarrÈs;fanbooks;LOGISTA;Participant;19,95;;07/11/2026 13:00
+9788419150462;Fills d'»odhum 2. Els cinc exËrcits;Roger TarrÈs;fanbooks;LOGISTA;Participant;19,95;;07/11/2026 13:00
+9788419150769;Fills d'»odhum 3. La fletxa blava;Roger TarrÈs;fanbooks;LOGISTA;Participant;19,95;;07/11/2026 13:00
+9788419202192;Deu annexos a la mort d'AlÌcia PinÛs;Rosa Olsa;Medusa;UDL;Participant;18;;
+9788412910988;Que morin els fills dels altres;Roser CabrÈ-Verdiell;Males Herbes;LES PUNXES;Fons Carbo;19;;
+9788425369827;Vuelve a mÌ;RubÈn S·nchez Trigos;Grijalbo;PENGUIN;Participant;22,9;;05/11/2026 16:00
+9788410390102;La noche de Venus;RubÈn S·nchez Trigos;Plan B Publicaciones;ACL;Participant;17,5;;05/11/2026 16:00
+9788410206083;El mundo de Dr·cula;Ruiz GarzÛn, Ricard;Alma;LES PUNXES;Participant;11,95;;Tots els dies
+9791399150209;Escapa't del castell de Dr‡cula;Sam Fern;Librooks;UDL;Fons Carbo;17,5;;Tots els dies
+9791399150216;Escapa del castillo de Dr·cula;Sam Fern;Librooks;UDL;Fons Carbo;17,5;;Tots els dies
+9788432244551;Distancia de rescate;Samanta Schweblin;Seix Barral;LOGISTA;Fons Carbo;18,5;;Tots els dies
+9788432244582;El buen mal;Samanta Schweblin;Seix Barral;LOGISTA;Fons Carbo;19,9;;Tots els dies
+9788432244766;P·jaros en la boca y otros cuentos;Samanta Schweblin;Seix Barral;LOGISTA;Fons Carbo;19,5;;Tots els dies
+9791399072822;El ejÈrcito negro 1. AdragÛn;Santiago GarcÌa Clairac;Serendipias de Tinta;ACL;Participant;17;;06/11/2026 18:30
+9791399072877;El ejÈrcito negro 6 Drako;Santiago GarcÌa Clairac;Serendipias de Tinta;ACL;Participant;18;;06/11/2026 18:30
+9791399072839;El ejÈrcito negro 2 Alexia;Santiago GarcÌa Clairac;Serendipias de Tinta;ACL;Participant;17;;06/11/2026 18:30
+9791399072846;El ejÈrcito negro 3 Arquimaes;Santiago GarcÌa Clairac;Serendipias de Tinta;ACL;Participant;17;;06/11/2026 18:30
+9791399072853;El ejÈrcito negro 4 …medi;Santiago GarcÌa Clairac;Serendipias de Tinta;ACL;Participant;17;;06/11/2026 18:30
+9791399072860;El ejÈrcito negro 5 Met·fora;Santiago GarcÌa Clairac;Serendipias de Tinta;ACL;Participant;17;;06/11/2026 18:30
+9788494928284;Ojos de DragÛn I La libertad;Santiago GarcÌa Clairac;Narval Editores;MACHADO;Participant;19;;06/11/2026 18:30
+9788412164626;Ojos de DragÛn II: °MaldiciÛn!;Santiago GarcÌa Clairac;Narval Editores;MACHADO;Participant;19;;06/11/2026 18:30
+9788412425703;Ojos de DragÛn III Poder;Santiago GarcÌa Clairac;Narval Editores;MACHADO;Participant;19;;06/11/2026 18:30
+9788412564020;AcÈrcate;Sara Gran;Biblioteca de C·rfax;UDL;Festival;21,9;Pors at‡viques;Tots els dies
+9788408325338;Una corte de armonÌa rota;Sarah J. Maas;Crossbooks;LOGISTA;Festival;19,95;Romantasy;Tots els dies
+9788419172389;La reina a la cova;Sard‡, J˙lia;Blackie Books;LES PUNXES;Fons Carbo;17,9;;Tots els dies
+9788410323629;La bruixa a la torre;Sard‡, J˙lia;Blackie Books;LES PUNXES;Fons Carbo;17,9;;Tots els dies
+9788419172372;La reina en la cueva;Sard‡, J˙lia;Blackie Books;LES PUNXES;Fons Carbo;17,9;;Tots els dies
+9788419550378;La sombra de Lovecraft;Scott Poole - Javier Calvo (trad.);Aristas MartÌnez;MACHADO;Festival;27,9;Pors at‡viques;Tots els dies
+9788484648604;All‡ on viuen els monstres;Sendak, Maurice;Kalandraka;MADE;Fons Carbo;16;;
+9788484648581;Donde viven los monstruos;Sendak, Maurice;Kalandraka;MADE;Fons Carbo;16;;
+9788410050075;Alchemised;SenLinYu;Montena;PENGUIN;Festival;25,95;Romantasy;
+9791387924386;Alchemised;SenLinYu;Montena;PENGUIN;Festival;39,95;Romantasy;
+9788419680402;Al final de la oscuridad;Sequoia Nagamatsu;Nocturna;UDL;Participant;18,95;;
+9788410198142;Fins on ens elevem en la foscor;Sequoia Nagamatsu;Sembra Llibres;MADE;Participant;22;;
+9791399063424;La ley del Trueno;Sergio Mars;InsÛlita;UDL;Festival;20,5;Alta fantasia;
+9788418431371;Hijos de dioses y guerreros;Shauna Lawless;OZ Editorial;UDL;Participant;21,95;;
+9788412830477;Carmilla;Sheridan Le Fanu;Edicions de la Ela Geminada;LES PUNXES;Fons Carbo;13,5;;
+9788412662023;El reloj de sol;Shirley Jackson;Min˙scula;LES PUNXES;Festival;21;Pors at‡viques;Tots els dies
+9788494836695;La maldiciÛn de Hill House;Shirley Jackson;Min˙scula;LES PUNXES;Festival;19,5;Pors at‡viques;Tots els dies
+9788494534867;Siempre hemos vivido en el castillo;Shirley Jackson;Min˙scula;LES PUNXES;Festival;18,5;Pors at‡viques;Tots els dies
+9788494508547;Sempre hem viscut al castell;Shirley Jackson;L'Altra Editorial;LES PUNXES;Festival;18;Pors at‡viques;Tots els dies
+9788412833478;La loteria i altres contes;Shirley Jackson;L'Altra Editorial;LES PUNXES;Festival;20,9;Pors at‡viques;Tots els dies
+9788494216077;La maledicciÛ de Hill House;Shirley Jackson;L'Altra Editorial;LES PUNXES;Festival;19,9;Pors at‡viques;Tots els dies
+9788494353970;Cuentos escogidos;Shirley Jackson;Min˙scula;LES PUNXES;Festival;19,5;Pors at‡viques;Tots els dies
+9788445018767;La lanza atraviesa el agua;Simon Jimenez;Minotauro;LOGISTA;Festival;22,95;CreaciÛ de mons;
+9788445008478;NewropÌa;SofÌa Rhei;Minotauro;LOGISTA;Participant;20,95;;04/11/2026 18:30
+9788491225898;Camden Down;SofÌa Rhei;Loqueleo;ACL;Participant;13,75;;04/11/2026 18:30
+9788419550170;El bosque Profundo;SofÌa Rhei;Aristas MartÌnez;MACHADO;Participant;24,9;;04/11/2026 18:30
+9788412435313;La m·quina de los deseos;SofÌa Rhei;Aristas MartÌnez;MACHADO;Participant;20;;04/11/2026 18:30
+9788410378179;La vida secreta de las brujas;SofÌa Rhei;Lunwerg;LOGISTA;Participant;22,95;;04/11/2026 18:30
+9788419834744;Delitos que suceden en OtoÒo;SofÌa Rhei;Duomo;UDL;Participant;18;;04/11/2026 18:30
+9788468370262;El viatge de l'Orfeu;SofÌa Rhei;EdebÈ;ARNOIA;Participant;13,5;;04/11/2026 18:30
+9788468370101;El viaje de Orfeo;SofÌa Rhei;EdebÈ;ARNOIA;Participant;13,5;;04/11/2026 18:30
+9788468347042;Irlanda sin ti;Sofia Rhei / Susana Vallejo;EdebÈ;ARNOIA;Participant;13,5;;04/11/2026 18:30
+9788418558382;Solaris;Stanis?aw Lem;Kalandraka;MADE;Fons Carbo;18;;
+9788418558122;Ubik;Stanis?aw Lem;Kalandraka;MADE;Fons Carbo;17;;
+9788410387201;Ciberiada;Stanis?aw Lem;Kalandraka;MADE;Fons Carbo;22;;
+9788418558719;Faules de robots;Stanis?aw Lem;Kalandraka;MADE;Fons Carbo;18;;
+9788415130093;Solaris;Stanis?aw Lem;Impedimenta;UDL;Fons Carbo;22,95;;
+9791399008678;CartografÌa interior;Stephen Graham Jones;Biblioteca de C·rfax;UDL;Festival;18,5;Pors at‡viques;Tots els dies
+9788412564051;Mi corazÛn es una motosierra;Stephen Graham Jones;Biblioteca de C·rfax;UDL;Festival;23;Pors at‡viques;Tots els dies
+9791399156928;Carrie;Stephen King;Males Herbes;LES PUNXES;Festival;20,9;;Tots els dies
+9788412216721;La gran caminada;Stephen King;Males Herbes;LES PUNXES;Festival;19,9;;Tots els dies
+9788401035777;Carrie - ESP;Stephen King;Plaza & JanÈs;PENGUIN;Festival;22,9;;Tots els dies
+9788494780080;Torn de nit;Stephen King;Males Herbes;LES PUNXES;Festival;26;;Tots els dies
+9788401037832;El misterio de Salem's Lot (Ed. 50.∫ aniversario);Stephen King;Plaza & JanÈs;PENGUIN;Festival;26,9;;Tots els dies
+9788466392259;El pistolero (ediciÛn cantos tintados) (La Torre Oscura 1);Stephen King;Penguin;PENGUIN;Festival;14,96;;Tots els dies
+9788466345682;Misery;Stephen King;Penguin;PENGUIN;Festival;17,95;;Tots els dies
+9788466348089;Cementerio de animales;Stephen King;Penguin;PENGUIN;Festival;15,95;;Tots els dies
+9788494782992;Escriure. MemÚries d'un ofici;Stephen King;L'Altra Editorial;LES PUNXES;Festival;17,9;;Tots els dies
+9788466392266;La llegada de los tres (ediciÛn cantos tintados) (La Torre Oscura 2);Stephen King;Penguin;PENGUIN;Festival;15,95;;Tots els dies
+9788401037849;El Instituto (ediciÛn especial con cantos tintados);Stephen King;Plaza & JanÈs;PENGUIN;Festival;27,9;;Tots els dies
+9788466357302;It;Stephen King;Penguin;PENGUIN;Festival;15,95;;Tots els dies
+9791388306037;Almuerzo en el cafÈ Gotham;Stephen King;NÛrdica;UDL;Festival;18,95;;Tots els dies
+9788466390163;Estuche Todo pasa en Derry;Stephen King;Penguin;PENGUIN;Festival;74,95;;Tots els dies
+9788416517862;La hija de la diosa de la luna;Sue Lynn Tan;Puck;URANO;Festival;21;Romantasy;
+9788410085527;Inmortal;Sue Lynn Tan;Umbriel;URANO;Festival;23;Romantasy;
+9788410239777;Por nunca jam·s;Sue Lynn Tan;Puck;URANO;Festival;22;Romantasy;
+9788445002513;Madre de dragones;Susana Vallejo;TimunMas;LOGISTA;Participant;15;;Tots els dies
+9788468374116;Por siempre;Susana Vallejo;EdebÈ;ARNOIA;Participant;13,5;;Tots els dies
+9788419960696;Piranesi - CAT;Susanna Clarke;Amsterdam;LOGIS PRGHE;Fons Carbo;20;;
+9791387928124;Piranesi - ESP;Susanna Clarke;Salamandra;PENGUIN;Fons Carbo;22;;
+9788412119510;Llengua Materna;Suzette Haden Elgin;Chronos;UDL;Fons Carbo;22,95;;
+9788410487390;Excavadora;T. Kingsfisher;IndÚmita;UDL;Fons Carbo;24,95;;
+9788418431340;CorazÛn de acero;T. Kingsfisher;OZ Editorial;UDL;Festival;19,95;CreaciÛ de mons;Tots els dies
+9788410487727;Tanca Espinosa;T. Kingsfisher;IndÚmita;UDL;Fons Carbo;19,95;;
+9788419206343;Ortiga i os;T. Kingsfisher;IndÚmita;UDL;Fons Carbo;19,95;;
+9788419206855;Guia m‡gica díautodefensa amb galetes;T. Kingsfisher;IndÚmita;UDL;Fons Carbo;23,95;;
+9791399127850;QuË ronda a les profunditats;T. Kingsfisher;Obscura Editorial;ACL;Festival;19,9;CreaciÛ de mons;Tots els dies
+9788412732771;QuË mou els morts;T. Kingsfisher;Obscura Editorial;ACL;Festival;19,9;CreaciÛ de mons;Tots els dies
+9788412839692;QuË ens devora de nit;T. Kingsfisher;Obscura Editorial;ACL;Festival;19,9;CreaciÛ de mons;Tots els dies
+9788417347970;Gideon la Novena (Saga de la Tumba Sellada 1);Tamsyn Muir;Nova;PENGUIN;Festival;26,9;Fantasia fosca;
+9788412822199;El reformatorio;Tananarive Due;La biblioteca de C·rfax;UDL;PREMIAT;24,9;;
+9788417517793;ExhalaciÛn;Ted Chiang;Sexto Piso;UDL;Fons Carbo;23,9;;
+9788412057683;ExhalaciÛ;Ted Chiang;Mai MÈs;LES PUNXES;Fons Carbo;22,95;;
+9788412363364;La histÚria de la teva vida;Ted Chiang;Mai MÈs;LES PUNXES;Fons Carbo;22,95;;
+9788410323865;El gegant de ferro;Ted Hughes;Blackie Books;LES PUNXES;Fons Carbo;16,9;;
+9788410254282;Bruixes a l'estranger;Terry Pratchett;Mai MÈs;LES PUNXES;Fons Carbo;21,5;;
+9788410254183;Sortiller;Terry Pratchett;Mai MÈs;LES PUNXES;Fons Carbo;20,95;;
+9788410254251;NaciÛ;Terry Pratchett;Mai MÈs;LES PUNXES;Fons Carbo;22,5;;
+9788410254183;Igualtat de ritus;Terry Pratchett;Mai MÈs;LES PUNXES;Fons Carbo;20,95;;
+9788412363302;Morth;Terry Pratchett;Mai MÈs;LES PUNXES;Fons Carbo;17,95;;
+9791399014631;CosdivÌ;Theodore Sturgeon;Males Herbes;LES PUNXES;Fons Carbo;20,9;;
+9788424676414;SËpia: El poder de la tinta (CAT);Theresa Bell;La Galera;LOGIS PRGHE;Fons Carbo;16,95;;
+9788424676421;Sepia: El poder de la tinta (CAST);Theresa Bell;La Galera;LOGIS PRGHE;Fons Carbo;16,95;;
+9791387554279;Un cielo lleno de dragones;Tiffany McDaniel;Hoja de lata;UDL;Fons Carbo;20,5;;
+9791387878092;Lightfall 1. L'˙ltima flama;Tim Probert;Entredos;LES PUNXES;Fons Carbo;19,9;;
+9791387878245;Lightfall 2. L'ombra de l'ocell;Tim Probert;Entredos;LES PUNXES;Fons Carbo;19,9;;
+9791387554064;Las ciÈnagas;Tina Makereti;Hoja de lata;UDL;Festival;22,9;Alternatives polÌtiques;Tots els dies
+9788494173714;The Leftovers;Tom Perrotta;Edicions del Periscopi;UDL;Fons Carbo;19;;
+9788412998931;Cube Arts 1 - CAT;Tomomi Usui;Catways;ACL;Festival;10;Manga;05/11/2026 18:30
+9788412998979;Cube Arts 1 - ESP;Tomomi Usui;Catways;ACL;Festival;10;Manga;05/11/2026 18:30
+9791399201604;Cube Arts 2 - CAT;Tomomi Usui;Catways;ACL;Festival;10;Manga;05/11/2026 18:30
+9788412998962;Cube Arts 2 - ESP;Tomomi Usui;Catways;ACL;Festival;10;Manga;05/11/2026 18:30
+9788412910971;Esqueixos;Toni Benages;Males Herbes;LES PUNXES;Participant;16;Pors at‡viques;06/11/2026 16:00
+9788412435252;El cercle de Loplop;Toni Benages / Sebasti‡ Roig;Males Herbes;LES PUNXES;Participant;20;Pors at‡viques;06/11/2026 16:00
+9788412538458;Hora Zero;Toni Benages / Sebasti‡ Roig;Males Herbes;LES PUNXES;Participant;18;Alternatives polÌtiques;06/11/2026 16:00
+9788419523440;L'altre Empord‡;Toni Benages/ Ricard MartÌn;Finestres;LES PUNXES;Participant;22;Pors at‡viques;06/11/2026 16:00
+9788412252064;La doctrina del fuego;Toni Cifuentes;El Transbordador;MAIDHISA;Fons Carbo;20;;
+9788419478412;L'alË dels llaurats;Toni Mata;Elastic Books;LOGIS PRGHE;Participant;16,95;;
+9788424667351;Nacidos para ser Breves;Toni Mata;La Galera;LOGIS PRGHE;Participant;16,95;;
+9788410487352;La m‡ esquerra de la foscor (ediciÛ especial);Ursula K. Le Guin;Raig Verd;UDL;Fons Carbo;21,9;;
+9788410487482;Un mag de Terramar (cÚmic);Ursula K. Le Guin;IndÚmita;UDL;Fons Carbo;28,9;;
+9788419206244;Els desposseÔts (50 anys);Ursula K. Le Guin;Raig Verd;UDL;Fons Carbo;21,9;;
+9788410487383;Poders;Ursula K. Le Guin;IndÚmita;UDL;Festival;22,9;CreaciÛ de mons;Tots els dies
+9788445009307;Los desposeÌdos;Ursula K. Le Guin;Minotauro;LOGISTA;Festival;20,95;Alternatives polÌtiques;Tots els dies
+9788445009314;La mano izquierda de la oscuridad;Ursula K. Le Guin;Minotauro;LOGISTA;Festival;19,95;Alternatives polÌtiques;Tots els dies
+9788410487406;Veus;Ursula K. Le Guin;IndÚmita;UDL;Fons Carbo;21,95;;
+9788410487666;Dons;Ursula K. Le Guin;IndÚmita;UDL;Fons Carbo;21,95;;
+9788419206879;Les dotze direccions del vent;Ursula K. Le Guin;Raig Verd;UDL;Fons Carbo;27,5;;
+9788445019832;Lo encontrado y lo perdido;Ursula K. Le Guin;Minotauro;LOGISTA;Festival;32;Alternatives polÌtiques;Tots els dies
+9788445022023;El lugar del comienzo;Ursula K. Le Guin;Minotauro;LOGISTA;Festival;16,95;Alternatives polÌtiques;Tots els dies
+9791387921965;Un mago de Terramar;Ursula K. Le Guin;Minotauro;LOGISTA;Fons Carbo;30;;
+9788494972577;La condesa sangrienta;Valentine Penrose;Wunderkammer;LES PUNXES;Festival;23;Pors at‡viques;Tots els dies
+9789878272559;Krakatoa;Veronica Stigger;Caja Negra;IXORAI;Fons Carbo;22;;
+9788427248762;La luz en la niebla;Victoria ¡lvarez;Molino;PENGUIN;PREMIAT;19,95;;
+9788427241596;Hojas de dedalera;Victoria ¡lvarez;Molino;PENGUIN;PREMIAT;19,95;;
+9788426401830;Tu nombre despuÈs de la lluvia (Dreaming Spires 1);Victoria ¡lvarez;Lumen;PENGUIN;PREMIAT;22,9;;
+9788426401526;Contra la fuerza del viento (Dreaming Spires 2);Victoria ¡lvarez;Lumen;PENGUIN;PREMIAT;22,9;;
+9788426402684;El sabor de tus heridas (Dreaming Spires 3);Victoria ¡lvarez;Lumen;PENGUIN;PREMIAT;22,9;;
+9788426433268;El esplendor en las sombras (Dreaming Spires 4);Victoria ¡lvarez;Lumen;PENGUIN;PREMIAT;22,9;;
+9788419676658;La Casa Als Confins De La Terra;William H. Hogdson;Laertes;ACL;Fons Carbo;18,5;;
+9788412198867;L'exorcista;William Peter Blatty;Obscura Editorial;ACL;Festival;23,9;Pors at‡viques;Tots els dies
+9788412980356;La terra de la pluja amarga;Wu Ming-Yi;Chronos;UDL;Fons Carbo;21;;
+9788412498011;L'home dels ulls compostos;Wu Ming-Yi;Chronos;UDL;Fons Carbo;23;;
+9788412927368;Hambre;Yaiza Carrasco;Cetus Editorial;CETUS EDITORIAL;Fons Carbo;;;
+9788412078961;Aquest robot sÛc jo;Yoshitake, Shinsuke;Libros del Zorro Rojo;LES PUNXES;Fons Carbo;13,9;;
+9788419686404;Tenkaichi: la batalla definitiva 1;Yosuke Nakamaru;Distrito Manga;PENGUIN;Festival;9,95;Manga;05/11/2026 18:30
+9788445012444;Black Water Sister;Zen Cho;Minotauro;LOGISTA;Festival;20,95;CreaciÛ de mons;
+9788412119565;L'Extern;Ada Hoffmann;Chronos;UDL;Fons Carbo;22,95;;
+9788412761627;Deu Ras;Stark Holborn;Chronos;UDL;Fons Carbo;21;;
+9788412498080;Camp Zero;Michelle Min Sterling;Chronos;UDL;Fons Carbo;21;;
+9788412564068;SeÒoras victorianas: fantasmas;Diverses autores;Bliblioteca de C·rfax;UDL;Festival;20,75;Pors at‡viques;
+9788417115302;Damas oscuras;Diverses autores;Impedimenta;UDL;Festival;27;Pors at‡viques;
+9791387711665;Un escenario para villanos;Shannon J. Spann;Hidra;MAIDHISA;Festival;25,95;Fantasia fosca;Tots els dies
