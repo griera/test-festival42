@@ -506,7 +506,7 @@
                                         <div>
                                             <div class="flex justify-between items-start gap-2">
                                                 <h3 class="font-bold text-lg text-white">${safeValue(book.title)}</h3>
-                                                <span class="bg-indigo-950 text-indigo-300 text-xs font-semibold px-2 py-1 rounded border border-indigo-900">${formatPrice(book.price)} €</span>
+                                                <span class="bg-indigo-950 text-indigo-300 text-xs font-semibold px-2 py-1 rounded border border-indigo-900 whitespace-nowrap flex-shrink-0">${formatPrice(book.price)} €</span>
                                             </div>
                                             <p class="text-slate-300 font-medium cursor-pointer hover:text-indigo-400 mt-1 author-filter-trigger" data-author="${escapeHTML(book.author)}">
                                                 Autor/a: <span class="underline">${safeValue(book.author)}</span>
