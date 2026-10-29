@@ -29,6 +29,7 @@ Here is a quick look at the user interface and responsive experience across diff
 ```text
 test-festival42/
 ├── index.html               # Public frontend interface (search, filters, rendering)
+├── app.js                   # External frontend application logic (CSP compliant)
 ├── styles.css               # Compiled, purged, and minified production Tailwind CSS
 ├── src/
 │   └── input.css            # Tailwind CSS v4 source stylesheet (@import "tailwindcss";)
@@ -187,6 +188,9 @@ docker run --rm -v $(pwd):/zap/wrk/:rw -t --add-host=host.docker.internal:host-g
 docker run --rm -v $(pwd):/zap/wrk/:rw -t --add-host=host.docker.internal:host-gateway ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py -t http://host.docker.internal:8000 -j -J zap_report.json -r zap_report.html
 
 ```
+
+### 🔒 Security & CSP Compliance
+To comply with a strict Content-Security-Policy (CSP) that blocks inline scripts (`unsafe-eval` / inline `<script>` tags), all application logic is completely externalized into `app.js` and loaded securely via the frontend interface.
 
 ---
 
