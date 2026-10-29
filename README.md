@@ -162,7 +162,7 @@ python3 scripts/extract_covers.py data/catalog.pdf
 
 *(You can also check available options using `python3 scripts/extract_covers.py --help`)*.
 
-4. Compile your CSS changes if necessary, then commit and push `index.html`, `styles.css`, `src/input.css`, `data.json`, and cover assets (`assets/covers/`) to deploy changes via GitHub Pages.
+4. Compile your CSS changes if necessary, then commit and push `index.html`, `app.js`, `styles.css`, `src/input.css`, `data.json`, and cover assets (`assets/covers/`) to deploy changes via GitHub Pages.
 
 ---
 
