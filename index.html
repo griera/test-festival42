@@ -292,7 +292,7 @@
             }))
         ];
 
-        // Utility function to resolve localized display labels from standard date inputs
+        // Get date label
         function formatDayLabel(dayCode) {
             const day = dayCode.substring(0, 2);
             const month = dayCode.substring(2, 4);
@@ -313,7 +313,7 @@
             return `${weekday} ${day} ${monthName}`;
         }
 
-        // Convert compact date representations into standard delimiter format for query matching
+        // Format date string
         function formatDayString(dayCode) {
             if (!dayCode || dayCode === 'all') return 'all';
             return `${dayCode.substring(0, 2)}/${dayCode.substring(2, 4)}/${dayCode.substring(4)}`;
