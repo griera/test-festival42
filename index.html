@@ -515,6 +515,7 @@
                                             <div class="mt-3 text-sm text-slate-400 space-y-1 border-t border-slate-700/60 pt-2">
                                                 ${book.publisher ? `<p><strong>Editorial:</strong> ${safeValue(book.publisher)}</p>` : ''}
                                                 ${book.distributor ? `<p><strong>Distribuïdor:</strong> ${safeValue(book.distributor)}</p>` : ''}
+                                                ${book.category ? `<p><strong>Categoria:</strong> ${safeValue(book.category)}</p>` : ''}
                                                 ${book.theme ? `<p><strong>Tema:</strong> ${safeValue(book.theme)}</p>` : ''}
                                                 ${book.schedule ? `<p><strong>Horaris:</strong>${renderSchedule(book.schedule)}</p>` : ''}
                                             </div>
