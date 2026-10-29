@@ -2,7 +2,7 @@
 
 This repository is a **testing prototype** for a lightweight, serverless catalog and schedule service designed for **Festival 42** (Festival Gèneres Fantàstics de Barcelona).
 
-It is built as a single-page static web app using **HTML5, Tailwind CSS (via CDN), and Vanilla JavaScript**, prioritizing performance, instant search, and zero maintenance overhead.
+It is built as a single-page static web app using **HTML5, Tailwind CSS v4 (compiled locally via CLI), and Vanilla JavaScript**, prioritizing performance, instant search, security (like strict Content-Security-Policy compliance) and zero maintenance overhead.
 
 ---
 
@@ -29,8 +29,14 @@ Here is a quick look at the user interface and responsive experience across diff
 ```text
 test-festival42/
 ├── index.html               # Public frontend interface (search, filters, rendering)
+├── styles.css               # Compiled, purged, and minified production Tailwind CSS
+├── src/
+│   └── input.css            # Tailwind CSS v4 source stylesheet (@import "tailwindcss";)
+├── package.json             # Node.js project and dependencies configuration
+├── package-lock.json        # Node.js Locked dependency versions for exact deterministic installs
 ├── data.json                # Public processed dataset consumed by the web app
-├── data/                    # CSV dataset files (raw inputs & processed data) and PDF files for book covers
+├── node_modules/            # Node.js local dependencies (ignored by Git)
+├── data/                    # CSV dataset files and PDF files for book covers
 │   ├── catalog.csv
 │   └── catalog.pdf          # Official PDF catalog (ignored by Git)
 ├── assets/                  # Public static assets
@@ -38,12 +44,40 @@ test-festival42/
 ├── screenshots/             # Documentation screenshots for the README
 ├── scripts/                 # Python development and automation tools
 │   ├── generate_catalog.py  # Script for massive synthetic load testing data
-│   ├── process_catalog.py   # Script to process raw catalog CSV and convert it directly into a structured JSON payload for the web app (verifying local cover files)
-│   └── extract_covers.py    # Script to extract unique vertical book covers from official PDF catalogs and name them using the EAN found on their right
+│   ├── process_catalog.py   # Script to process raw catalog CSV and convert it into a JSON payload for the web app
+│   └── extract_covers.py    # Script to extract book covers from Azeta (distributor) PDF catalogs
 ├── requirements.txt         # Python package dependencies
 ├── .venv/                   # Python virtual environment (ignored by Git)
 ├── .gitignore               # Git exclusion rules
 └── README.md                # Project documentation
+
+```
+
+---
+
+## 🎨 Tailwind CSS Local Compilation
+
+To maintain a strict Content-Security-Policy (CSP) without `unsafe-eval` or external script CDNs, Tailwind CSS is compiled locally using the modern **Tailwind CLI v4**.
+
+### Setup & Compilation Steps
+
+Ensure you have [Node.js](https://nodejs.org/) installed (recommended via [NVM](https://github.com/nvm-sh/nvm)):
+
+1. Install project dependencies:
+```bash
+npm install -D tailwindcss @tailwindcss/cli
+
+```
+
+2. Compile the production stylesheet (`styles.css`) from your source input:
+```bash
+npx @tailwindcss/cli -i ./src/input.css -o ./styles.css --minify
+
+```
+
+3. *(Optional)* Run in watch mode during active frontend development:
+```bash
+npx @tailwindcss/cli -i ./src/input.css -o ./styles.css --watch
 
 ```
 
@@ -96,7 +130,7 @@ EAN;LLIBRE;AUTORI;EDITORIAL;DISTRIBUÏDOR;TIPUS;PVP;TEMA;HORARIS
 ## 🔄 How to Update the Catalog & Test Performance
 
 1. Place your raw semicolon-delimited CSV source file (exported from booksellers, typically in legacy `cp1252` encoding) inside your workspace.
-2. **Process and convert the catalog:** Clean text, fix encoding, normalize Unicode, map headers, default missing quantities and prices to 0, verify local cover files, and generate the public `data.json` payload.:
+2. **Process and convert the catalog:** Clean text, fix encoding, normalize Unicode, map headers, default missing quantities and prices to 0, verify local cover files, and generate the public `data.json` payload:
 
 ```bash
 python3 scripts/process_catalog.py data/catalog_raw.csv data.json --encoding cp1252
@@ -127,7 +161,7 @@ python3 scripts/extract_covers.py data/catalog.pdf
 
 *(You can also check available options using `python3 scripts/extract_covers.py --help`)*.
 
-4. Commit and push the updated `data.json`, cover assets (`assets/covers/`), and frontend files (`index.html`) to deploy changes via GitHub Pages.
+4. Compile your CSS changes if necessary, then commit and push `index.html`, `styles.css`, `src/input.css`, `data.json`, and cover assets (`assets/covers/`) to deploy changes via GitHub Pages.
 
 ---
 

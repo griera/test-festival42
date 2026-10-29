@@ -23,3 +23,11 @@ zap_report.json
 
 # Ignore all PDF files
 *.pdf
+
+# Node.js dependencies and logs
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm/
