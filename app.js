@@ -141,7 +141,7 @@ document.getElementById('resultsContainer').addEventListener('click', (e) => {
 // Global error listener to handle broken image covers securely
 document.addEventListener('error', (e) => {
     if (e.target && e.target.tagName === 'IMG') {
-        e.target.style.display = 'none';
+        e.target.classList.add('hidden');
     }
 }, true);
 
