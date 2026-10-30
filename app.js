@@ -58,6 +58,12 @@ window.addEventListener('DOMContentLoaded', async () => {
             dayContainer.appendChild(btn);
         });
 
+        // Bind search input listener programmatically
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', handleSearch);
+        }
+
         // Read URL location parameters
         const urlParams = new URLSearchParams(window.location.search);
         const initialQuery = urlParams.get('search');
