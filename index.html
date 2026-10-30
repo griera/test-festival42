@@ -7,7 +7,7 @@
     <!-- Crawler access rules definition -->
     <meta name="robots" content="noindex, nofollow">
     <!-- Tailwind CSS -->
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=0.9.0">
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
 
@@ -81,21 +81,36 @@
     </button>
 
     <!-- Footer -->
-    <footer class="bg-slate-950 text-slate-400 text-center py-6 text-sm border-t border-slate-800 px-4">
-        <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p>
-                <span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs px-2 py-0.5 rounded-full font-semibold uppercase mr-2">Prototip de proves</span>
-                Festival 42 (Edició de prova)
-            </p>
-            <p class="text-slate-500 text-xs">
-                Codi obert sota llicència
-                <a href="https://opensource.org/licenses/MIT" target="_blank" class="underline hover:text-indigo-400">MIT</a>.
-                Repositori a <a href="https://github.com/griera/test-festival42" target="_blank" class="underline hover:text-indigo-400">GitHub</a>.
-            </p>
+    <footer class="bg-slate-950 text-slate-400 py-6 text-sm border-t border-slate-800 px-4">
+        <div class="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-4 text-xs sm:text-sm">
+
+            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-slate-300">
+                <span>&copy; 2026 <strong class="font-medium text-slate-100">Genís Riera Pérez</strong></span>
+                <span class="text-slate-600">|</span>
+                <a href="https://github.com/griera" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400 transition-colors">GitHub</a>
+                <span class="text-slate-600">·</span>
+                <a href="https://linkedin.com/in/genisrieraperez" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400 transition-colors">LinkedIn</a>
+            </div>
+
+            <div class="flex justify-center">
+                <span class="bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 px-2.5 py-0.5 rounded-full font-semibold uppercase tracking-wide text-xs">
+                    Prototip de proves (v0.9.0)
+                </span>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-center sm:justify-end gap-3 text-xs text-slate-500">
+                <span>
+                    Codi obert sota llicència
+                    <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400 transition-colors">MIT</a>
+                </span>
+                <span class="text-slate-700">•</span>
+                <a href="https://github.com/griera/test-festival42" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400 transition-colors">Repositori</a>
+            </div>
+
         </div>
     </footer>
 
     <!-- JavaScript Application Logic -->
-    <script src="app.js" defer> </script>
+    <script src="app.js?v=0.9.0" defer> </script>
 </body>
 </html>
