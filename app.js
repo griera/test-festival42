@@ -102,7 +102,7 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// Global event delegation for author clicking (prevents quote breaking and XSS issues)
+// Global event delegation for interactive elements (prevents quote breaking, XSS issues and CSP compliant)
 document.getElementById('resultsContainer').addEventListener('click', (e) => {
     const authorTrigger = e.target.closest('.author-filter-trigger');
     if (authorTrigger) {
@@ -111,7 +111,22 @@ document.getElementById('resultsContainer').addEventListener('click', (e) => {
             searchByAuthor(authorName);
         }
     }
+
+    const loadMoreBtn = e.target.closest('[data-action="load-more"]');
+    if (loadMoreBtn) {
+        const itemType = loadMoreBtn.getAttribute('data-type');
+        if (itemType) {
+            loadMoreItems(itemType);
+        }
+    }
 });
+
+// Global error listener to handle broken image covers securely
+document.addEventListener('error', (e) => {
+    if (e.target && e.target.tagName === 'IMG') {
+        e.target.style.display = 'none';
+    }
+}, true);
 
 // Smooth scroll window back to top
 function scrollToTop() {
@@ -391,13 +406,12 @@ function renderResults(data, query = '') {
                             <!-- Book Cover Image (conditionally rendered only if cover path exists) -->
                             ${book.cover ? `
                                 <img 
-                                    src="${safeValue(book.cover)}" 
-                                    alt="Cover of ${safeValue(book.title)}" 
+                                    src="${safeValue(book.cover)}"
+                                    alt="Coberta de ${safeValue(book.title)}"
                                     class="w-24 h-36 object-cover rounded-lg shadow bg-slate-900 flex-shrink-0"
                                     width="96"
                                     height="144"
                                     loading="lazy"
-                                    onerror="this.style.display='none'"
                                 >
                             ` : ''}
                             <!-- Book Info Container -->
@@ -431,7 +445,7 @@ function renderResults(data, query = '') {
 
                 ${hasMoreBooks ? `
                     <div class="text-center mt-6">
-                        <button onclick="loadMoreItems('book')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
+                        <button data-action="load-more" data-type="book" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
                             Carregar més llibres (${allBooks.length - books.length} restants)...
                         </button>
                     </div>
@@ -467,7 +481,7 @@ function renderResults(data, query = '') {
 
                 ${hasMoreTalks ? `
                     <div class="text-center mt-6">
-                        <button onclick="loadMoreItems('talk')" class="bg-teal-600 hover:bg-teal-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
+                        <button data-action="load-more" data-type="talk" class="bg-teal-600 hover:bg-teal-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
                             Carregar més xerrades i conferències (${allTalks.length - talks.length} restants)...
                         </button>
                     </div>
@@ -503,7 +517,7 @@ function renderResults(data, query = '') {
 
                 ${hasMoreSignings ? `
                     <div class="text-center mt-6">
-                        <button onclick="loadMoreItems('signing')" class="bg-amber-600 hover:bg-amber-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
+                        <button data-action="load-more" data-type="signing" class="bg-amber-600 hover:bg-amber-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
                             Carregar més sessions de signatures (${allSignings.length - signings.length} restants)...
                         </button>
                     </div>
