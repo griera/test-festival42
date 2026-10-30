@@ -102,6 +102,17 @@ window.addEventListener('scroll', () => {
     }
 });
 
+// Smooth scroll window back to top via global event delegation
+document.addEventListener('click', (e) => {
+    const scrollBtn = e.target.closest('#scrollToTopBtn');
+    if (scrollBtn) {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+});
+
 // Global event delegation for interactive elements (prevents quote breaking, XSS issues and CSP compliant)
 document.getElementById('resultsContainer').addEventListener('click', (e) => {
     const authorTrigger = e.target.closest('.author-filter-trigger');
@@ -127,14 +138,6 @@ document.addEventListener('error', (e) => {
         e.target.style.display = 'none';
     }
 }, true);
-
-// Smooth scroll window back to top
-function scrollToTop() {
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
-}
 
 // Utility function to sanitize input strings before rendering
 function escapeHTML(str) {
