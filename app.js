@@ -28,7 +28,7 @@ let currentDayFilter = 'all';
 // Fetch JSON data asynchronously when the page loads and securely load initial URL search/filters
 window.addEventListener('DOMContentLoaded', async () => {
     try {
-        const TIMESTAMP_VERSION = '20261030154942';
+        const TIMESTAMP_VERSION = '20261030170342';
         const response = await fetch('data.json?v=${TIMESTAMP_VERSION}');
         if (!response.ok) throw new Error('Network response was not ok');
         fairData = await response.json();
