@@ -110,7 +110,7 @@ Examples:
         header = next(reader, None)
 
         if header is None:
-            raise SystemExit("The input file is empty.")
+            raise SystemExit("[ERROR]: The input file is empty.")
 
         # Remove trailing empty column caused by a trailing semicolon if present
         if header and header[-1] == "":
@@ -127,7 +127,7 @@ Examples:
             expected_length = len(HEADER_9_COL)
         else:
             raise SystemExit(
-                "The header does not match any expected columns.\n"
+                "[ERROR]: The header does not match any expected columns.\n"
                 f"Expected 9-col: {HEADER_9_COL}\n"
                 f"Or Expected 12-col: {HEADER_12_COL}\n"
                 f"Received: {header}"
@@ -143,7 +143,7 @@ Examples:
 
             if len(row) != expected_length:
                 raise SystemExit(
-                    f"Line {line_number}: expected {expected_length} fields, found {len(row)}."
+                    f"[ERROR]:Line {line_number}: expected {expected_length} fields, found {len(row)}."
                 )
 
             # Clean and normalize text values across all columns
@@ -215,12 +215,24 @@ Examples:
     # Determine indentation: None removes whitespace for minification, 2 keeps it readable
     indent_value = None if args.minify else 2
 
+    # Check for duplicate EANs (ignoring empty strings)
+    ean_counts = {}
+    for item in records:
+        ean = item.get('ean', '').strip()
+        if ean:
+            ean_counts[ean] = ean_counts.get(ean, 0) + 1
+
+    duplicates = [ean for ean, count in ean_counts.items() if count > 1]
+
+    if duplicates:
+        print(f"[WARNING]: Found {len(duplicates)} duplicate EAN(s) in '{args.input_file}': {duplicates}")
+
     # Save the result into a structured JSON file
     with open(args.output_file, mode="w", encoding="utf-8") as json_file:
         json.dump(records, json_file, ensure_ascii=False, indent=indent_value)
 
     format_status = "minified (optimized)" if args.minify else "formatted (readable)"
-    print(f"Process completed! Successfully converted {len(records)} records from {args.input_file} to {args.output_file} [{format_status}]")
+    print(f"[SUCCESS]: Process completed! Successfully converted {len(records)} records from {args.input_file} to {args.output_file} [{format_status}]")
 
 
 if __name__ == "__main__":
