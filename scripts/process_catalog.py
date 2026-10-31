@@ -28,6 +28,10 @@ def clean_text(text, replacements):
         text = text.replace(original, corrected)
     return text.strip()
 
+def remove_accents(input_str):
+    """Normalize string by removing diacritics (accents) for correct alphabetical sorting."""
+    nfkd_form = unicodedata.normalize('NFKD', input_str)
+    return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
 def parse_float(val):
     """Convert numeric strings with a comma (e.g., '28,80') to float (28.80)."""
@@ -204,6 +208,9 @@ Examples:
                 item["cover"] = ""
 
             records.append(item)
+
+    # Sort records alphabetically by author name (case-insensitive)
+    records.sort(key=lambda x: remove_accents(x.get('author', '')).lower())
 
     # Determine indentation: None removes whitespace for minification, 2 keeps it readable
     indent_value = None if args.minify else 2
