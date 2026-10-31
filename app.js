@@ -9,8 +9,7 @@ let fairData = [];
 // Initial limits perfectly matched to viewport capacity (5 rows x 2 columns = 10 items)
 let visibleLimits = {
     book: 10,
-    talk: 10,
-    signing: 10
+    activity: 10,
 };
 
 // Stores the latest search or filter results to preserve state when loading more items
@@ -28,7 +27,7 @@ let currentDayFilter = 'all';
 // Fetch JSON data asynchronously when the page loads and securely load initial URL search/filters
 window.addEventListener('DOMContentLoaded', async () => {
     try {
-        const TIMESTAMP_VERSION = '20261031105423';
+        const TIMESTAMP_VERSION = '20261031194123';
         const response = await fetch('data.json?v=${TIMESTAMP_VERSION}');
         if (!response.ok) throw new Error('Network response was not ok');
         fairData = await response.json();
@@ -178,14 +177,13 @@ function formatPrice(price) {
 const eventTypesConfig = [
     { id: 'all', label: 'Tots', activeClass: 'bg-slate-100 text-slate-900 border-white shadow-sm' },
     { id: 'book', label: '📚 Llibres', activeClass: 'bg-indigo-600 text-white border-indigo-500' },
-    { id: 'talk', label: '🎤 Xerrades', activeClass: 'bg-teal-600 text-white border-teal-500' },
-    { id: 'signing', label: '✍️ Signatures', activeClass: 'bg-amber-600 text-white border-amber-500' }
+    { id: 'activity', label: '🎤 Activitats', activeClass: 'bg-teal-600 text-white border-teal-500' }
 ];
 
 // Updates active type filter and re-runs the search filtering (by default)
 function setTypeFilter(type, runSearch = true) {
     currentTypeFilter = type;
-    visibleLimits = { book: 30, talk: 30, signing: 30 }; // Reset limits when switching filter
+    visibleLimits = { book: 30, activity: 30 }; // Reset limits when switching filter
 
     eventTypesConfig.forEach(typeObj => {
         const btn = document.getElementById(`btn-filter-${typeObj.id}`);
@@ -246,7 +244,7 @@ function formatDayString(dayCode) {
 // Updates active day filter and re-runs the search filtering (by default)
 function setDayFilter(dayCode, runSearch = true) {
     currentDayFilter = dayCode;
-    visibleLimits = { book: 30, talk: 30, signing: 30 }; // Reset limits when switching filter
+    visibleLimits = { book: 30, activity: 30 }; // Reset limits when switching filter
 
     eventDaysConfig.forEach(dayObj => {
         const btn = document.getElementById(`btn-day-${dayObj.id}`);
@@ -340,7 +338,7 @@ function handleSearch() {
 
     // Delay input handler for performance optimization
     searchTimeout = setTimeout(() => {
-        visibleLimits = { book: 30, talk: 30, signing: 30 }; // Reset view parameters on update
+        visibleLimits = { book: 30, activity: 30 }; // Reset view parameters on update
         executeSearch();
     }, 300); // 300 milliseconds delay prevents UI freezing while typing
 }
@@ -387,18 +385,14 @@ function renderResults(data, query = '') {
 
     // Separate data into categories based on the 'type' field
     const allBooks = data.filter(item => item.type === 'book');
-    const allTalks = data.filter(item => item.type === 'talk');
-    const allSignings = data.filter(item => item.type === 'signing');
+    const allActivities = data.filter(item => item.type === 'activity');
 
     // Performance optimization: Apply dynamic limit based on state
     const books = allBooks.slice(0, visibleLimits.book);
     const hasMoreBooks = allBooks.length > visibleLimits.book;
 
-    const talks = allTalks.slice(0, visibleLimits.talk);
-    const hasMoreTalks = allTalks.length > visibleLimits.talk;
-
-    const signings = allSignings.slice(0, visibleLimits.signing);
-    const hasMoreSignings = allSignings.length > visibleLimits.signing;
+    const activities = allActivities.slice(0, visibleLimits.activity);
+    const hasMoreActivities = allActivities.length > visibleLimits.activity;
 
     let htmlContent = '';
 
@@ -464,71 +458,35 @@ function renderResults(data, query = '') {
         `;
     }
 
-    // Render Talks Section if any
-    if (talks.length > 0) {
+    // Render Activities Section if any
+    if (activities.length > 0) {
         htmlContent += `
             <section class="mt-6">
                 <div class="flex justify-between items-center mb-3">
                     <h2 class="text-xl font-bold text-teal-400 flex items-center gap-2">🎤 Xerrades i Conferències</h2>
-                    <span class="text-xs text-slate-400">Mostrant ${talks.length} de ${allTalks.length}</span>
+                    <span class="text-xs text-slate-400">Mostrant ${activities.length} de ${allActivities.length}</span>
                 </div>
                 <div class="space-y-3">
-                    ${talks.map(talk => `
+                    ${activities.map(activity => `
                         <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 hover:border-teal-500 transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                            <div>
-                                <h3 class="font-bold text-white">${safeValue(talk.title)}</h3>
-                                <p class="text-slate-300 text-sm cursor-pointer hover:text-teal-400 author-filter-trigger" data-author="${escapeHTML(talk.author)}">
-                                    Ponent: <span class="underline">${safeValue(talk.author)}</span>
+                            <div class="min-w-0 flex-grow">
+                                <h3 class="font-bold text-white">${safeValue(activity.title)}</h3>
+                                <p class="text-slate-300 text-sm cursor-pointer hover:text-teal-400 author-filter-trigger" data-author="${escapeHTML(activity.author)}">
+                                    Participant(s): <span class="underline">${safeValue(activity.author)}</span>
                                 </p>
                             </div>
-                            <div class="text-right text-sm bg-teal-950 text-teal-200 border border-teal-900 px-3 py-1.5 rounded-lg w-full sm:w-auto">
-                                <p>📍 ${safeValue(talk.location)}</p>
-                                <p class="font-semibold">📅 ${safeValue(talk.datetime)}</p>
+                            <div class="text-right text-sm bg-teal-950 text-teal-200 border border-teal-900 px-3 py-1.5 rounded-lg w-full sm:w-auto flex-shrink-0 whitespace-nowrap">
+                                <p>📍 ${safeValue(activity.location)}</p>
+                                <p class="font-semibold">📅 ${safeValue(activity.datetime)}</p>
                             </div>
                         </div>
                     `).join('')}
                 </div>
 
-                ${hasMoreTalks ? `
+                ${hasMoreActivities ? `
                     <div class="text-center mt-6">
-                        <button data-action="load-more" data-type="talk" class="bg-teal-600 hover:bg-teal-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
-                            Carregar més xerrades i conferències (${allTalks.length - talks.length} restants)...
-                        </button>
-                    </div>
-                ` : ''}
-            </section>
-        `;
-    }
-
-    // Render Signings Section if any
-    if (signings.length > 0) {
-        htmlContent += `
-            <section class="mt-6">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-xl font-bold text-amber-400 flex items-center gap-2">✍️ Sessions de Signatures</h2>
-                    <span class="text-xs text-slate-400">Mostrant ${signings.length} de ${allSignings.length}</span>
-                </div>
-                <div class="space-y-3">
-                    ${signings.map(signing => `
-                        <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 hover:border-amber-500 transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                            <div>
-                                <h3 class="font-bold text-white">${safeValue(signing.title)}</h3>
-                                <p class="text-slate-300 text-sm cursor-pointer hover:text-amber-400 author-filter-trigger" data-author="${escapeHTML(signing.author)}">
-                                    Autor/a: <span class="underline">${safeValue(signing.author)}</span>
-                                </p>
-                            </div>
-                            <div class="text-right text-sm bg-amber-950 text-amber-200 border border-amber-900/50 px-3 py-1.5 rounded-lg w-full sm:w-auto">
-                                <p>📍 ${safeValue(signing.location)}</p>
-                                <p class="font-semibold">📅 ${safeValue(signing.datetime)}</p>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-
-                ${hasMoreSignings ? `
-                    <div class="text-center mt-6">
-                        <button data-action="load-more" data-type="signing" class="bg-amber-600 hover:bg-amber-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
-                            Carregar més sessions de signatures (${allSignings.length - signings.length} restants)...
+                        <button data-action="load-more" data-type="activity" class="bg-teal-600 hover:bg-teal-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
+                            Carregar més activitats (${allActivities.length - activities.length} restants)...
                         </button>
                     </div>
                 ` : ''}
