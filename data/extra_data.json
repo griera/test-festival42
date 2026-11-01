@@ -926,5 +926,21 @@
       "location": "Fabra i Coats. 3a planta. Sala tallers",
       "datetime": "08/11/2026 10:00",
       "cover": ""
+  },
+  {
+      "type": "activity",
+      "ean": "",
+      "title": "Literatura fantàstica i experimental. Més enllà de les convencions",
+      "author": "Ramiro Sanchiz, Mafe Moscoso, Elaine Vilar Madruga",
+      "publisher": "",
+      "distributor": "",
+      "category": "",
+      "price": 0.0,
+      "theme": "",
+      "schedule": "",
+      "quantity": "No Disponible",
+      "location": "Fabra i Coats. Sala 1",
+      "datetime": "08/11/2026 11:00",
+      "cover": ""
   }
 ]
