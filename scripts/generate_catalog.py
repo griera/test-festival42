@@ -85,7 +85,7 @@ def generate_large_csv(output_filename, num_books, num_talks, num_signings):
 
     generated_rows = []
 
-    # Generate Books
+    # Generate books
     for i in range(1, num_books + 1):
         ean = f"97884{random.randint(100000000, 999999999)}"
         title = f"{random.choice(adjectives)} {random.choice(nouns)}"
@@ -105,7 +105,7 @@ def generate_large_csv(output_filename, num_books, num_talks, num_signings):
         row = f"book;{ean};{title};{author};{publisher};{distributor};{category};{price_str};{theme};{schedule};{location};{datetime_val}"
         generated_rows.append(row)
 
-    # Generate Talks
+    # Generate activities
     for i in range(1, num_talks + 1):
         ean = ""
         title = f"TAULA RODONA: EL TERROR CONTEMPORANI #{i}"
@@ -122,30 +122,13 @@ def generate_large_csv(output_filename, num_books, num_talks, num_signings):
         row = f"talk;{ean};{title};{author};{publisher};{distributor};{category};{price_str};{theme};{schedule};{location};{datetime_val}"
         generated_rows.append(row)
 
-    # Generate Signings
-    for i in range(1, num_signings + 1):
-        ean = ""
-        title = f"SESSIÓ DE SIGNATURES CRONONAUTA #{i}"
-        author = random.choice(authors)
-        publisher = ""
-        distributor = ""
-        category = ""
-        price_str = "0"
-        theme = ""
-        schedule = ""
-        location = random.choice(locations_signings)
-        datetime_val = f"{random.choice(days)} {random.choice(hours)}"
-
-        row = f"signing;{ean};{title};{author};{publisher};{distributor};{category};{price_str};{theme};{schedule};{location};{datetime_val}"
-        generated_rows.append(row)
-
     with open(output_filename, "w", encoding="utf-8") as f:
         f.write(header)
         for r in generated_rows:
             f.write(r + "\n")
 
     total = len(generated_rows)
-    print(f"Successfully generated {output_filename} with {total} records ({num_books} books, {num_talks} talks, {num_signings} signings)!")
+    print(f"Successfully generated {output_filename} with {total} records ({num_books} books, {num_activities} activities)!")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -153,9 +136,8 @@ if __name__ == "__main__":
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument("-b", "--books", type=int, default=500, help="Number of books (default: 500)")
-    parser.add_argument("-t", "--talks", type=int, default=20, help="Number of talks (default: 20)")
-    parser.add_argument("-s", "--signings", type=int, default=30, help="Number of signings (default: 30)")
+    parser.add_argument("-a", "--activities", type=int, default=50, help="Number of activities (default: 50)")
     parser.add_argument("-o", "--output", type=str, default="data/catalog_raw.csv", help="Output CSV path (default: data/catalog_raw.csv)")
 
     args = parser.parse_args()
-    generate_large_csv(args.output, args.books, args.talks, args.signings)
+    generate_large_csv(args.output, args.books, args.activities)

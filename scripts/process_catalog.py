@@ -22,7 +22,7 @@ OUTPUT_HEADER = [
 
 
 def clean_text(text, replacements):
-    # Normalize Unicode and replace non-breaking spaces with regular spaces.
+    """Normalize Unicode and replace non-breaking spaces with regular spaces."""
     text = unicodedata.normalize("NFC", text).replace("\u00a0", " ")
     for original, corrected in replacements.items():
         text = text.replace(original, corrected)
@@ -63,6 +63,7 @@ Examples:
   python3 process_catalog.py data/data.csv data.json
   python3 process_catalog.py data/data.csv data.json --encoding cp1252
   python3 process_catalog.py data/data.csv data.json --replacements replacements.json --no-minify
+  python3 process_catalog.py data/data.csv data.json --extra-data data/extra_data.json
   python3 process_catalog.py --help
 """,
     )
@@ -71,14 +72,18 @@ Examples:
     parser.add_argument(
         "--encoding",
         default="utf-8-sig",
-        help="Input file encoding (default: utf-8-sig)",
+        help="Input CSV file encoding (default: utf-8-sig)",
     )
     parser.add_argument(
         "--replacements",
         help="JSON file containing text replacements, e.g. replacements.json",
     )
+    parser.add_argument(
+        "--extra-data",
+        help="JSON file containing extra records (e.g., books/activities) to append at the end",
+    )
     
-    # Minification flags (Enabled by default)
+    # Minification flags (enabled by default)
     parser.add_argument(
         "--minify",
         dest="minify",
@@ -212,8 +217,28 @@ Examples:
     # Sort records alphabetically by author name (case-insensitive)
     records.sort(key=lambda x: remove_accents(x.get('author', '')).lower())
 
-    # Determine indentation: None removes whitespace for minification, 2 keeps it readable
-    indent_value = None if args.minify else 2
+    # Append extra data JSON if provided (equivalent to jq . + $new[0])
+    if args.extra_data:
+        try:
+            with open(args.extra_data, "r", encoding="utf-8") as extra_file:
+                extra_data = json.load(extra_file)
+                if isinstance(extra_data, list):
+                    records.extend(extra_data)
+                    print(f"[INFO]: Successfully appended {len(extra_data)} extra record(s) from '{args.extra_data}'.")
+                else:
+                    print(f"[WARNING]: Extra data file '{args.extra_data}' does not contain a JSON array. Skipped.")
+        except FileNotFoundError:
+            raise SystemExit(f"[ERROR]: Extra data file '{args.extra_data}' not found.")
+        except json.JSONDecodeError as e:
+            raise SystemExit(f"[ERROR]: Failed to parse JSON from extra data file '{args.extra_events}': {e}")
+
+    # Determine indentation and separators for strict minification or readability
+    if args.minify:
+        indent_value = None
+        separators_value = (',', ':')
+    else:
+        indent_value = 2
+        separators_value = None
 
     # Check for duplicate EANs (ignoring empty strings)
     ean_counts = {}
@@ -229,10 +254,10 @@ Examples:
 
     # Save the result into a structured JSON file
     with open(args.output_file, mode="w", encoding="utf-8") as json_file:
-        json.dump(records, json_file, ensure_ascii=False, indent=indent_value)
+        json.dump(records, json_file, ensure_ascii=False, indent=indent_value, separators=separators_value)
 
     format_status = "minified (optimized)" if args.minify else "formatted (readable)"
-    print(f"[SUCCESS]: Process completed! Successfully converted {len(records)} records from {args.input_file} to {args.output_file} [{format_status}]")
+    print(f"[SUCCESS]: Process completed! Successfully converted {len(records)} total records to {args.output_file} [{format_status}]")
 
 
 if __name__ == "__main__":

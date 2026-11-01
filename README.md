@@ -37,8 +37,9 @@ test-festival42/
 ├── package-lock.json        # Node.js Locked dependency versions for exact deterministic installs
 ├── data.json                # Public processed dataset consumed by the web app
 ├── node_modules/            # Node.js local dependencies (ignored by Git)
-├── data/                    # CSV dataset files and PDF files for book covers
+├── data/                    # CSV (and extra JSON payload) dataset files and PDF files for book covers
 │   ├── catalog.csv
+│   ├── extra_data.json
 │   └── catalog.pdf          # Official PDF catalog (ignored by Git)
 ├── assets/                  # Public static assets
 │   └── covers/              # Extracted optimized WebP book cover images (named by EAN)
@@ -145,7 +146,7 @@ python3 scripts/process_catalog.py data/catalog_raw.csv data.json --encoding cp1
 *(Alternatively, to generate massive synthetic datasets for performance and scalability testing instead of real data, run:)*
 
 ```bash
-python3 scripts/generate_catalog.py --books 500 --talks 20 --signings 30 -o data/massive_catalog.csv
+python3 scripts/generate_catalog.py --books 500 --activities 50 -o data/massive_catalog.csv
 python3 scripts/process_catalog.py data/massive_catalog.csv data.json
 
 ```
