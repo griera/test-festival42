@@ -488,8 +488,8 @@ function renderResults(data, query = '') {
                         <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 hover:border-teal-500 transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                             <div class="min-w-0 flex-grow">
                                 <h3 class="font-bold text-white">${safeValue(activity.title)}</h3>
-                                <p class="text-slate-400 text-sm mt-1">
-                                    <strong>Participants:</strong>${renderActivityAuthors(activity.author)}
+                                <p class="text-slate-400 text-sm mt-1 group">
+                                    <strong class="group-hover:text-teal-400 transition-colors">Participants:</strong>${renderActivityAuthors(activity.author)}
                                 </p>
                             </div>
                             <div class="text-right text-sm bg-teal-950 text-teal-200 border border-teal-900 px-3 py-1.5 rounded-lg w-full sm:w-auto flex-shrink-0 whitespace-nowrap">
