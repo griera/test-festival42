@@ -442,7 +442,7 @@ function renderResults(data, query = '') {
                                         <h3 class="font-bold text-lg text-white">${safeValue(book.title)}</h3>
                                         <span class="bg-indigo-950 text-indigo-300 text-xs font-semibold px-2 py-1 rounded border border-indigo-900 whitespace-nowrap flex-shrink-0">${formatPrice(book.price)} €</span>
                                     </div>
-                                    <p class="text-slate-300 font-medium cursor-pointer hover:text-indigo-400 mt-1 author-filter-trigger" data-author="${escapeHTML(book.author)}">
+                                    <p class="text-slate-300 font-medium cursor-pointer hover:text-indigo-400 mt-1 transition-colors author-filter-trigger" data-author="${escapeHTML(book.author)}">
                                         Autor/a: <span class="underline">${safeValue(book.author)}</span>
                                     </p>
 
@@ -488,8 +488,8 @@ function renderResults(data, query = '') {
                         <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 hover:border-teal-500 transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                             <div class="min-w-0 flex-grow">
                                 <h3 class="font-bold text-white">${safeValue(activity.title)}</h3>
-                                <p class="text-slate-400 text-sm mt-1 group">
-                                    <strong class="group-hover:text-teal-400 transition-colors">Participants:</strong>${renderActivityAuthors(activity.author)}
+                                <p class="text-sm text-slate-400 mt-1 [&:has(.author-filter-trigger:hover)_strong]:text-teal-400">
+                                    <strong class="transition-colors">Participants:</strong>${renderActivityAuthors(activity.author)}
                                 </p>
                             </div>
                             <div class="text-right text-sm bg-teal-950 text-teal-200 border border-teal-900 px-3 py-1.5 rounded-lg w-full sm:w-auto flex-shrink-0 whitespace-nowrap">
