@@ -480,7 +480,7 @@ function renderResults(data, query = '') {
         htmlContent += `
             <section class="mt-6">
                 <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-xl font-bold text-teal-400 flex items-center gap-2">🎤 Xerrades i Conferències</h2>
+                    <h2 class="text-xl font-bold text-teal-400 flex items-center gap-2">🎤 Activitats</h2>
                     <span class="text-xs text-slate-400">Mostrant ${activities.length} de ${allActivities.length}</span>
                 </div>
                 <div class="space-y-3">
