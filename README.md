@@ -127,6 +127,7 @@ EAN;LLIBRE;AUTORI;EDITORIAL;DISTRIBUÏDOR;TIPUS;PVP;TEMA;HORARIS
 
 * **Price (`PVP`)**: Automatically defaults to `0.0` if empty or blank.
 * **Quantity**: Defaults to `0` since it is absent in the raw source.
+* **Schedule (`HORARIS`) / Datetime:** Automatically normalized to strict `dd/mm/yyyy` format, handling mixed format ambiguities (`dd/mm` vs `mm/dd`) using the fair date bounds (04/11/2026 - 08/11/2026). Also, automatically formatted to strict `HH:MM` by dropping trailing seconds.
 * **Text Values**: Cleaned, Unicode-normalized, and stripped of trailing whitespace while preserving original raw text.
 
 ---
