@@ -28,7 +28,7 @@ let currentDayFilter = 'all';
 window.addEventListener('DOMContentLoaded', async () => {
     try {
         const TIMESTAMP_VERSION = '20261101170535';
-        const response = await fetch('data.json?v=${TIMESTAMP_VERSION}');
+        const response = await fetch(`data.json?v=${TIMESTAMP_VERSION}`);
         if (!response.ok) throw new Error('Network response was not ok');
         fairData = await response.json();
 
@@ -365,6 +365,23 @@ function renderSchedule(scheduleStr) {
     return `<br>` + items.map(s => `<span class="block pl-2">${safeValue(s)}</span>`).join('');
 }
 
+function renderActivityAuthors(authorStr) {
+    if (!authorStr) return ' -';
+
+    // Split multiple authors by comma and trim whitespace
+    const authors = authorStr.split(',').map(a => a.trim()).filter(a => a.length > 0);
+
+    // Return inline if only one author exists
+    if (authors.length === 1) {
+        return ` <span class="underline cursor-pointer hover:text-teal-400 author-filter-trigger" data-author="${escapeHTML(authors[0])}">${safeValue(authors[0])}</span>`;
+    }
+
+    // Format multiple authors into individual lines, each with its own filter trigger link
+    return `<br>` + authors.map(author =>
+        `<span class="block pl-2"><span class="underline cursor-pointer hover:text-teal-400 author-filter-trigger" data-author="${escapeHTML(author)}">${safeValue(author)}</span></span>`
+    ).join('');
+}
+
 // Render results into HTML structure with performance capping
 function renderResults(data, query = '') {
     const container = document.getElementById('resultsContainer');
@@ -471,8 +488,8 @@ function renderResults(data, query = '') {
                         <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 hover:border-teal-500 transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                             <div class="min-w-0 flex-grow">
                                 <h3 class="font-bold text-white">${safeValue(activity.title)}</h3>
-                                <p class="text-slate-300 text-sm cursor-pointer hover:text-teal-400 author-filter-trigger" data-author="${escapeHTML(activity.author)}">
-                                    Participant(s): <span class="underline">${safeValue(activity.author)}</span>
+                                <p class="text-slate-400 text-sm mt-1">
+                                    <strong>Participants:</strong>${renderActivityAuthors(activity.author)}
                                 </p>
                             </div>
                             <div class="text-right text-sm bg-teal-950 text-teal-200 border border-teal-900 px-3 py-1.5 rounded-lg w-full sm:w-auto flex-shrink-0 whitespace-nowrap">
