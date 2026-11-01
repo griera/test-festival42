@@ -34,20 +34,22 @@ test-festival42/
 ├── src/
 │   └── input.css            # Tailwind CSS v4 source stylesheet (@import "tailwindcss";)
 ├── package.json             # Node.js project and dependencies configuration
-├── package-lock.json        # Node.js Locked dependency versions for exact deterministic installs
+├── package-lock.json        # Node.js locked dependency versions for exact deterministic installs
 ├── data.json                # Public processed dataset consumed by the web app
 ├── node_modules/            # Node.js local dependencies (ignored by Git)
-├── data/                    # CSV (and extra JSON payload) dataset files and PDF files for book covers
-│   ├── catalog.csv
-│   ├── extra_data.json
-│   └── catalog.pdf          # Official PDF catalog (ignored by Git)
+├── data/                    # Dataset files
+│   ├── catalog.csv          # Bookstore catalog (CSV dataset)
+│   ├── extra_data.json      # Special activities and extra events (JSON dataset)
+│   └── catalog.pdf          # PDF catalog with book covers (ignored by Git)
 ├── assets/                  # Public static assets
-│   └── covers/              # Extracted optimized WebP book cover images (named by EAN)
+│   ├── covers/              # Extracted optimized WebP book cover images (named by EAN)
+│   └── icons/               # Graphic resources and favicon
+│       └── f42_32x32.png    # Festival 42 favicon
 ├── screenshots/             # Documentation screenshots for the README
 ├── scripts/                 # Python development and automation tools
 │   ├── generate_catalog.py  # Script for massive synthetic load testing data
 │   ├── process_catalog.py   # Script to process raw catalog CSV and convert it into a JSON payload for the web app
-│   └── extract_covers.py    # Script to extract book covers from Azeta (distributor) PDF catalogs
+│   └── extract_covers.py    # Script to extract book covers from distributor's PDF catalogs
 ├── requirements.txt         # Python package dependencies
 ├── .venv/                   # Python virtual environment (ignored by Git)
 ├── .gitignore               # Git exclusion rules
