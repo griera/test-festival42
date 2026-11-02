@@ -88,6 +88,17 @@ window.addEventListener('DOMContentLoaded', async () => {
         // Run initial search/render matching URL state
         executeSearch();
 
+        // Populate footer version and timestamp
+        const versionEl = document.getElementById('footer-version');
+        if (versionEl) {
+            versionEl.textContent = getAppVersion();
+        }
+
+        const timestampEl = document.getElementById('footer-timestamp');
+        if (timestampEl) {
+            timestampEl.textContent = formatTimestamp(TIMESTAMP_VERSION);
+        }
+
     } catch (error) {
         console.error('Error loading data:', error);
         document.getElementById('loadingIndicator').innerHTML = `
@@ -523,4 +534,50 @@ function searchByAuthor(authorName) {
     searchInput.value = authorName;
     handleSearch();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Utility function to format a 14-digit timestamp into DD/MM/YYYY HH:mm:SS CET/CEST
+function formatTimestamp(ts) {
+    if (!ts || ts.length !== 14) return ts;
+
+    const year = ts.slice(0, 4);
+    const month = ts.slice(4, 6);
+    const day = ts.slice(6, 8);
+    const hour = ts.slice(8, 10);
+    const minute = ts.slice(10, 12);
+    const second = ts.slice(12, 14);
+
+    const formattedDate = `${day}/${month}/${year} ${hour}:${minute}:${second}`;
+
+    // Automatically detect CET or CEST using Europe/Madrid timezone
+    let tzName = 'CET';
+    try {
+        const dateObj = new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
+        tzName = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Europe/Madrid',
+            timeZoneName: 'short'
+        }).formatToParts(dateObj).find(p => p.type === 'timeZoneName')?.value || 'CET';
+    } catch (e) {
+        const m = parseInt(month, 10);
+        tzName = (m > 3 && m < 10) ? 'CEST' : 'CET';
+    }
+
+    return `${formattedDate} ${tzName}`;
+}
+
+// Utility function to extract the semantic version from the app.js script tag query parameter
+function getAppVersion() {
+    const scripts = document.getElementsByTagName('script');
+    for (let script of scripts) {
+        if (script.src && script.src.includes('app.js')) {
+            try {
+                const url = new URL(script.src);
+                const v = url.searchParams.get('v');
+                if (v) return v;
+            } catch (e) {
+                // Ignore parsing errors
+            }
+        }
+    }
+    return 'n/a';
 }

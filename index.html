@@ -7,7 +7,7 @@
     <!-- Crawler access rules definition -->
     <meta name="robots" content="noindex, nofollow">
     <!-- Tailwind CSS -->
-    <link rel="stylesheet" href="styles.css?v=0.9.13">
+    <link rel="stylesheet" href="styles.css?v=0.9.14">
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="assets/icons/f42_32x32.png">
 </head>
@@ -84,9 +84,9 @@
 
     <!-- Footer -->
     <footer class="bg-slate-950 text-slate-400 py-6 text-sm border-t border-slate-800 px-4">
-        <div class="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-4 text-xs sm:text-sm">
+        <div class="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-4">
 
-            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-slate-300">
+            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-slate-300 text-xs sm:text-sm">
                 <span>&copy; 2026 <strong class="font-medium text-slate-100">Genís Riera Pérez</strong></span>
                 <span class="text-slate-600">|</span>
                 <a href="https://github.com/griera" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400 transition-colors">GitHub</a>
@@ -94,13 +94,19 @@
                 <a href="https://linkedin.com/in/genisrieraperez" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400 transition-colors">LinkedIn</a>
             </div>
 
-            <div class="flex justify-center">
-                <span class="bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 px-2.5 py-0.5 rounded-full font-semibold uppercase tracking-wide text-xs">
-                    Prototip de proves
+            <div class="flex flex-col items-center justify-center gap-1.5 text-center">
+                <span class="bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 px-3 py-0.5 rounded-full font-semibold tracking-wide text-xs sm:text-sm inline-flex items-center gap-1.5">
+                    <span>Prototip de proves</span>
+                    <span class="text-yellow-500/40">•</span>
+                    <span>v<span id="footer-version" class="font-mono">--</span></span>
                 </span>
+
+                <div class="text-xs sm:text-sm text-slate-400">
+                    <span>Última actualització de dades: <strong id="footer-timestamp" class="font-mono text-slate-300">--</strong></span>
+                </div>
             </div>
 
-            <div class="flex flex-wrap items-center justify-center sm:justify-end gap-3 text-xs text-slate-500">
+            <div class="flex flex-wrap items-center justify-center sm:justify-end gap-3 text-xs text-slate-500 text-xs sm:text-sm">
                 <span>
                     Codi obert sota llicència
                     <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400 transition-colors">MIT</a>
@@ -113,6 +119,6 @@
     </footer>
 
     <!-- JavaScript Application Logic -->
-    <script src="app.js?v=0.9.13" defer> </script>
+    <script src="app.js?v=0.9.14" defer> </script>
 </body>
 </html>
