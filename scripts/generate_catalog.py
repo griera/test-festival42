@@ -28,10 +28,10 @@ def generate_random_schedule(days, hours):
 
     return ", ".join(selected_schedules)
 
-def generate_large_csv(output_filename, num_books, num_talks, num_signings):
+def generate_large_csv(output_filename, num_books, num_activities):
     """
-    Generates a synthetic raw festival catalog CSV file containing books, talks, 
-    and signings with 'type' as the first column and 'location' & 'datetime' at the end.
+    Generates a synthetic raw festival catalog CSV file containing books and
+    activities with 'type' as the first column and 'location' & 'datetime' at the end.
     """
     header = "type;ean;title;author;publisher;distributor;category;price;theme;schedule;location;datetime\n"
 
@@ -78,8 +78,7 @@ def generate_large_csv(output_filename, num_books, num_talks, num_signings):
         ""
     ]
 
-    locations_talks = ["Escenari 1 (Fabra i Coats)", "Auditori Central", "Sala Polivalent B"]
-    locations_signings = ["Mòdul de Signatures A", "Mòdul de Signatures B", "Punt de Trobada Llibreters"]
+    locations_activities = ["Escenari 1 (Fabra i Coats)", "Auditori Central", "Sala Polivalent B"]
     days = ["04/11/2026", "05/11/2026", "06/11/2026", "07/11/2026", "08/11/2026"]
     hours = ["10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30"]
 
@@ -106,7 +105,7 @@ def generate_large_csv(output_filename, num_books, num_talks, num_signings):
         generated_rows.append(row)
 
     # Generate activities
-    for i in range(1, num_talks + 1):
+    for i in range(1, num_activities + 1):
         ean = ""
         title = f"TAULA RODONA: EL TERROR CONTEMPORANI #{i}"
         author = f"{random.choice(authors)}, {random.choice(authors)}"
@@ -116,10 +115,10 @@ def generate_large_csv(output_filename, num_books, num_talks, num_signings):
         price_str = "0"
         theme = ""
         schedule = ""
-        location = random.choice(locations_talks)
+        location = random.choice(locations_activities)
         datetime_val = f"{random.choice(days)} {random.choice(hours)}"
 
-        row = f"talk;{ean};{title};{author};{publisher};{distributor};{category};{price_str};{theme};{schedule};{location};{datetime_val}"
+        row = f"activity;{ean};{title};{author};{publisher};{distributor};{category};{price_str};{theme};{schedule};{location};{datetime_val}"
         generated_rows.append(row)
 
     with open(output_filename, "w", encoding="utf-8") as f:

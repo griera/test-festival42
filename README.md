@@ -48,7 +48,8 @@ test-festival42/
 ├── screenshots/             # Documentation screenshots for the README
 ├── scripts/                 # Python development and automation tools
 │   ├── generate_catalog.py  # Script for massive synthetic load testing data
-│   ├── process_catalog.py   # Script to process raw catalog CSV and convert it into a JSON payload for the web app
+│   ├── process_catalog.py   # Script to process raw catalog CSV and convert it into a JSON payload
+│   ├── bump_version.py      # Script for versioning (semver for app & styles, timestamp for data)
 │   └── extract_covers.py    # Script to extract book covers from distributor's PDF catalogs
 ├── requirements.txt         # Python package dependencies
 ├── .venv/                   # Python virtual environment (ignored by Git)
@@ -167,6 +168,51 @@ python3 scripts/extract_covers.py data/catalog.pdf
 *(You can also check available options using `python3 scripts/extract_covers.py --help`)*.
 
 4. Compile your CSS changes if necessary, then commit and push `index.html`, `app.js`, `styles.css`, `src/input.css`, `data.json`, and cover assets (`assets/covers/`) to deploy changes via GitHub Pages.
+
+---
+
+## 🏷️ Version Management Workflow
+
+To ensure efficient browser caching while keeping your data and code versions fully synchronized, this project uses an automated Python script (`bump_version.py`). It automatically handles timezone-aware timestamps (`CET/CEST` via `Europe/Madrid`) and semantic versioning (`MAJOR.MINOR.PATCH`).
+
+### Business Rules
+
+1. **Data updates (`data.json`)**: Any change in the data implies that `app.js` must be updated (since its internal `TIMESTAMP_VERSION` changes). This **automatically triggers a `patch` version bump** for the code in `index.html`.
+2. **Code updates (`app.js` / `styles.css`)**: You can manually choose whether a code change requires a `patch`, `minor`, or `major` version increment.
+
+### Usage Instructions
+
+Run the script from your project's root terminal according to what you have modified:
+
+* **When you update data (`data.json`):**
+This generates a new CET/CEST timestamp, updates the `TIMESTAMP_VERSION` constant in `app.js`, and automatically bumps the `patch` version of `app.js` and `styles.css` in `index.html`.
+```bash
+python3 scripts/bump_version.py data
+
+```
+
+
+* **When you make a small code/style fix (bugfix):**
+```bash
+python3 scripts/ bump_version.py code --type patch
+
+```
+
+
+* **When you add a new feature to the code (minor update):**
+```bash
+python3 scripts/ bump_version.py code --type minor
+
+```
+
+
+* **When you make a breaking change to the architecture/code (major update):**
+```bash
+python3 scripts/ bump_version.py code --type major
+
+```
+
+*(You can also check available options using `python3 scripts/bump_version.py --help`)*.
 
 ---
 
