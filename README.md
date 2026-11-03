@@ -185,7 +185,7 @@ To ensure efficient browser caching while keeping your data and code versions fu
 Run the script from your project's root terminal according to what you have modified:
 
 * **When you update data (`data.json`):**
-This generates a new CET/CEST timestamp, updates the `TIMESTAMP_VERSION` constant in `app.js`, and automatically bumps the `patch` version of `app.js` and `styles.css` in `index.html`.
+This generates a new CET/CEST timestamp, updates the `TIMESTAMP_VERSION` constant in `app.js`, synchronizes the `data.json` preload link in `index.html`, and automatically bumps the `patch` version of `app.js` and `styles.css` in `index.html`.
 ```bash
 python3 scripts/bump_version.py data
 

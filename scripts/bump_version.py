@@ -98,19 +98,33 @@ def main():
 
     if args.action == "data":
         new_timestamp = get_current_timestamp()
-        print("  └─ Data change detected. Updating app.js timestamp...")
+        print("  └─ Data change detected. Updating app.js timestamp and index.html preload...")
         print(f"     ├─ New timestamp (CET/CEST): {new_timestamp}")
         
+        # Update TIMESTAMP_VERSION in app.js
         js_pattern = r"(const\s+TIMESTAMP_VERSION\s*=\s*['\"])\d{14}(['\"])"
-        replacement = rf"\g<1>{new_timestamp}\g<2>"
-        matches_count = update_file_content(APP_JS_FILE, js_pattern, replacement)
+        js_replacement = rf"\g<1>{new_timestamp}\g<2>"
+        js_matches = update_file_content(APP_JS_FILE, js_pattern, js_replacement)
         
-        if matches_count > 0:
-            print(f"     └─ ✔ {APP_JS_FILE} successfully updated ({matches_count} match(es))")
-            print("  └─ Data update implies a code change (app.js modified). Bumping code version (patch)...")
-            update_code_version("patch")
+        if js_matches > 0:
+            print(f"     ├─ ✔ {APP_JS_FILE} successfully updated ({js_matches} match(es))")
         else:
-            print(f"     └─ ⚠️ Pattern not found in {APP_JS_FILE}")
+            print(f"     ├─ ⚠️ Pattern not found in {APP_JS_FILE}")
+
+        # Update data.json preload version in index.html
+        html_preload_pattern = r'(data\.json\?v=)\d{14}'
+        html_preload_replacement = rf'\g<1>{new_timestamp}'
+        html_matches = update_file_content(INDEX_FILE, html_preload_pattern, html_preload_replacement)
+
+        if html_matches > 0:
+            print(f"     └─ ✔ {INDEX_FILE} preload link successfully updated ({html_matches} match(es))")
+        else:
+            print(f"     └─ ⚠️ Preload pattern for data.json not found in {INDEX_FILE}")
+
+        # If data changed, automatically bump code patch version as before
+        if js_matches > 0 or html_matches > 0:
+            print("  └─ Data update implies a code change. Bumping code version (patch)...")
+            update_code_version("patch")
 
     elif args.action == "code":
         print(f"  └─ Code-only change detected. Bumping version ({args.type})...")
