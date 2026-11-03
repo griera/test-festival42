@@ -194,21 +194,21 @@ python3 scripts/bump_version.py data
 
 * **When you make a small code/style fix (bugfix):**
 ```bash
-python3 scripts/ bump_version.py code --type patch
+python3 scripts/bump_version.py code --type patch
 
 ```
 
 
 * **When you add a new feature to the code (minor update):**
 ```bash
-python3 scripts/ bump_version.py code --type minor
+python3 scripts/bump_version.py code --type minor
 
 ```
 
 
 * **When you make a breaking change to the architecture/code (major update):**
 ```bash
-python3 scripts/ bump_version.py code --type major
+python3 scripts/bump_version.py code --type major
 
 ```
 

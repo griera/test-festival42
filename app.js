@@ -24,10 +24,76 @@ let currentTypeFilter = 'all';
 // Active day filter setting
 let currentDayFilter = 'all';
 
+// Constant for scripts/bump_version.py automation
+const TIMESTAMP_VERSION = '20261102002254';
+
+// Initialize non-async UI elements (footer version and timestamp) and configure scroll-to-top behavior immediately when DOM loads
+window.addEventListener('DOMContentLoaded', () => {
+    // Populate footer version and timestamp immediately (independent of network data)
+    const versionEl = document.getElementById('footer-version');
+    if (versionEl) {
+        versionEl.textContent = getAppVersion();
+    }
+
+    const timestampEl = document.getElementById('footer-timestamp');
+    if (timestampEl) {
+        timestampEl.textContent = formatTimestamp(TIMESTAMP_VERSION);
+    }
+
+    // Scroll-to-top button & IntersectionObserver configuration
+    const scrollBtn = document.getElementById('scrollToTopBtn');
+    const footer = document.querySelector('footer');
+
+    if (scrollBtn) {
+        // Smooth fade-in/fade-out based on vertical scroll position
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                scrollBtn.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+                scrollBtn.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+            } else {
+                scrollBtn.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                scrollBtn.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+            }
+        });
+
+        // IntersectionObserver to prevent footer overlap on mobile/desktop
+        if (footer) {
+            const observerOptions = { root: null, threshold: 0 };
+            const footerObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (window.innerWidth < 640) {
+                        if (entry.isIntersecting) {
+                            const footerHeight = footer.offsetHeight;
+                            scrollBtn.style.bottom = `${footerHeight + 20}px`;
+                        } else {
+                            scrollBtn.style.bottom = '1.5rem'; // Reset to bottom-6 (24px)
+                        }
+                    } else {
+                        // Ensure desktop always keeps default bottom spacing
+                        scrollBtn.style.bottom = '1.5rem';
+                    }
+                });
+            }, observerOptions);
+
+            footerObserver.observe(footer);
+        }
+    }
+});
+
+// Smooth scroll window back to top via global event delegation
+document.addEventListener('click', (e) => {
+    const scrollBtn = e.target.closest('#scrollToTopBtn');
+    if (scrollBtn) {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+});
+
 // Fetch JSON data asynchronously when the page loads and securely load initial URL search/filters
 window.addEventListener('DOMContentLoaded', async () => {
     try {
-        const TIMESTAMP_VERSION = '20261102002254';
         const response = await fetch(`data.json?v=${TIMESTAMP_VERSION}`);
         if (!response.ok) throw new Error('Network response was not ok');
         fairData = await response.json();
@@ -88,45 +154,11 @@ window.addEventListener('DOMContentLoaded', async () => {
         // Run initial search/render matching URL state
         executeSearch();
 
-        // Populate footer version and timestamp
-        const versionEl = document.getElementById('footer-version');
-        if (versionEl) {
-            versionEl.textContent = getAppVersion();
-        }
-
-        const timestampEl = document.getElementById('footer-timestamp');
-        if (timestampEl) {
-            timestampEl.textContent = formatTimestamp(TIMESTAMP_VERSION);
-        }
-
     } catch (error) {
         console.error('Error loading data:', error);
         document.getElementById('loadingIndicator').innerHTML = `
             <p class="text-red-400">Error al carregar el fitxer de dades (data.json). Assegura't de pujar-lo al mateix directori.</p>
         `;
-    }
-});
-
-// Show or hide the "Scroll to Top" button based on window vertical scroll position
-window.addEventListener('scroll', () => {
-    const scrollBtn = document.getElementById('scrollToTopBtn');
-    if (window.scrollY > 300) {
-        scrollBtn.classList.remove('hidden');
-        scrollBtn.classList.add('flex');
-    } else {
-        scrollBtn.classList.add('hidden');
-        scrollBtn.classList.remove('flex');
-    }
-});
-
-// Smooth scroll window back to top via global event delegation
-document.addEventListener('click', (e) => {
-    const scrollBtn = e.target.closest('#scrollToTopBtn');
-    if (scrollBtn) {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
     }
 });
 
@@ -477,8 +509,9 @@ function renderResults(data, query = '') {
 
                 ${hasMoreBooks ? `
                     <div class="text-center mt-6">
-                        <button data-action="load-more" data-type="book" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
-                            Carregar més llibres (${allBooks.length - books.length} restants)...
+                        <button data-action="load-more" data-type="book" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-5 py-2 rounded-xl text-sm transition-colors shadow-sm cursor-pointer inline-flex flex-col items-center justify-center">
+                            <span>Carregar més llibres</span>
+                            <span class="text-xs opacity-80 font-normal">(${allBooks.length - books.length} restants)</span>
                         </button>
                     </div>
                 ` : ''}
@@ -513,8 +546,9 @@ function renderResults(data, query = '') {
 
                 ${hasMoreActivities ? `
                     <div class="text-center mt-6">
-                        <button data-action="load-more" data-type="activity" class="bg-teal-600 hover:bg-teal-500 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
-                            Carregar més activitats (${allActivities.length - activities.length} restants)...
+                        <button data-action="load-more" data-type="activity" class="bg-teal-600 hover:bg-teal-500 text-white font-medium px-5 py-2 rounded-xl text-sm transition-colors shadow-sm cursor-pointer inline-flex flex-col items-center justify-center">
+                            <span>Carregar més activitats</span>
+                            <span class="text-xs opacity-80 font-normal">(${allActivities.length - activities.length} restants)</span>
                         </button>
                     </div>
                 ` : ''}
