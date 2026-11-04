@@ -3,7 +3,9 @@ import argparse
 import csv
 import json
 import os
+import re
 import unicodedata
+from datetime import datetime, date
 
 # Defined expected headers
 HEADER_9_COL = [
@@ -20,6 +22,10 @@ OUTPUT_HEADER = [
     "price", "theme", "schedule", "quantity", "location", "datetime",
 ]
 
+# Fair date boundaries for disambiguating mixed date formats (dd/mm vs mm/dd)
+FAIR_START = date(2026, 11, 4)
+FAIR_END = date(2026, 11, 8)
+
 
 def clean_text(text, replacements):
     """Normalize Unicode and replace non-breaking spaces with regular spaces."""
@@ -34,14 +40,15 @@ def remove_accents(input_str):
     return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
 def parse_float(val):
-    """Convert numeric strings with a comma (e.g., '28,80') to float (28.80)."""
+    """Convert numeric strings with a comma and optional currency symbols (e.g., '28,80', '23,12 €') to float."""
     if not val:
         return 0.0
     try:
-        return float(val.replace(',', '.'))
+        # Remove currency symbols (like €), letters, and whitespace, keeping digits, commas, dots, and minus signs
+        cleaned_val = re.sub(r'[^\d,\.-]', '', str(val))
+        return float(cleaned_val.replace(',', '.'))
     except ValueError:
         return 0.0
-
 
 def parse_int(val):
     """Safely convert strings to integers."""
@@ -52,6 +59,51 @@ def parse_int(val):
     except ValueError:
         return 0
 
+def format_schedule_dates(schedule_str):
+    """
+    Normalize mixed dd/mm/yyyy and mm/dd/yyyy formats using fair bounds context,
+    standardize output to dd/mm/yyyy, and ensure times are strictly HH:MM.
+    """
+    if not schedule_str:
+        return schedule_str
+
+    # Match date patterns separated by slash or dash
+    pattern_date = r'\b(\d{1,2})[/-](\d{1,2})[/-](\d{4})\b'
+
+    def date_replacer(match):
+        p1, p2, year_str = match.groups()
+        n1, n2, yr = int(p1), int(p2), int(year_str)
+
+        # Try interpretation as DD/MM/YYYY (p1 = day, p2 = month)
+        try:
+            dt_dmy = date(yr, n2, n1)
+            if FAIR_START <= dt_dmy <= FAIR_END:
+                return dt_dmy.strftime('%d/%m/%Y')
+        except ValueError:
+            pass
+
+        # Try interpretation as MM/DD/YYYY (p1 = month, p2 = day)
+        try:
+            dt_mdy = date(yr, n1, n2)
+            if FAIR_START <= dt_mdy <= FAIR_END:
+                return dt_mdy.strftime('%d/%m/%Y')
+        except ValueError:
+            pass
+
+        # Fallback: default to standard DD/MM/YYYY if valid, else keep original
+        try:
+            dt_default = date(yr, n2, n1)
+            return dt_default.strftime('%d/%m/%Y')
+        except ValueError:
+            return match.group(0)
+
+    schedule_str = re.sub(pattern_date, date_replacer, schedule_str)
+
+    # Force time format to HH:MM by removing seconds (e.g., 18:00:00 -> 18:00)
+    pattern_time = r'\b([0-1]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])\b'
+    schedule_str = re.sub(pattern_time, r'\1:\2', schedule_str)
+
+    return schedule_str
 
 def main():
     # Set up argument parser with detailed usage and execution examples
@@ -166,7 +218,7 @@ Examples:
                 raw_price = row[7].strip()
                 price = parse_float(raw_price) if raw_price else 0.0
                 theme = row[8]
-                schedule = row[9]
+                schedule = format_schedule_dates(row[9])
                 location = row[10]
                 datetime_val = row[11]
             else:
@@ -181,7 +233,7 @@ Examples:
                 raw_price = row[6].strip()
                 price = parse_float(raw_price) if raw_price else 0.0
                 theme = row[7]
-                schedule = row[8]
+                schedule = format_schedule_dates(row[8])
                 location = ""
                 datetime_val = ""
 
@@ -223,6 +275,13 @@ Examples:
             with open(args.extra_data, "r", encoding="utf-8") as extra_file:
                 extra_data = json.load(extra_file)
                 if isinstance(extra_data, list):
+                    for extra_item in extra_data:
+                        # Format schedule and datetime fields if present in extra records
+                        if "schedule" in extra_item and extra_item["schedule"]:
+                            extra_item["schedule"] = format_schedule_dates(extra_item["schedule"])
+                        if "datetime" in extra_item and extra_item["datetime"]:
+                            extra_item["datetime"] = format_schedule_dates(extra_item["datetime"])
+
                     records.extend(extra_data)
                     print(f"[INFO]: Successfully appended {len(extra_data)} extra record(s) from '{args.extra_data}'.")
                 else:
