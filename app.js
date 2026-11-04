@@ -25,7 +25,7 @@ let currentTypeFilter = 'all';
 let currentDayFilter = 'all';
 
 // Constant for scripts/bump_version.py automation
-const TIMESTAMP_VERSION = '20261103213429';
+const TIMESTAMP_VERSION = '20261104100947';
 
 // Initialize non-async UI elements (footer version and timestamp) and configure scroll-to-top behavior immediately when DOM loads
 window.addEventListener('DOMContentLoaded', () => {
