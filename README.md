@@ -12,9 +12,7 @@ Here is a quick look at the user interface and responsive experience across diff
 
 ### 🖥️ Desktop
 
-<p align="center">
-  <video src="./docs/assets/f42_demo.mp4" autoplay loop muted playsinline width="100%"></video>
-</p>
+![Demo](./docs/assets/f42_demo.gif)
 
 ### 📱 Mobile
 
@@ -45,7 +43,7 @@ test-festival42/
 │       └── f42_32x32.png    # Festival 42 favicon
 ├── docs/                    # Documentation assets for the README
 │   └── assets/
-│       └── f42_demo.mp4     # Demo video for the README
+│       └── f42_demo.gif     # Demo video for the README
 ├── scripts/                 # Python development and automation tools
 │   ├── generate_catalog.py  # Script for massive synthetic load testing data
 │   ├── process_catalog.py   # Script to process raw catalog CSV and convert it into a JSON payload
