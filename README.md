@@ -6,21 +6,19 @@ It is built as a single-page static web app using **HTML5, Tailwind CSS v4 (comp
 
 ---
 
-## 📸 Screenshots
+## 🎥 Demo & Responsive Experience
 
 Here is a quick look at the user interface and responsive experience across different devices:
 
-### 🖥️ Desktop Experience
+### 🖥️ Desktop
 
-| Homepage View | Search & Filter View |
-| :---: | :---: |
-| <img src="screenshots/desktop-home.png" alt="Desktop Homepage" width="100%" style="border-radius: 0.5rem; border: 1px solid #334155;"> | <img src="screenshots/desktop-search.png" alt="Desktop Search" width="100%" style="border-radius: 0.5rem; border: 1px solid #334155;"> |
+<p align="center">
+  <video src="./docs/assets/f42_demo.mp4" autoplay loop muted playsinline width="100%"></video>
+</p>
 
-### 📱 Mobile Experience
+### 📱 Mobile
 
-| Homepage View | Search & Filter View |
-| :---: | :---: |
-| Coming soon | coming soon |
+Coming soon
 
 ---
 
@@ -45,7 +43,9 @@ test-festival42/
 │   ├── covers/              # Extracted optimized WebP book cover images (named by EAN)
 │   └── icons/               # Graphic resources and favicon
 │       └── f42_32x32.png    # Festival 42 favicon
-├── screenshots/             # Documentation screenshots for the README
+├── docs/                    # Documentation assets for the README
+│   └── assets/
+│       └── f42_demo.mp4     # Demo video for the README
 ├── scripts/                 # Python development and automation tools
 │   ├── generate_catalog.py  # Script for massive synthetic load testing data
 │   ├── process_catalog.py   # Script to process raw catalog CSV and convert it into a JSON payload
