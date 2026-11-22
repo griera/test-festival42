@@ -1,220 +1,44 @@
+'use strict';
+
 // ==========================================
-// GLOBAL APPLICATION STATE
+// CONFIGURATION
 // ==========================================
-
-// Stores main application records
-let fairData = [];
-
-// Controls the initial and progressive item display limit (Result Capping for INP performance optimization)
-// Initial limits perfectly matched to viewport capacity (5 rows x 2 columns = 10 items)
-let visibleLimits = {
-    book: 10,
-    activity: 10,
-};
-
-// Stores the latest search or filter results to preserve state when loading more items
-let lastFilteredData = [];
-
-// Timer reference used for the search input debounce delay (prevents main thread blocking while typing)
-let searchTimeout = null;
-
-// Active type filter setting
-let currentTypeFilter = 'all';
-
-// Active day filter setting
-let currentDayFilter = 'all';
 
 // Constant for scripts/bump_version.py automation
-const TIMESTAMP_VERSION = '20261105103627';
+const TIMESTAMP_VERSION = '20261122215104';
 
-// Initialize non-async UI elements (footer version and timestamp) and configure scroll-to-top behavior immediately when DOM loads
-window.addEventListener('DOMContentLoaded', () => {
-    // Populate footer version and timestamp immediately (independent of network data)
-    const versionEl = document.getElementById('footer-version');
-    if (versionEl) {
-        versionEl.textContent = getAppVersion();
-    }
+// Number of items shown per section and added by each "load more" click
+const PAGE_SIZE = 30;
 
-    const timestampEl = document.getElementById('footer-timestamp');
-    if (timestampEl) {
-        timestampEl.textContent = formatTimestamp(TIMESTAMP_VERSION);
-    }
+// Delay before running a search while typing (prevents main thread blocking)
+const SEARCH_DEBOUNCE_MS = 300;
 
-    // Scroll-to-top button & IntersectionObserver configuration
-    const scrollBtn = document.getElementById('scrollToTopBtn');
-    const footer = document.querySelector('footer');
+// Extra wait before announcing results to screen readers, so fast typing produces one announcement, not one per pause
+const RESULTS_ANNOUNCE_DELAY_MS = 500;
 
-    if (scrollBtn) {
-        // Smooth fade-in/fade-out based on vertical scroll position
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 300) {
-                scrollBtn.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
-                scrollBtn.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
-            } else {
-                scrollBtn.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                scrollBtn.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
-            }
-        });
+// Offline covers: must match COVERS_CACHE in sw.js
+const COVERS_CACHE = 'fair-catalog-covers-v1';
+const COVER_CHANNEL_NAME = 'fair-catalog-covers';
+const COVER_REQUEST_HEADER = 'X-Fair-Cover';
+const COVER_DOWNLOAD_CONCURRENCY = 6;
+const COVER_TIMEOUT_MS = 20000;
+const COVER_STORE_CONFIRM_MS = 5000;           // wait for the Service Worker to confirm it stored a cover
+const COVER_RETRY_BASE_MS = 15000;             // backoff when the network fails but the device still reports "online"
+const COVER_RETRY_MAX_MS = 5 * 60 * 1000;
+const COVER_MAX_RETRY_ATTEMPTS = 8;
+const COVER_DOWNLOAD_PENDING_KEY = 'fair_catalog_cover_download_pending';
 
-        // IntersectionObserver to prevent footer overlap on mobile/desktop
-        if (footer) {
-            const observerOptions = { root: null, threshold: 0 };
-            const footerObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (window.innerWidth < 640) {
-                        if (entry.isIntersecting) {
-                            const footerHeight = footer.offsetHeight;
-                            scrollBtn.style.bottom = `${footerHeight + 20}px`;
-                        } else {
-                            scrollBtn.style.bottom = '1.5rem'; // Reset to bottom-6 (24px)
-                        }
-                    } else {
-                        // Ensure desktop always keeps default bottom spacing
-                        scrollBtn.style.bottom = '1.5rem';
-                    }
-                });
-            }, observerOptions);
+// The page may stay open all day: how often to look for new data / app versions
+const UPDATE_CHECK_INTERVAL_MS = 10 * 60 * 1000;
 
-            footerObserver.observe(footer);
-        }
-    }
-});
+// After "Més tard", the new-version notice comes back after this delay
+const UPDATE_REMINDER_MS = 5 * 60 * 1000;
 
-// Smooth scroll window back to top via global event delegation
-document.addEventListener('click', (e) => {
-    const scrollBtn = e.target.closest('#scrollToTopBtn');
-    if (scrollBtn) {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-    }
-});
+// Captured while the script is executing (document.currentScript is null afterwards)
+const APP_SCRIPT_SRC = document.currentScript ? document.currentScript.src : '';
 
-// Fetch JSON data asynchronously when the page loads and securely load initial URL search/filters
-window.addEventListener('DOMContentLoaded', async () => {
-    try {
-        const response = await fetch(`data.json?v=${TIMESTAMP_VERSION}`);
-        if (!response.ok) throw new Error('Network response was not ok');
-        fairData = await response.json();
-
-        // Hide loading and show results container
-        document.getElementById('loadingIndicator').classList.add('hidden');
-        document.getElementById('resultsContainer').classList.remove('hidden');
-
-        // Dynamically construct type filter controls
-        const typeContainer = document.getElementById('typeFilterContainer');
-        eventTypesConfig.forEach(typeObj => {
-            const btn = document.createElement('button');
-            btn.onclick = () => setTypeFilter(typeObj.id);
-            btn.id = `btn-filter-${typeObj.id}`;
-            btn.className = 'type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
-            btn.textContent = typeObj.label;
-            typeContainer.appendChild(btn);
-        });
-
-        // Dynamically construct day filter controls
-        const dayContainer = document.getElementById('dayFilterContainer');
-        eventDaysConfig.forEach(dayObj => {
-            const btn = document.createElement('button');
-            btn.onclick = () => setDayFilter(dayObj.id);
-            btn.id = `btn-day-${dayObj.id}`;
-            btn.className = 'day-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
-            btn.textContent = dayObj.label;
-            dayContainer.appendChild(btn);
-        });
-
-        // Bind search input listener programmatically
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.addEventListener('input', handleSearch);
-        }
-
-        // Read URL location parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const initialQuery = urlParams.get('search');
-        const initialType = urlParams.get('type');
-        const initialDay = urlParams.get('day');
-
-        // Determine and apply initial type state (fallback to 'all' if missing or invalid)
-        const validTypes = eventTypesConfig.map(t => t.id);
-        const activeType = (initialType && validTypes.includes(initialType)) ? initialType : 'all';
-        setTypeFilter(activeType, false);
-
-        // Determine and apply initial day state (fallback to 'all' if missing or invalid)
-        const validDays = eventDaysConfig.map(d => d.id);
-        const activeDay = (initialDay && validDays.includes(initialDay)) ? initialDay : 'all';
-        setDayFilter(activeDay, false);
-
-        // Load initial search parameters (.value is safe against XSS)
-        if (initialQuery) {
-            document.getElementById('searchInput').value = initialQuery;
-        }
-
-        // Run initial search/render matching URL state
-        executeSearch();
-
-    } catch (error) {
-        console.error('Error loading data:', error);
-        document.getElementById('loadingIndicator').innerHTML = `
-            <p class="text-red-400">Error al carregar el fitxer de dades (data.json). Assegura't de pujar-lo al mateix directori.</p>
-        `;
-    }
-});
-
-// Global event delegation for interactive elements (prevents quote breaking, XSS issues and CSP compliant)
-document.getElementById('resultsContainer').addEventListener('click', (e) => {
-    const authorTrigger = e.target.closest('.author-filter-trigger');
-    if (authorTrigger) {
-        const authorName = authorTrigger.getAttribute('data-author');
-        if (authorName) {
-            searchByAuthor(authorName);
-        }
-    }
-
-    const loadMoreBtn = e.target.closest('[data-action="load-more"]');
-    if (loadMoreBtn) {
-        const itemType = loadMoreBtn.getAttribute('data-type');
-        if (itemType) {
-            loadMoreItems(itemType);
-        }
-    }
-});
-
-// Global error listener to handle broken image covers securely
-document.addEventListener('error', (e) => {
-    if (e.target && e.target.tagName === 'IMG') {
-        e.target.classList.add('hidden');
-    }
-}, true);
-
-// Utility function to sanitize input strings before rendering
-function escapeHTML(str) {
-    if (!str) return '';
-    return String(str).replace(/[&<>'"]/g,
-        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
-    );
-}
-
-// Utility function to return '-' if a field is null, undefined, or empty string, but allowing 0 and 0.0
-function safeValue(val) {
-    if (val === null || val === undefined || val === 'null' || val === '') {
-        return '-';
-    }
-    if (typeof val === 'string' && val.trim() === '') {
-        return '-';
-    }
-    return escapeHTML(val);
-}
-
-// Utility function to format prices securely, ensuring 0 and decimals are properly displayed
-function formatPrice(price) {
-    if (price === null || price === undefined || price === '' || price === 'null') {
-        return '0,00';
-    }
-    const num = Number(price);
-    return isNaN(num) ? escapeHTML(price) : num.toFixed(2).replace('.', ',');
-}
+const FILTER_BTN_BASE = 'px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer';
+const FILTER_BTN_IDLE = 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
 
 // Content type configuration mapping
 const eventTypesConfig = [
@@ -223,354 +47,660 @@ const eventTypesConfig = [
     { id: 'activity', label: '🎤 Activitats', activeClass: 'bg-teal-600 text-white border-teal-500' }
 ];
 
-// Updates active type filter and re-runs the search filtering (by default)
-function setTypeFilter(type, runSearch = true) {
-    currentTypeFilter = type;
-    visibleLimits = { book: 30, activity: 30 }; // Reset limits when switching filter
-
-    eventTypesConfig.forEach(typeObj => {
-        const btn = document.getElementById(`btn-filter-${typeObj.id}`);
-        if (btn) {
-            if (typeObj.id === type) {
-                btn.className = `type-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${typeObj.activeClass}`;
-            } else {
-                btn.className = 'type-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
-            }
-        }
-    });
-
-    if (runSearch) {
-        executeSearch();
-    }
-}
-
 // Configured event dates array for dynamic selector rendering
 const eventDaysList = ['04112026', '05112026', '06112026', '07112026', '08112026'];
 
 // Content day configuration mapping
 const eventDaysConfig = [
     { id: 'all', label: 'Tots els dies', activeClass: 'bg-slate-100 text-slate-900 border-white shadow-sm' },
-    ...eventDaysList.map(dayCode => ({
+    ...eventDaysList.map((dayCode) => ({
         id: dayCode,
         label: formatDayLabel(dayCode),
         activeClass: 'bg-blue-600 text-white border-blue-400 shadow-md'
     }))
 ];
 
-// Get date label
-function formatDayLabel(dayCode) {
-    const day = dayCode.substring(0, 2);
-    const month = dayCode.substring(2, 4);
-    const year = dayCode.substring(4, 8);
+// Per-section rendering settings (class names are written in full so Tailwind can detect them)
+const SECTION_META = {
+    book: {
+        title: '📚 Llibres',
+        titleClass: 'text-indigo-400',
+        sectionClass: '',
+        listClass: 'grid gap-4 sm:grid-cols-2',
+        moreLabel: 'Carregar més llibres',
+        moreClass: 'bg-indigo-600 hover:bg-indigo-500',
+        renderItem: renderBookCard
+    },
+    activity: {
+        title: '🎤 Activitats',
+        titleClass: 'text-teal-400',
+        sectionClass: 'mt-6',
+        listClass: 'grid gap-4 sm:grid-cols-2',   // same grid as books: 1 column on mobile, 2 from 640px
+        moreLabel: 'Carregar més activitats',
+        moreClass: 'bg-teal-600 hover:bg-teal-500',
+        renderItem: renderActivityCard
+    }
+};
 
-    // Construct standard ISO date format string for Date parsing
-    const date = new Date(`${year}-${month}-${day}`);
+// ==========================================
+// GLOBAL APPLICATION STATE
+// ==========================================
 
-    // Localized weekday abbreviations index mapping
-    const weekdays = ['Dg', 'Dl', 'Dm', 'Dc', 'Dj', 'Dv', 'Ds'];
+const state = {
+    data: [],                                   // all records, each with a precomputed _search string
+    typeFilter: 'all',
+    dayFilter: 'all',
+    results: { book: [], activity: [] },        // latest filtered results, split by type
+    visible: { book: PAGE_SIZE, activity: PAGE_SIZE }
+};
 
-    // Localized month name abbreviations index mapping (1-indexed for direct matching)
-    const months = ['', 'Gen', 'Feb', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Des'];
+let searchTimeout = null;
+let announceTimeout = null;
+// The first render (page load) is not announced: the screen reader is already reading the page
+let hasRenderedResults = false;
 
-    const weekday = weekdays[date.getDay()];
-    const monthName = months[parseInt(month, 10)];
+// Offline covers: the real cache is the single source of truth for every counter shown
+const coverState = {
+    wanted: new Set(),          // cover URLs referenced by data.json
+    cachedUrls: new Set(),      // mirror of the covers cache, kept live by Service Worker broadcasts
+    addedMeanwhile: null,       // URLs announced while the cache is being re-read
+    notOnServer: new Set(),     // 404/410 in the current download: retrying will not help
+    waiters: new Map(),         // url -> callback waiting for the Service Worker store confirmation
+    phase: 'idle',              // idle | downloading | paused-offline | paused-network | quota | done | gave-up
+    renderTimer: null
+};
 
-    return `${weekday} ${day} ${monthName}`;
+// Manual "download all covers" run; it stays pending (also across reloads) until it completes
+const coverDownload = {
+    running: false,
+    controller: null,
+    pausedByOffline: false,
+    retryTimer: null,
+    retryAttempt: 0
+};
+
+// ==========================================
+// INITIALIZATION
+// ==========================================
+
+async function init() {
+    initFooter();
+    initScrollToTop();
+    bindGlobalEvents();
+
+    try {
+        await loadData();
+        document.getElementById('loadingIndicator').classList.add('hidden');
+        document.getElementById('resultsContainer').classList.remove('hidden');
+
+        buildFilterButtons();
+        applyInitialStateFromUrl();
+        executeSearch();
+    } catch (error) {
+        console.error('Error loading data:', error);
+        // Written for the staff at the stand: what happened and what to do (technical details go to the console)
+        document.getElementById('loadingIndicator').innerHTML = `
+            <div class="text-center py-12 bg-slate-800 rounded-xl border border-rose-500/40">
+                <p class="text-rose-300 font-semibold">No s'ha pogut carregar el catàleg.</p>
+                <p class="text-slate-400 text-sm mt-1">Comprova la connexió i torna-ho a provar.</p>
+                <button type="button" data-action="reload-app" class="mt-4 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-wait focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300">Tornar-ho a provar</button>
+            </div>
+        `;
+    }
+
+    // Registered in both cases: a later visit can still work offline
+    registerOfflineServiceWorker();
 }
 
-// Format date string
-function formatDayString(dayCode) {
-    if (!dayCode || dayCode === 'all') return 'all';
-    return `${dayCode.substring(0, 2)}/${dayCode.substring(2, 4)}/${dayCode.substring(4)}`;
+function initFooter() {
+    const versionEl = document.getElementById('footer-version');
+    if (versionEl) versionEl.textContent = getAppVersion();
+
+    const timestampEl = document.getElementById('footer-timestamp');
+    if (timestampEl) timestampEl.textContent = formatTimestamp(TIMESTAMP_VERSION);
 }
 
-// Updates active day filter and re-runs the search filtering (by default)
-function setDayFilter(dayCode, runSearch = true) {
-    currentDayFilter = dayCode;
-    visibleLimits = { book: 30, activity: 30 }; // Reset limits when switching filter
+// "invisible" removes the hidden button from the Tab order; opacity-0 alone would keep it focusable
+const SCROLL_BTN_SHOWN = ['opacity-100', 'translate-y-0', 'pointer-events-auto'];
+const SCROLL_BTN_HIDDEN = ['invisible', 'opacity-0', 'translate-y-4', 'pointer-events-none'];
 
-    eventDaysConfig.forEach(dayObj => {
-        const btn = document.getElementById(`btn-day-${dayObj.id}`);
-        if (btn) {
-            if (dayObj.id === dayCode) {
-                btn.className = `day-filter-btn active-filter px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${dayObj.activeClass}`;
-            } else {
-                btn.className = 'day-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
-            }
+// Scroll-to-top button: classes only change when visibility actually changes, once per frame at most
+function initScrollToTop() {
+    const scrollBtn = document.getElementById('scrollToTopBtn');
+    if (!scrollBtn) return;
+
+    let isShown = null;
+    let ticking = false;
+    const update = () => {
+        ticking = false;
+        const show = window.scrollY > 300;
+        if (show === isShown) return;
+        isShown = show;
+        swapClasses(scrollBtn,
+            show ? SCROLL_BTN_SHOWN : SCROLL_BTN_HIDDEN,
+            show ? SCROLL_BTN_HIDDEN : SCROLL_BTN_SHOWN);
+    };
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            ticking = true;
+            requestAnimationFrame(update);
+        }
+    }, { passive: true });
+    update();
+
+    // IntersectionObserver to prevent footer overlap on mobile
+    const footer = document.querySelector('footer');
+    if (!footer) return;
+    new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            scrollBtn.style.bottom = (window.innerWidth < 640 && entry.isIntersecting)
+                ? `${footer.offsetHeight + 20}px`
+                : '1.5rem';
+        });
+    }, { root: null, threshold: 0 }).observe(footer);
+}
+
+function swapClasses(el, add, remove) {
+    el.classList.remove(...remove);
+    el.classList.add(...add);
+}
+
+// Single delegated click handler (CSP friendly, no inline handlers, safe with any author name)
+function bindGlobalEvents() {
+    document.addEventListener('click', (e) => {
+        const target = e.target instanceof Element ? e.target : null;
+        if (!target) return;
+
+        if (target.closest('#scrollToTopBtn')) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+
+        const authorTrigger = target.closest('.author-filter-trigger');
+        if (authorTrigger) {
+            const authorName = authorTrigger.getAttribute('data-author');
+            if (authorName) searchByAuthor(authorName);
+            return;
+        }
+
+        const actionEl = target.closest('[data-action]');
+        if (!actionEl) return;
+
+        switch (actionEl.getAttribute('data-action')) {
+            case 'load-more':
+                loadMoreItems(actionEl.getAttribute('data-type'));
+                break;
+            case 'filter-type':
+                setTypeFilter(actionEl.getAttribute('data-value'));
+                break;
+            case 'filter-day':
+                setDayFilter(actionEl.getAttribute('data-value'));
+                break;
+            case 'prefetch-covers':
+                downloadAllCovers();
+                break;
+            case 'reload-app':
+                reloadApp(actionEl);
+                break;
+            case 'dismiss-update':
+                postponeUpdateBanner();
+                break;
         }
     });
 
+    const searchInput = getSearchInput();
+    if (searchInput) searchInput.addEventListener('input', handleSearch);
+
+    // Broken covers are hidden and flagged so they can be retried when the connection returns
+    document.addEventListener('error', (e) => {
+        if (e.target instanceof HTMLImageElement) {
+            e.target.classList.add('hidden');
+            e.target.dataset.failed = '1';
+        }
+    }, true);
+
+    document.addEventListener('load', (e) => {
+        if (e.target instanceof HTMLImageElement) {
+            e.target.classList.remove('hidden');
+            delete e.target.dataset.failed;
+        }
+    }, true);
+}
+
+// ==========================================
+// DATA
+// ==========================================
+
+async function loadData() {
+    const response = await fetch(`data.json?v=${TIMESTAMP_VERSION}`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const json = await response.json();
+    if (!Array.isArray(json)) throw new Error('data.json must contain an array');
+    state.data = json.filter((item) => item && typeof item === 'object').map(prepareItem);
+}
+
+const SEARCHABLE_FIELDS = ['title', 'author', 'publisher', 'distributor', 'ean', 'location', 'datetime', 'schedule'];
+
+// Precompute one normalized string per record so each keystroke does a single includes() per item
+function prepareItem(item) {
+    const searchText = SEARCHABLE_FIELDS
+        .map((field) => item[field])
+        .filter((value) => value !== null && value !== undefined && value !== '')
+        .map(normalizeText)
+        .join('\u0001'); // separator that a query can never contain, so matches never span two fields
+    return { ...item, _search: searchText };
+}
+
+// Lowercase and accent-insensitive ("Barceló" matches "barcelo", "Ç" matches "c")
+function normalizeText(value) {
+    return String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+// ==========================================
+// FILTERS & SEARCH
+// ==========================================
+
+function getSearchInput() {
+    return document.getElementById('searchInput');
+}
+
+function buildFilterButtons() {
+    const typeContainer = document.getElementById('typeFilterContainer');
+    eventTypesConfig.forEach((typeObj) => {
+        typeContainer.appendChild(createFilterButton(`btn-filter-${typeObj.id}`, 'type-filter-btn', 'filter-type', typeObj));
+    });
+
+    const dayContainer = document.getElementById('dayFilterContainer');
+    eventDaysConfig.forEach((dayObj) => {
+        dayContainer.appendChild(createFilterButton(`btn-day-${dayObj.id}`, 'day-filter-btn', 'filter-day', dayObj));
+    });
+}
+
+function createFilterButton(id, groupClass, action, config) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = id;
+    btn.dataset.action = action;
+    btn.dataset.value = config.id;
+    btn.className = `${groupClass} ${FILTER_BTN_BASE} ${FILTER_BTN_IDLE}`;
+    btn.setAttribute('aria-pressed', 'false');
+    btn.textContent = config.label;
+    return btn;
+}
+
+function applyInitialStateFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialType = urlParams.get('type');
+    const initialDay = urlParams.get('day');
+    const initialQuery = urlParams.get('search');
+
+    const validTypes = eventTypesConfig.map((t) => t.id);
+    setTypeFilter(validTypes.includes(initialType) ? initialType : 'all', false);
+
+    const validDays = eventDaysConfig.map((d) => d.id);
+    setDayFilter(validDays.includes(initialDay) ? initialDay : 'all', false);
+
+    // .value is safe against XSS
+    if (initialQuery) getSearchInput().value = initialQuery;
+}
+
+function highlightFilterButtons(config, idPrefix, groupClass, activeId) {
+    config.forEach((obj) => {
+        const btn = document.getElementById(`${idPrefix}${obj.id}`);
+        if (!btn) return;
+        const isActive = obj.id === activeId;
+        btn.className = isActive
+            ? `${groupClass} active-filter ${FILTER_BTN_BASE} ${obj.activeClass}`
+            : `${groupClass} ${FILTER_BTN_BASE} ${FILTER_BTN_IDLE}`;
+        btn.setAttribute('aria-pressed', String(isActive));
+    });
+}
+
+// Updates active type filter and re-runs the search filtering (by default)
+function setTypeFilter(type, runSearch = true) {
+    if (!eventTypesConfig.some((t) => t.id === type)) return;
+    state.typeFilter = type;
+    highlightFilterButtons(eventTypesConfig, 'btn-filter-', 'type-filter-btn', type);
     if (runSearch) {
+        resetVisibleLimits();
         executeSearch();
     }
 }
 
+// Updates active day filter and re-runs the search filtering (by default)
+function setDayFilter(dayCode, runSearch = true) {
+    if (!eventDaysConfig.some((d) => d.id === dayCode)) return;
+    state.dayFilter = dayCode;
+    highlightFilterButtons(eventDaysConfig, 'btn-day-', 'day-filter-btn', dayCode);
+    if (runSearch) {
+        resetVisibleLimits();
+        executeSearch();
+    }
+}
+
+function resetVisibleLimits() {
+    state.visible = { book: PAGE_SIZE, activity: PAGE_SIZE };
+}
+
 // Modify address bar state dynamically without page refresh
 function updateUrlParams(query, type, day) {
-    const url = new URL(window.location);
-
-    if (query && query.trim() !== '') {
-        url.searchParams.set('search', query);
-    } else {
-        url.searchParams.delete('search');
-    }
-
-    if (type && type !== 'all') {
-        url.searchParams.set('type', type);
-    } else {
-        url.searchParams.delete('type');
-    }
-
-   if (day && day !== 'all') {
-        url.searchParams.set('day', day);
-    } else {
-        url.searchParams.delete('day');
-    }
-
+    const url = new URL(window.location.href);
+    const setOrDelete = (key, value, emptyValue) => {
+        if (value && value !== emptyValue) url.searchParams.set(key, value);
+        else url.searchParams.delete(key);
+    };
+    setOrDelete('search', query, '');
+    setOrDelete('type', type, 'all');
+    setOrDelete('day', day, 'all');
     window.history.replaceState({}, '', url);
 }
 
-// Core search logic combining filters, text search, and secure URL persistence
-// When typing in search, reset the limit back to 50
+function matchesDay(item, targetDate) {
+    return (item.datetime != null && String(item.datetime).includes(targetDate))
+        || (item.schedule != null && String(item.schedule).includes(targetDate));
+}
+
+// Core search logic combining filters, text search and URL persistence
 function executeSearch() {
-    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    const rawQuery = getSearchInput().value.trim();
+    const query = normalizeText(rawQuery);
+    const targetDate = state.dayFilter === 'all' ? null : formatDayString(state.dayFilter);
 
-    let results = fairData;
-
-    // Apply category selection criteria
-    if (currentTypeFilter !== 'all') {
-        results = results.filter(item => item.type === currentTypeFilter);
+    const book = [];
+    const activity = [];
+    for (const item of state.data) {
+        if (state.typeFilter !== 'all' && item.type !== state.typeFilter) continue;
+        if (targetDate && !matchesDay(item, targetDate)) continue;
+        if (query && !item._search.includes(query)) continue;
+        if (item.type === 'book') book.push(item);
+        else if (item.type === 'activity') activity.push(item);
     }
 
-    if (currentDayFilter !== 'all') {
-        const targetDate = formatDayString(currentDayFilter);
-        results = results.filter(item => {
-            const matchDatetime = item.datetime && item.datetime.includes(targetDate);
-            const matchSchedule = item.schedule && item.schedule.includes(targetDate);
-            return matchDatetime || matchSchedule;
-        });
-    }
+    state.results = { book, activity };
+    updateUrlParams(rawQuery, state.typeFilter, state.dayFilter);
+    renderResults(rawQuery);
 
-    // Apply text search criteria if available
-    if (query !== '') {
-        results = results.filter(item => {
-            const matchTitle = item.title && item.title.toLowerCase().includes(query);
-            const matchAuthor = item.author && item.author.toLowerCase().includes(query);
-            const matchPublisher = item.publisher && item.publisher.toLowerCase().includes(query);
-            const matchDistributor = item.distributor && item.distributor.toLowerCase().includes(query);
-            const matchEan = item.ean && item.ean.toLowerCase().includes(query);
-            const matchLocation = item.location && item.location.toLowerCase().includes(query);
-            const matchDatetime = item.datetime && item.datetime.toLowerCase().includes(query);
-            const matchSchedule = item.schedule && item.schedule.toLowerCase().includes(query);
-
-            return matchTitle || matchAuthor || matchPublisher || matchDistributor || matchEan || matchLocation || matchDatetime || matchSchedule;
-        });
-    }
-
-    lastFilteredData = results;
-
-    // Sync state to URL parameters securely (persistence)
-    updateUrlParams(query, currentTypeFilter, currentDayFilter);
-
-    renderResults(results, query);
+    if (hasRenderedResults) announceResults(describeResults(rawQuery));
+    hasRenderedResults = true;
 }
 
 // Process text input events with timing control
 function handleSearch() {
     clearTimeout(searchTimeout);
-
-    // Delay input handler for performance optimization
     searchTimeout = setTimeout(() => {
-        visibleLimits = { book: 30, activity: 30 }; // Reset view parameters on update
+        resetVisibleLimits();
         executeSearch();
-    }, 300); // 300 milliseconds delay prevents UI freezing while typing
+    }, SEARCH_DEBOUNCE_MS);
 }
 
-// Function triggered when clicking "Load More" button
-function loadMoreItems(itemType) {
-    visibleLimits[itemType] += 30;
-    const query = document.getElementById('searchInput').value.toLowerCase().trim();
-    renderResults(lastFilteredData.length > 0 || query !== '' ? lastFilteredData : fairData, query);
+// Clicking an author name filters everything related to them immediately (no debounce needed)
+function searchByAuthor(authorName) {
+    clearTimeout(searchTimeout);
+    getSearchInput().value = authorName;
+    resetVisibleLimits();
+    executeSearch();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ==========================================
+// RENDERING
+// ==========================================
+
+function renderResults(query) {
+    const container = document.getElementById('resultsContainer');
+    const html = renderSection('book') + renderSection('activity');
+
+    if (html === '') {
+        const message = query
+            ? `No s'ha trobat cap resultat per "${escapeHTML(query)}".`
+            : 'No hi ha resultats amb els filtres seleccionats.';
+        container.innerHTML = `
+            <div class="text-center py-12 bg-slate-800 rounded-xl shadow-sm border border-slate-700">
+                <p class="text-slate-400 text-lg">${message}</p>
+            </div>
+        `;
+        return;
+    }
+    container.innerHTML = html;
+}
+
+function renderSection(type) {
+    const items = state.results[type];
+    const shown = Math.min(state.visible[type], items.length);
+    if (shown === 0) return '';
+
+    const meta = SECTION_META[type];
+    return `
+        <section class="${meta.sectionClass}" data-section="${type}">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-xl font-bold ${meta.titleClass} flex items-center gap-2">${meta.title}</h2>
+                <span class="text-xs text-slate-400" data-role="count">${renderCountText(shown, items.length)}</span>
+            </div>
+            <div class="${meta.listClass}" data-role="list">${items.slice(0, shown).map(meta.renderItem).join('')}</div>
+            <div data-role="more">${renderLoadMore(type, items.length - shown)}</div>
+        </section>
+    `;
+}
+
+function renderCountText(shown, total) {
+    return `Mostrant ${shown} de ${total}`;
+}
+
+function renderLoadMore(type, remaining) {
+    if (remaining <= 0) return '';
+    const meta = SECTION_META[type];
+    return `
+        <div class="text-center mt-6">
+            <button type="button" data-action="load-more" data-type="${type}" class="${meta.moreClass} text-white font-medium px-5 py-2 rounded-xl text-sm transition-colors shadow-sm cursor-pointer inline-flex flex-col items-center justify-center">
+                <span>${meta.moreLabel}</span>
+                <span class="text-xs opacity-80 font-normal">(${remaining} restants)</span>
+            </button>
+        </div>
+    `;
+}
+
+// "Load more" appends only the new cards: existing cards, images and scroll position stay untouched
+function loadMoreItems(type) {
+    const meta = SECTION_META[type];
+    const items = state.results[type];
+    const section = document.querySelector(`#resultsContainer [data-section="${type}"]`);
+    if (!meta || !items || !section) return;
+
+    const start = Math.min(state.visible[type], items.length);
+    const end = Math.min(start + PAGE_SIZE, items.length);
+    state.visible[type] = start + PAGE_SIZE;
+
+    const list = section.querySelector('[data-role="list"]');
+    list.insertAdjacentHTML('beforeend', items.slice(start, end).map(meta.renderItem).join(''));
+    section.querySelector('[data-role="count"]').textContent = renderCountText(end, items.length);
+    section.querySelector('[data-role="more"]').innerHTML = renderLoadMore(type, items.length - end);
+
+    const added = end - start;
+    announceResults(type === 'book'
+        ? `S'${added === 1 ? 'ha' : 'han'} carregat ${pluralize(added, 'llibre', 'llibres')} més.`
+        : `S'${added === 1 ? 'ha' : 'han'} carregat ${pluralize(added, 'activitat', 'activitats')} més.`);
+
+    // The clicked button was replaced, so focus fell back to <body> and keyboard users lost their place.
+    // Move it to the first new card (or the new button); preventScroll keeps the page where it is.
+    const firstNewCard = list.children[start];
+    const focusTarget = (firstNewCard && firstNewCard.querySelector('button, a'))
+        || section.querySelector('[data-role="more"] button');
+    if (focusTarget && (document.activeElement === document.body || !document.activeElement)) {
+        focusTarget.focus({ preventScroll: true });
+    }
+}
+
+// ------------------------------------------
+// Screen reader announcements
+// ------------------------------------------
+
+function pluralize(count, singular, plural) {
+    return `${count} ${count === 1 ? singular : plural}`;
+}
+
+// "S'han trobat 12 llibres i 3 activitats." / "S'ha trobat 1 llibre."
+function describeResults(query) {
+    const books = state.results.book.length;
+    const activities = state.results.activity.length;
+    const total = books + activities;
+
+    // Same wording as the visible empty state, so both channels say the same thing
+    if (total === 0) {
+        return query
+            ? `No s'ha trobat cap resultat per "${query}".`
+            : 'No hi ha resultats amb els filtres seleccionats.';
+    }
+
+    const parts = [];
+    if (books > 0) parts.push(pluralize(books, 'llibre', 'llibres'));
+    if (activities > 0) parts.push(pluralize(activities, 'activitat', 'activitats'));
+    return `${total === 1 ? "S'ha trobat" : "S'han trobat"} ${parts.join(' i ')}.`;
+}
+
+function announceResults(message) {
+    const region = document.getElementById('resultsAnnouncer');
+    if (!region) return;
+    clearTimeout(announceTimeout);
+    announceTimeout = setTimeout(() => {
+        // Empty it first: setting the same text twice in a row (e.g. two searches with 3 results) is not announced again
+        region.textContent = '';
+        setTimeout(() => { region.textContent = message; }, 50);
+    }, RESULTS_ANNOUNCE_DELAY_MS);
+}
+
+function renderAuthorButton(author, hoverClass) {
+    return `<button type="button" class="underline cursor-pointer ${hoverClass} transition-colors text-left author-filter-trigger" data-author="${escapeHTML(author)}">${safeValue(author)}</button>`;
+}
+
+function renderBookCard(book) {
+    const author = typeof book.author === 'string' ? book.author.trim() : '';
+    return `
+        <div class="bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-700 hover:border-indigo-500 transition-colors flex gap-4">
+            ${book.cover ? `
+                <img
+                    src="${safeValue(book.cover)}"
+                    alt="Coberta de ${safeValue(book.title)}"
+                    class="w-24 h-36 object-cover rounded-lg shadow bg-slate-900 flex-shrink-0"
+                    width="96"
+                    height="144"
+                    loading="lazy"
+                    decoding="async"
+                >
+            ` : ''}
+            <div class="flex flex-col justify-between flex-grow">
+                <div>
+                    <div class="flex justify-between items-start gap-2">
+                        <h3 class="font-bold text-lg text-white">${safeValue(book.title)}</h3>
+                        <span class="bg-indigo-950 text-indigo-300 text-xs font-semibold px-2 py-1 rounded border border-indigo-900 whitespace-nowrap flex-shrink-0">${formatPrice(book.price)}</span>
+                    </div>
+                    <p class="text-slate-300 font-medium mt-1">
+                        Autor/a: ${author ? renderAuthorButton(author, 'hover:text-indigo-400') : '-'}
+                    </p>
+
+                    <div class="mt-3 text-sm text-slate-400 space-y-1 border-t border-slate-700/60 pt-2">
+                        ${book.publisher ? `<p><strong>Editorial:</strong> ${safeValue(book.publisher)}</p>` : ''}
+                        ${book.distributor ? `<p><strong>Distribuïdor:</strong> ${safeValue(book.distributor)}</p>` : ''}
+                        ${book.category ? `<p><strong>Categoria:</strong> ${safeValue(book.category)}</p>` : ''}
+                        ${book.theme ? `<p><strong>Tema:</strong> ${safeValue(book.theme)}</p>` : ''}
+                        ${book.schedule ? `<p><strong>Horaris:</strong>${renderSchedule(book.schedule)}</p>` : ''}
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-700/60 flex justify-between items-center text-xs text-slate-400">
+                    <span>EAN: ${safeValue(book.ean)}</span>
+                    <span class="bg-slate-900 px-2 py-1 rounded text-slate-300">Stock: <strong>${safeValue(book.quantity)}</strong></span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Vertical card so it fits half a row; grid items stretch to the row height and mt-auto keeps
+// the location/time badge at the bottom right, aligned across cards of the same row
+function renderActivityCard(activity) {
+    return `
+        <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 hover:border-teal-500 transition-colors flex flex-col gap-3">
+            <div class="min-w-0">
+                <h3 class="font-bold text-white">${safeValue(activity.title)}</h3>
+                <p class="text-sm text-slate-400 mt-1 [&:has(.author-filter-trigger:hover)_strong]:text-teal-400">
+                    <strong class="transition-colors">Participants:</strong>${renderActivityAuthors(activity.author)}
+                </p>
+            </div>
+            <!-- Bottom-right badge, like the stock badge of book cards (divider line + right-aligned box) -->
+            <div class="mt-auto pt-3 border-t border-slate-700/60 flex justify-end">
+                <div class="max-w-full text-right text-sm bg-teal-950 text-teal-200 border border-teal-900 px-3 py-1.5 rounded-lg">
+                    <p class="break-words"><span aria-hidden="true">📍</span> ${safeValue(activity.location)}</p>
+                    <p class="font-semibold whitespace-nowrap"><span aria-hidden="true">📅</span> ${safeValue(activity.datetime)}</p>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 function renderSchedule(scheduleStr) {
     if (!scheduleStr) return '';
-
-    // Split multiple entries and trim whitespace
-    const items = scheduleStr.split(',').map(s => s.trim());
-
-    // Return inline if only one entry exists
-    if (items.length === 1) {
-        return ` ${safeValue(items[0])}`;
-    }
-
-    // Format multiple entries into individual lines
-    return `<br>` + items.map(s => `<span class="block pl-2">${safeValue(s)}</span>`).join('');
+    const items = String(scheduleStr).split(',').map((s) => s.trim());
+    if (items.length === 1) return ` ${safeValue(items[0])}`;
+    return '<br>' + items.map((s) => `<span class="block pl-2">${safeValue(s)}</span>`).join('');
 }
 
 function renderActivityAuthors(authorStr) {
     if (!authorStr) return ' -';
-
-    // Split multiple authors by comma and trim whitespace
-    const authors = authorStr.split(',').map(a => a.trim()).filter(a => a.length > 0);
-
-    // Return inline if only one author exists
-    if (authors.length === 1) {
-        return ` <span class="underline cursor-pointer hover:text-teal-400 author-filter-trigger" data-author="${escapeHTML(authors[0])}">${safeValue(authors[0])}</span>`;
-    }
-
-    // Format multiple authors into individual lines, each with its own filter trigger link
-    return `<br>` + authors.map(author =>
-        `<span class="block pl-2"><span class="underline cursor-pointer hover:text-teal-400 author-filter-trigger" data-author="${escapeHTML(author)}">${safeValue(author)}</span></span>`
+    const authors = String(authorStr).split(',').map((a) => a.trim()).filter((a) => a.length > 0);
+    if (authors.length === 0) return ' -';
+    if (authors.length === 1) return ` ${renderAuthorButton(authors[0], 'hover:text-teal-400')}`;
+    return '<br>' + authors.map((author) =>
+        `<span class="block pl-2">${renderAuthorButton(author, 'hover:text-teal-400')}</span>`
     ).join('');
 }
 
-// Render results into HTML structure with performance capping
-function renderResults(data, query = '') {
-    const container = document.getElementById('resultsContainer');
+// ==========================================
+// FORMATTING UTILITIES
+// ==========================================
 
-    if (data.length === 0) {
-        const emptyHtml = `
-            <div class="text-center py-12 bg-slate-800 rounded-xl shadow-sm border border-slate-700">
-                <p class="text-slate-400 text-lg">No s'ha trobat cap resultat per "${escapeHTML(query)}".</p>
-            </div>
-        `;
-
-        // Performance optimization: Render asynchronously via requestAnimationFrame
-        requestAnimationFrame(() => {
-            container.innerHTML = emptyHtml;
-        });
-        return;
-    }
-
-    // Separate data into categories based on the 'type' field
-    const allBooks = data.filter(item => item.type === 'book');
-    const allActivities = data.filter(item => item.type === 'activity');
-
-    // Performance optimization: Apply dynamic limit based on state
-    const books = allBooks.slice(0, visibleLimits.book);
-    const hasMoreBooks = allBooks.length > visibleLimits.book;
-
-    const activities = allActivities.slice(0, visibleLimits.activity);
-    const hasMoreActivities = allActivities.length > visibleLimits.activity;
-
-    let htmlContent = '';
-
-    // Render Books Section if any
-    if (books.length > 0) {
-        htmlContent += `
-            <section>
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-xl font-bold text-indigo-400 flex items-center gap-2">📚 Llibres</h2>
-                    <span class="text-xs text-slate-400">Mostrant ${books.length} de ${allBooks.length}</span>
-                </div>
-                <div class="grid gap-4 sm:grid-cols-2">
-                    ${books.map(book => `
-                        <div class="bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-700 hover:border-indigo-500 transition-colors flex gap-4">
-                            <!-- Book Cover Image (conditionally rendered only if cover path exists) -->
-                            ${book.cover ? `
-                                <img 
-                                    src="${safeValue(book.cover)}"
-                                    alt="Coberta de ${safeValue(book.title)}"
-                                    class="w-24 h-36 object-cover rounded-lg shadow bg-slate-900 flex-shrink-0"
-                                    width="96"
-                                    height="144"
-                                    loading="lazy"
-                                >
-                            ` : ''}
-                            <!-- Book Info Container -->
-                            <div class="flex flex-col justify-between flex-grow">
-                                <div>
-                                    <div class="flex justify-between items-start gap-2">
-                                        <h3 class="font-bold text-lg text-white">${safeValue(book.title)}</h3>
-                                        <span class="bg-indigo-950 text-indigo-300 text-xs font-semibold px-2 py-1 rounded border border-indigo-900 whitespace-nowrap flex-shrink-0">${formatPrice(book.price)} €</span>
-                                    </div>
-                                    <p class="text-slate-300 font-medium cursor-pointer hover:text-indigo-400 mt-1 transition-colors author-filter-trigger" data-author="${escapeHTML(book.author)}">
-                                        Autor/a: <span class="underline">${safeValue(book.author)}</span>
-                                    </p>
-
-                                    <div class="mt-3 text-sm text-slate-400 space-y-1 border-t border-slate-700/60 pt-2">
-                                        ${book.publisher ? `<p><strong>Editorial:</strong> ${safeValue(book.publisher)}</p>` : ''}
-                                        ${book.distributor ? `<p><strong>Distribuïdor:</strong> ${safeValue(book.distributor)}</p>` : ''}
-                                        ${book.category ? `<p><strong>Categoria:</strong> ${safeValue(book.category)}</p>` : ''}
-                                        ${book.theme ? `<p><strong>Tema:</strong> ${safeValue(book.theme)}</p>` : ''}
-                                        ${book.schedule ? `<p><strong>Horaris:</strong>${renderSchedule(book.schedule)}</p>` : ''}
-                                    </div>
-                                </div>
-
-                                <div class="mt-4 pt-3 border-t border-slate-700/60 flex justify-between items-center text-xs text-slate-400">
-                                    <span>EAN: ${safeValue(book.ean)}</span>
-                                    <span class="bg-slate-900 px-2 py-1 rounded text-slate-300">Stock: <strong>${safeValue(book.quantity)}</strong></span>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-
-                ${hasMoreBooks ? `
-                    <div class="text-center mt-6">
-                        <button data-action="load-more" data-type="book" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-5 py-2 rounded-xl text-sm transition-colors shadow-sm cursor-pointer inline-flex flex-col items-center justify-center">
-                            <span>Carregar més llibres</span>
-                            <span class="text-xs opacity-80 font-normal">(${allBooks.length - books.length} restants)</span>
-                        </button>
-                    </div>
-                ` : ''}
-            </section>
-        `;
-    }
-
-    // Render Activities Section if any
-    if (activities.length > 0) {
-        htmlContent += `
-            <section class="mt-6">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-xl font-bold text-teal-400 flex items-center gap-2">🎤 Activitats</h2>
-                    <span class="text-xs text-slate-400">Mostrant ${activities.length} de ${allActivities.length}</span>
-                </div>
-                <div class="space-y-3">
-                    ${activities.map(activity => `
-                        <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 hover:border-teal-500 transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                            <div class="min-w-0 flex-grow">
-                                <h3 class="font-bold text-white">${safeValue(activity.title)}</h3>
-                                <p class="text-sm text-slate-400 mt-1 [&:has(.author-filter-trigger:hover)_strong]:text-teal-400">
-                                    <strong class="transition-colors">Participants:</strong>${renderActivityAuthors(activity.author)}
-                                </p>
-                            </div>
-                            <div class="text-right text-sm bg-teal-950 text-teal-200 border border-teal-900 px-3 py-1.5 rounded-lg w-full sm:w-auto flex-shrink-0 whitespace-nowrap">
-                                <p>📍 ${safeValue(activity.location)}</p>
-                                <p class="font-semibold">📅 ${safeValue(activity.datetime)}</p>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-
-                ${hasMoreActivities ? `
-                    <div class="text-center mt-6">
-                        <button data-action="load-more" data-type="activity" class="bg-teal-600 hover:bg-teal-500 text-white font-medium px-5 py-2 rounded-xl text-sm transition-colors shadow-sm cursor-pointer inline-flex flex-col items-center justify-center">
-                            <span>Carregar més activitats</span>
-                            <span class="text-xs opacity-80 font-normal">(${allActivities.length - activities.length} restants)</span>
-                        </button>
-                    </div>
-                ` : ''}
-            </section>
-        `;
-    }
-
-    // Performance optimization: Push DOM mutation to the next repaint frame
-    requestAnimationFrame(() => {
-        container.innerHTML = htmlContent;
-    });
+// Escape a value for HTML text or attributes (0 and false are kept, only null/undefined become '')
+function escapeHTML(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/[&<>'"]/g,
+        (tag) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])
+    );
 }
 
-// Quick helper when clicking on an author name to instantly filter everything related to them
-function searchByAuthor(authorName) {
-    const searchInput = document.getElementById('searchInput');
-    searchInput.value = authorName;
-    handleSearch();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+// Return '-' for null, undefined, 'null' or blank strings, but keep 0 and 0.0
+function safeValue(val) {
+    if (val === null || val === undefined || val === 'null') return '-';
+    if (typeof val === 'string' && val.trim() === '') return '-';
+    return escapeHTML(val);
 }
 
-// Utility function to format a 14-digit timestamp into DD/MM/YYYY HH:mm:SS CET/CEST
+const priceFormatter = new Intl.NumberFormat('ca-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// Missing prices show '-' instead of '0,00 €' so a missing price is never mistaken for a free book
+function formatPrice(price) {
+    if (price === null || price === undefined || price === '' || price === 'null') return '-';
+    const num = Number(price);
+    return Number.isFinite(num) ? `${priceFormatter.format(num)} €` : `${escapeHTML(price)} €`;
+}
+
+// Get date label (local date constructor, so the weekday never shifts with the time zone)
+function formatDayLabel(dayCode) {
+    const day = dayCode.substring(0, 2);
+    const month = dayCode.substring(2, 4);
+    const year = dayCode.substring(4, 8);
+    const date = new Date(Number(year), Number(month) - 1, Number(day));
+
+    const weekdays = ['Dg', 'Dl', 'Dm', 'Dc', 'Dj', 'Dv', 'Ds'];
+    const months = ['Gen', 'Feb', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Des'];
+    return `${weekdays[date.getDay()]} ${day} ${months[date.getMonth()]}`;
+}
+
+// Format date string DDMMYYYY -> DD/MM/YYYY
+function formatDayString(dayCode) {
+    if (!dayCode || dayCode === 'all') return 'all';
+    return `${dayCode.substring(0, 2)}/${dayCode.substring(2, 4)}/${dayCode.substring(4)}`;
+}
+
+// Format a 14-digit timestamp into DD/MM/YYYY HH:mm:SS CET/CEST
 function formatTimestamp(ts) {
     if (!ts || ts.length !== 14) return ts;
 
@@ -580,38 +710,591 @@ function formatTimestamp(ts) {
     const hour = ts.slice(8, 10);
     const minute = ts.slice(10, 12);
     const second = ts.slice(12, 14);
-
     const formattedDate = `${day}/${month}/${year} ${hour}:${minute}:${second}`;
 
-    // Automatically detect CET or CEST using Europe/Madrid timezone
     let tzName = 'CET';
     try {
         const dateObj = new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
         tzName = new Intl.DateTimeFormat('en-US', {
             timeZone: 'Europe/Madrid',
             timeZoneName: 'short'
-        }).formatToParts(dateObj).find(p => p.type === 'timeZoneName')?.value || 'CET';
-    } catch (e) {
+        }).formatToParts(dateObj).find((p) => p.type === 'timeZoneName')?.value || 'CET';
+    } catch (_) {
         const m = parseInt(month, 10);
         tzName = (m > 3 && m < 10) ? 'CEST' : 'CET';
     }
-
     return `${formattedDate} ${tzName}`;
 }
 
-// Utility function to extract the semantic version from the app.js script tag query parameter
+// Semantic version from the app.js script tag query parameter
 function getAppVersion() {
-    const scripts = document.getElementsByTagName('script');
-    for (let script of scripts) {
-        if (script.src && script.src.includes('app.js')) {
-            try {
-                const url = new URL(script.src);
-                const v = url.searchParams.get('v');
-                if (v) return v;
-            } catch (e) {
-                // Ignore parsing errors
-            }
-        }
+    const sources = APP_SCRIPT_SRC
+        ? [APP_SCRIPT_SRC]
+        : Array.from(document.scripts, (s) => s.src).filter((src) => src.includes('app.js'));
+    for (const src of sources) {
+        try {
+            const v = new URL(src).searchParams.get('v');
+            if (v) return v;
+        } catch (_) {}
     }
     return 'n/a';
+}
+
+// ==========================================
+// OFFLINE MODE
+// ==========================================
+// Covers are cached by the Service Worker as they are viewed. Downloading every cover is a manual
+// action, meant for staff devices before the fair, on a good connection (not on the venue Wi-Fi).
+
+function canUseServiceWorker() {
+    // Browsers hide navigator.serviceWorker on plain HTTP LAN IPs
+    if (!window.isSecureContext) {
+        showOfflineUnavailable('Cal obrir la pàgina amb HTTPS.');
+        return false;
+    }
+    if (!('serviceWorker' in navigator) || !('caches' in window)) {
+        showOfflineUnavailable('Aquest navegador no ho permet.');
+        return false;
+    }
+    return true;
+}
+
+function showOfflineUnavailable(detail) {
+    setOfflinePanel({ tone: 'off', label: 'Mode offline no disponible', detail, progress: null, action: null });
+}
+
+async function registerOfflineServiceWorker() {
+    if (!canUseServiceWorker()) return;
+
+    // Legacy key from the previous prefetch implementation
+    try { localStorage.removeItem('fair_catalog_last_prefetch_data_version'); } catch (_) {}
+
+    // A new worker took control: notify only if it serves other versions than the ones this page is running
+    navigator.serviceWorker.addEventListener('controllerchange', async () => {
+        if (await isNewerVersionActive()) showUpdateBanner();
+    });
+
+    try {
+        const buildVersion = `${getAppVersion()}-${TIMESTAMP_VERSION}`;
+        const registration = await navigator.serviceWorker.register(`sw.js?v=${encodeURIComponent(buildVersion)}`, { scope: './' });
+        schedulePeriodicUpdateChecks(registration);
+    } catch (err) {
+        console.warn('Service Worker registration failed:', err);
+        showOfflineUnavailable('No s\'ha pogut activar en aquest navegador.');
+        return;
+    }
+
+    initCoverTracking();
+
+    // A download started earlier (page closed, reloaded or offline at the time) continues by itself
+    if (isCoverDownloadPending()) {
+        setTimeout(() => downloadAllCovers({ resume: true }), 2000);
+    }
+}
+
+// Look for new data/app versions periodically while the page is visible and online
+function schedulePeriodicUpdateChecks(registration) {
+    let lastCheck = Date.now();
+    const check = () => {
+        if (!navigator.onLine || document.visibilityState !== 'visible') return;
+        if (Date.now() - lastCheck < 60 * 1000) return;
+        lastCheck = Date.now();
+        registration.update().catch(() => {});
+    };
+    setInterval(check, UPDATE_CHECK_INTERVAL_MS);
+    document.addEventListener('visibilitychange', check);
+}
+
+// Ask the controlling worker which app/data versions it serves and compare them with this page
+async function isNewerVersionActive() {
+    const worker = navigator.serviceWorker.controller;
+    if (!worker) return false;
+    try {
+        const served = await new Promise((resolve, reject) => {
+            const channel = new MessageChannel();
+            const timer = setTimeout(() => reject(new Error('timeout')), 3000);
+            channel.port1.onmessage = (event) => {
+                clearTimeout(timer);
+                resolve(event.data || {});
+            };
+            worker.postMessage({ type: 'GET_VERSION' }, [channel.port2]);
+        });
+        return served.data !== TIMESTAMP_VERSION || served.app !== getAppVersion();
+    } catch (_) {
+        // A worker that cannot answer predates this check, so it is a different version
+        return true;
+    }
+}
+
+// A new Service Worker took control: new data (stock) or a new app version is ready after a reload.
+// Markup and styles live in index.html; this only toggles the visibility classes.
+const UPDATE_BANNER_HIDDEN = ['invisible', 'opacity-0', 'scale-95', 'pointer-events-none'];
+const UPDATE_BANNER_SHOWN = ['opacity-100', 'scale-100'];
+let updateReminderTimer = null;
+
+function showUpdateBanner() {
+    const banner = document.getElementById('updateBanner');
+    if (!banner) return;
+    clearTimeout(updateReminderTimer);
+    swapClasses(banner, UPDATE_BANNER_SHOWN, UPDATE_BANNER_HIDDEN);
+
+    // Filling the live region makes screen readers announce the notice without stealing focus
+    const announcer = banner.querySelector('[data-role="update-announcer"]');
+    if (announcer) announcer.textContent = 'Nova versió disponible. Actualitza per veure l\'estoc més recent.';
+}
+
+// "Later" hides the notice for a while: stale stock must not be forgotten for the rest of the day
+function postponeUpdateBanner() {
+    const banner = document.getElementById('updateBanner');
+    if (!banner) return;
+    swapClasses(banner, UPDATE_BANNER_HIDDEN, UPDATE_BANNER_SHOWN);
+    const announcer = banner.querySelector('[data-role="update-announcer"]');
+    if (announcer) announcer.textContent = '';
+    clearTimeout(updateReminderTimer);
+    updateReminderTimer = setTimeout(showUpdateBanner, UPDATE_REMINDER_MS);
+}
+
+function reloadApp(button) {
+    button.disabled = true;
+    button.textContent = 'Actualitzant…';
+    window.location.reload();
+}
+
+// ------------------------------------------
+// Offline panel (markup and styles in index.html; this only sets data-tone and the texts)
+// ------------------------------------------
+
+const countFormatter = new Intl.NumberFormat('ca-ES');
+const percentFormatter = new Intl.NumberFormat('ca-ES', { style: 'percent', maximumFractionDigits: 0 });
+
+// view: { tone: 'neutral' | 'progress' | 'success' | 'warning' | 'error' | 'off',
+//         label, detail, progress: { cached, total } | null, action: button text | null }
+function setOfflinePanel(view) {
+    const panel = document.getElementById('offlinePanel');
+    if (!panel) return;
+    panel.dataset.tone = view.tone;
+
+    // The label is a live region: only touch it when the text changes, so only state changes are announced
+    const label = panel.querySelector('[data-role="label"]');
+    if (label.textContent !== view.label) label.textContent = view.label;
+    panel.querySelector('[data-role="detail"]').textContent = view.detail || '';
+
+    const bar = panel.querySelector('[data-role="progress"]');
+    if (view.progress && view.progress.total > 0) {
+        // floor: 100 % is shown only when every cover is really stored
+        const percent = Math.floor((view.progress.cached / view.progress.total) * 100);
+        bar.classList.remove('hidden');
+        bar.setAttribute('aria-valuenow', String(percent));
+        bar.setAttribute('aria-valuetext', `${view.progress.cached} de ${view.progress.total} cobertes`);
+        panel.querySelector('[data-role="progress-fill"]').style.width = `${percent}%`;
+    } else {
+        bar.classList.add('hidden');
+    }
+
+    const button = panel.querySelector('[data-role="action"]');
+    button.classList.toggle('hidden', !view.action);
+    button.classList.toggle('inline-flex', Boolean(view.action));
+    if (view.action) panel.querySelector('[data-role="action-label"]').textContent = view.action;
+}
+
+// Unique absolute same-origin cover URLs, resolved exactly like the <img> elements resolve them
+function getUniqueCoverUrls() {
+    const urls = new Set();
+    for (const item of state.data) {
+        if (item.type !== 'book' || typeof item.cover !== 'string') continue;
+        const trimmed = item.cover.trim();
+        if (!trimmed) continue;
+        try {
+            const url = new URL(trimmed, document.baseURI);
+            if (url.origin === window.location.origin) urls.add(url.href);
+        } catch (_) {}
+    }
+    return [...urls];
+}
+
+// ------------------------------------------
+// Live mirror of the covers cache
+// ------------------------------------------
+
+function initCoverTracking() {
+    coverState.wanted = new Set(getUniqueCoverUrls());
+
+    // Listen before reading the cache so nothing stored in between is missed
+    if (typeof BroadcastChannel === 'function') {
+        const channel = new BroadcastChannel(COVER_CHANNEL_NAME);
+        channel.onmessage = (event) => {
+            const msg = event.data;
+            if (!msg || typeof msg.url !== 'string') return;
+            if (msg.type === 'stored') {
+                markCoverCached(msg.url);
+                resolveCoverWaiter(msg.url, 'ok');
+            } else if (msg.type === 'rejected') {
+                resolveCoverWaiter(msg.url, msg.reason === 'quota' ? 'quota' : 'error');
+            }
+        };
+    }
+
+    refreshCachedCoverSet();
+
+    // Re-read the cache when the tablet wakes up or the tab comes back (e.g. data cleared meanwhile)
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') refreshCachedCoverSet();
+    });
+}
+
+function markCoverCached(url) {
+    coverState.cachedUrls.add(url);
+    if (coverState.addedMeanwhile) coverState.addedMeanwhile.add(url);
+    scheduleCoverStatusRender();
+}
+
+// Replace the mirror with the real cache contents, keeping anything announced during the read
+async function refreshCachedCoverSet() {
+    const addedMeanwhile = new Set();
+    coverState.addedMeanwhile = addedMeanwhile;
+    try {
+        const cache = await caches.open(COVERS_CACHE);
+        const fresh = new Set((await cache.keys()).map((request) => request.url));
+        addedMeanwhile.forEach((url) => fresh.add(url));
+        coverState.cachedUrls = fresh;
+    } catch (_) {
+        // Keep the current mirror if the cache cannot be read
+    } finally {
+        if (coverState.addedMeanwhile === addedMeanwhile) coverState.addedMeanwhile = null;
+    }
+    scheduleCoverStatusRender();
+}
+
+function countCachedCovers() {
+    let cached = 0;
+    for (const url of coverState.wanted) {
+        if (coverState.cachedUrls.has(url)) cached++;
+    }
+    return cached;
+}
+
+function setCoverPhase(phase) {
+    coverState.phase = phase;
+    scheduleCoverStatusRender();
+}
+
+// Coalesce bursts of updates (many covers stored per second) into one DOM write
+function scheduleCoverStatusRender() {
+    if (coverState.renderTimer) return;
+    coverState.renderTimer = setTimeout(() => {
+        coverState.renderTimer = null;
+        renderCoverStatus();
+    }, 200);
+}
+
+function renderCoverStatus() {
+    setOfflinePanel(getOfflinePanelView());
+}
+
+// Translate the cover sync state into what the panel shows
+function getOfflinePanelView() {
+    if (state.data.length === 0) {
+        return { tone: 'neutral', label: 'Mode offline', detail: 'Les cobertes es podran desar quan es carregui el catàleg.', progress: null, action: null };
+    }
+
+    const total = coverState.wanted.size;
+    if (total === 0) {
+        return { tone: 'neutral', label: 'Sense cobertes', detail: 'El catàleg no inclou cobertes per desar.', progress: null, action: null };
+    }
+
+    const cached = countCachedCovers();
+    const notOnServer = coverState.notOnServer.size;
+    const progress = { cached, total };
+    const counts = `${countFormatter.format(cached)} de ${countFormatter.format(total)} cobertes desades en aquest dispositiu`;
+    const missingNote = notOnServer > 0 ? ` · ${countFormatter.format(notOnServer)} no existeixen al servidor` : '';
+
+    switch (coverState.phase) {
+        case 'downloading':
+            return {
+                tone: 'progress',
+                label: 'Descarregant cobertes…',
+                detail: `${countFormatter.format(cached)} de ${countFormatter.format(total)} · ${percentFormatter.format(cached / total)}`,
+                progress,
+                action: null
+            };
+        case 'paused-offline':
+            return { tone: 'warning', label: 'En pausa: sense connexió', detail: `${counts}. Es reprendrà automàticament.`, progress, action: null };
+        case 'paused-network':
+            return { tone: 'warning', label: 'Problemes de xarxa', detail: `${counts}. Es tornarà a provar automàticament.`, progress, action: 'Reintentar ara' };
+        case 'quota':
+            return { tone: 'error', label: 'Sense espai al dispositiu', detail: `${counts}. Allibera espai i torna-ho a provar.`, progress, action: 'Tornar-ho a provar' };
+        case 'gave-up':
+            return { tone: 'error', label: 'Descàrrega incompleta', detail: `${counts}${missingNote}.`, progress, action: 'Tornar-ho a provar' };
+        default: // idle, done
+            if (cached + notOnServer >= total) {
+                return {
+                    tone: 'success',
+                    label: 'Preparat per treballar sense connexió',
+                    detail: notOnServer > 0 ? `${counts}${missingNote}.` : `Totes les cobertes desades en aquest dispositiu (${countFormatter.format(total)}).`,
+                    progress,
+                    action: null
+                };
+            }
+            return { tone: 'neutral', label: 'Cobertes pendents de desar', detail: `${counts}.`, progress, action: 'Descarregar totes les cobertes' };
+    }
+}
+
+// Resolves with 'ok' when the Service Worker confirms the cover is stored, 'error' or 'quota' otherwise
+function waitForCoverStored(url, timeoutMs) {
+    if (coverState.cachedUrls.has(url)) return Promise.resolve('ok');
+    return new Promise((resolve) => {
+        const timer = setTimeout(async () => {
+            coverState.waiters.delete(url);
+            // No broadcast (old browser, or the response came from the cache): ask the cache directly
+            try {
+                const cache = await caches.open(COVERS_CACHE);
+                if (await cache.match(url)) {
+                    markCoverCached(url);
+                    resolve('ok');
+                    return;
+                }
+            } catch (_) {}
+            resolve('error');
+        }, timeoutMs);
+
+        coverState.waiters.set(url, (result) => {
+            clearTimeout(timer);
+            coverState.waiters.delete(url);
+            resolve(result);
+        });
+    });
+}
+
+function resolveCoverWaiter(url, result) {
+    const waiter = coverState.waiters.get(url);
+    if (waiter) waiter(result);
+}
+
+// ------------------------------------------
+// Manual "download all covers" (pauses offline, resumes by itself)
+// ------------------------------------------
+
+function isCoverDownloadPending() {
+    try { return localStorage.getItem(COVER_DOWNLOAD_PENDING_KEY) === '1'; } catch (_) { return false; }
+}
+
+function setCoverDownloadPending(pending) {
+    try {
+        if (pending) localStorage.setItem(COVER_DOWNLOAD_PENDING_KEY, '1');
+        else localStorage.removeItem(COVER_DOWNLOAD_PENDING_KEY);
+    } catch (_) {}
+}
+
+// Ask the browser not to evict the offline covers under storage pressure (Firefox shows a prompt)
+async function requestPersistentStorage() {
+    try {
+        if (navigator.storage && navigator.storage.persist && !(await navigator.storage.persisted())) {
+            await navigator.storage.persist();
+        }
+    } catch (_) {}
+}
+
+// On the very first visit the page is not controlled until the new Service Worker claims it
+function waitForController(timeoutMs) {
+    if (navigator.serviceWorker.controller) return Promise.resolve(true);
+    return new Promise((resolve) => {
+        const timer = setTimeout(() => resolve(Boolean(navigator.serviceWorker.controller)), timeoutMs);
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            clearTimeout(timer);
+            resolve(true);
+        }, { once: true });
+    });
+}
+
+async function pruneOrphanCovers() {
+    if (coverState.wanted.size === 0) return; // never prune against an empty list
+    const cache = await caches.open(COVERS_CACHE);
+    const orphans = (await cache.keys()).filter((request) => !coverState.wanted.has(request.url));
+    await Promise.all(orphans.map((request) => cache.delete(request)));
+}
+
+// Download only the missing covers. Downloads go through the Service Worker, which validates and stores them.
+async function downloadAllCovers({ resume = false } = {}) {
+    if (coverDownload.running || !canUseServiceWorker()) return;
+    if (coverState.wanted.size === 0) {
+        renderCoverStatus();
+        return;
+    }
+
+    clearTimeout(coverDownload.retryTimer);
+    if (!resume) {
+        coverDownload.retryAttempt = 0;
+        requestPersistentStorage();
+    }
+    setCoverDownloadPending(true);
+
+    if (!navigator.onLine) {
+        setCoverPhase('paused-offline');
+        return;
+    }
+
+    coverDownload.running = true;
+    coverDownload.pausedByOffline = false;
+    coverState.notOnServer = new Set();
+    const controller = new AbortController();
+    coverDownload.controller = controller;
+    setCoverPhase('downloading');
+
+    let failures = 0;
+    let quotaExceeded = false;
+
+    try {
+        if (!(await waitForController(10000))) throw new Error('Service Worker not controlling the page yet');
+        await pruneOrphanCovers();
+        await refreshCachedCoverSet();
+
+        const missing = [...coverState.wanted].filter((url) => !coverState.cachedUrls.has(url));
+        let consecutiveErrors = 0;
+
+        await runPool(missing, COVER_DOWNLOAD_CONCURRENCY, controller.signal, async (url) => {
+            // Possibly stored meanwhile by an on-screen <img>
+            if (coverState.cachedUrls.has(url)) return;
+
+            const outcome = await downloadCover(url, controller.signal);
+            if (outcome === 'aborted') return;
+
+            if (outcome === 'missing') {
+                coverState.notOnServer.add(url);
+            } else if (outcome === 'quota') {
+                quotaExceeded = true;
+                controller.abort();
+            } else if (outcome === 'error') {
+                failures++;
+            }
+
+            consecutiveErrors = outcome === 'error' ? consecutiveErrors + 1 : 0;
+            // The device says "online" but nothing gets through (saturated or dead Wi-Fi): pause and back off
+            if (consecutiveErrors >= COVER_DOWNLOAD_CONCURRENCY * 2) controller.abort();
+        });
+    } catch (err) {
+        console.warn('Cover download interrupted:', err);
+        failures++;
+    } finally {
+        coverDownload.running = false;
+        coverDownload.controller = null;
+    }
+
+    const stillMissing = [...coverState.wanted]
+        .filter((url) => !coverState.cachedUrls.has(url) && !coverState.notOnServer.has(url)).length;
+
+    if (quotaExceeded) {
+        setCoverDownloadPending(false);
+        setCoverPhase('quota');
+    } else if (coverDownload.pausedByOffline || !navigator.onLine) {
+        // The 'online' listener resumes it
+        setCoverPhase('paused-offline');
+    } else if (failures > 0 || stillMissing > 0) {
+        scheduleCoverDownloadRetry();
+    } else {
+        coverDownload.retryAttempt = 0;
+        setCoverDownloadPending(false);
+        setCoverPhase('done');
+    }
+}
+
+// Returns 'ok', 'missing' (404/410), 'quota', 'aborted' (download paused) or 'error'
+async function downloadCover(url, outerSignal) {
+    const controller = new AbortController();
+    const abort = () => controller.abort();
+    outerSignal.addEventListener('abort', abort, { once: true });
+    const timer = setTimeout(abort, COVER_TIMEOUT_MS);
+
+    try {
+        const response = await fetch(url, {
+            signal: controller.signal,
+            headers: { [COVER_REQUEST_HEADER]: '1' }
+        });
+        if (response.status === 404 || response.status === 410) return 'missing';
+        if (!response.ok) return 'error';
+
+        const type = (response.headers.get('Content-Type') || '').toLowerCase();
+        // Reading the whole body lets the Service Worker receive the complete image
+        const body = await response.arrayBuffer();
+        if (body.byteLength === 0 || (type && !type.startsWith('image/'))) return 'error';
+
+        // Count it only once it is really in the cache
+        return await waitForCoverStored(url, COVER_STORE_CONFIRM_MS);
+    } catch (_) {
+        return outerSignal.aborted ? 'aborted' : 'error';
+    } finally {
+        clearTimeout(timer);
+        outerSignal.removeEventListener('abort', abort);
+    }
+}
+
+// Exponential backoff with jitter, so many devices on the same Wi-Fi do not retry in lockstep
+function scheduleCoverDownloadRetry() {
+    clearTimeout(coverDownload.retryTimer);
+    if (coverDownload.retryAttempt >= COVER_MAX_RETRY_ATTEMPTS) {
+        coverDownload.retryAttempt = 0;
+        setCoverDownloadPending(false);
+        setCoverPhase('gave-up');
+        return;
+    }
+    const base = Math.min(COVER_RETRY_MAX_MS, COVER_RETRY_BASE_MS * 2 ** coverDownload.retryAttempt);
+    coverDownload.retryAttempt++;
+    setCoverPhase('paused-network');
+    coverDownload.retryTimer = setTimeout(() => {
+        // While offline, the 'online' listener takes over
+        if (navigator.onLine) downloadAllCovers({ resume: true });
+    }, base / 2 + Math.random() * (base / 2));
+}
+
+// Run task(item) with a fixed number of parallel workers until done or aborted
+async function runPool(items, concurrency, signal, task) {
+    let next = 0;
+    const worker = async () => {
+        while (!signal.aborted && next < items.length) {
+            await task(items[next++]);
+        }
+    };
+    await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, worker));
+}
+
+// When the connection returns, retry covers that failed to render while it was down
+function repairBrokenRenderedCovers() {
+    document.querySelectorAll('#resultsContainer img[data-failed]').forEach((img) => {
+        const src = img.getAttribute('src');
+        if (!src) return;
+        delete img.dataset.failed;
+        img.classList.remove('hidden');
+        try {
+            // _retry defeats the in-memory image cache; the Service Worker strips it from the cache key
+            const retryUrl = new URL(src, document.baseURI);
+            retryUrl.searchParams.set('_retry', Date.now().toString());
+            img.src = retryUrl.href;
+        } catch (_) {}
+    });
+}
+
+// Pause immediately instead of letting every in-flight download time out
+window.addEventListener('offline', () => {
+    if (coverDownload.running && coverDownload.controller) {
+        coverDownload.pausedByOffline = true;
+        coverDownload.controller.abort();
+    }
+});
+
+window.addEventListener('online', () => {
+    repairBrokenRenderedCovers();
+    if (!isCoverDownloadPending() || coverDownload.running) return;
+    clearTimeout(coverDownload.retryTimer);
+    coverDownload.retryAttempt = 0;
+    // Random delay: every device on the venue Wi-Fi reconnects at the same moment
+    coverDownload.retryTimer = setTimeout(() => downloadAllCovers({ resume: true }), 1000 + Math.random() * 3000);
+});
+
+// ==========================================
+// BOOTSTRAP (last, so every const above is initialized before init() runs)
+// ==========================================
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
 }

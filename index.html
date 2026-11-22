@@ -4,14 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Festival 42 - Festival Gèneres Fantàstics de Barcelona</title>
-    <!-- Preload JSON data file to speed up initial render -->
-    <link rel="preload" href="data.json?v=20261105103627" as="fetch" crossorigin>
+    <!-- Dark native controls (scrollbars, search clear button, autofill) and matching mobile browser bar -->
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#1e1b4b">
     <!-- Crawler access rules definition -->
     <meta name="robots" content="noindex, nofollow">
+    <!-- Preload JSON data file to speed up initial render -->
+    <link rel="preload" href="data.json?v=20261122215104" as="fetch" crossorigin>
     <!-- Tailwind CSS -->
-    <link rel="stylesheet" href="styles.css?v=0.9.25">
+    <link rel="stylesheet" href="styles.css?v=0.9.37">
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="assets/icons/f42_32x32.png">
+    <!-- Application logic: in <head> with defer it downloads in parallel with the HTML and still runs after parsing -->
+    <script src="app.js?v=0.9.37" defer></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
 
@@ -23,9 +28,10 @@
             <p class="text-indigo-300 font-medium text-lg mt-1">Festival Gèneres Fantàstics de Barcelona</p>
 
             <div class="mt-4 flex flex-wrap justify-center gap-4 text-sm text-slate-300">
-                <p>📅 <strong>Dates:</strong> 4-8 de novembre de 2026</p>
-                <p>📍 <strong>Lloc:</strong> <a href="https://www.barcelona.cat/fabraicoats/ca" target="_blank" class="underline hover:text-indigo-400">Fabra i Coats</a></p>
-                <p>🌐 <strong>Web oficial:</strong> <a href="https://www.barcelona.cat/festival42/ca" target="_blank" class="underline hover:text-indigo-400">Festival 42</a></p>
+                <!-- Emojis are decorative: hidden from screen readers so they do not read "calendar", "pin"... -->
+                <p><span aria-hidden="true">📅</span> <strong>Dates:</strong> 4–8 de novembre de 2026</p>
+                <p><span aria-hidden="true">📍</span> <strong>Lloc:</strong> <a href="https://www.barcelona.cat/fabraicoats/ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Fabra i Coats</a></p>
+                <p><span aria-hidden="true">🌐</span> <strong>Web oficial:</strong> <a href="https://www.barcelona.cat/festival42/ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Festival 42</a></p>
             </div>
         </div>
     </header>
@@ -35,27 +41,151 @@
 
         <!-- Search Bar -->
         <div class="relative mb-8">
+            <!-- A placeholder is not a label: screen readers and voice control need a real one -->
+            <label for="searchInput" class="sr-only">Cerca al catàleg</label>
+            <!-- type="search": clear button, Esc to clear and a "search" key on mobile keyboards.
+                 Autocorrect and autocapitalize are off so mobile keyboards do not alter author names or EANs. -->
             <input
-                type="text"
+                type="search"
                 id="searchInput"
-                placeholder="Cerca per Títol, Autor/a, Editorial, Distribuïdor, EAN i Horaris"
-                class="w-full p-4 pl-12 rounded-xl border border-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-800 text-white text-lg transition-all placeholder-slate-400"
+                placeholder="Títol, autor/a, editorial o EAN"
+                enterkeyhint="search"
+                autocomplete="off"
+                autocorrect="off"
+                autocapitalize="none"
+                spellcheck="false"
+                class="w-full p-4 pl-12 rounded-xl border border-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-800 text-white text-base sm:text-lg transition-all placeholder-slate-400"
             >
-            <span class="absolute left-4 top-4 text-slate-400 text-xl">🔍</span>
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl pointer-events-none" aria-hidden="true">🔍</span>
         </div>
 
         <!-- Type Filter Chips (dynamically generated) -->
-        <div class="flex flex-wrap justify-center gap-2 mt-4" id="typeFilterContainer"></div>
+        <div class="flex flex-wrap justify-center gap-2 mt-4" id="typeFilterContainer" role="group" aria-label="Filtra per tipus"></div>
 
         <!-- Day Filter Chips (dynamically generated) -->
-        <div class="flex flex-wrap justify-center gap-2 mt-4" id="dayFilterContainer"></div>
+        <div class="flex flex-wrap justify-center gap-2 mt-4" id="dayFilterContainer" role="group" aria-label="Filtra per dia"></div>
+
+        <!-- Offline covers panel.
+             app.js sets data-tone (neutral | progress | success | warning | error | off) and fills the texts;
+             every color and icon change below is driven by that attribute through Tailwind data variants. -->
+        <section
+            id="offlinePanel"
+            data-tone="neutral"
+            aria-labelledby="offlinePanelLabel"
+            class="group mt-6 rounded-xl border p-3 sm:p-4 transition-colors duration-300 motion-reduce:transition-none
+                   bg-slate-800/60 border-slate-700
+                   data-[tone=progress]:border-indigo-500/50 data-[tone=progress]:bg-indigo-950/40
+                   data-[tone=success]:border-emerald-500/40 data-[tone=success]:bg-emerald-950/30
+                   data-[tone=warning]:border-amber-500/40 data-[tone=warning]:bg-amber-950/30
+                   data-[tone=error]:border-rose-500/40 data-[tone=error]:bg-rose-950/30
+                   data-[tone=off]:bg-slate-800/40 data-[tone=off]:border-slate-700/60"
+        >
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-3">
+                <!-- State icon: only the one matching the current tone is displayed -->
+                <span
+                    class="flex-shrink-0 h-9 w-9 rounded-full flex items-center justify-center
+                           bg-slate-700/60 text-slate-300
+                           group-data-[tone=progress]:bg-indigo-500/20 group-data-[tone=progress]:text-indigo-300
+                           group-data-[tone=success]:bg-emerald-500/20 group-data-[tone=success]:text-emerald-300
+                           group-data-[tone=warning]:bg-amber-500/20 group-data-[tone=warning]:text-amber-300
+                           group-data-[tone=error]:bg-rose-500/20 group-data-[tone=error]:text-rose-300"
+                    aria-hidden="true"
+                >
+                    <!-- neutral: download -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden group-data-[tone=neutral]:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    <!-- progress: spinner -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden group-data-[tone=progress]:block motion-safe:animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3"></circle>
+                        <path class="opacity-90" fill="currentColor" d="M12 3a9 9 0 019 9h-3a6 6 0 00-6-6V3z"></path>
+                    </svg>
+                    <!-- success: check -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden group-data-[tone=success]:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <!-- warning: pause -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden group-data-[tone=warning]:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 6v12M15 6v12" />
+                    </svg>
+                    <!-- off: offline mode not available on this device -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden group-data-[tone=off]:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <path stroke-linecap="round" d="M5.64 5.64l12.72 12.72" />
+                    </svg>
+                    <!-- error: alert -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden group-data-[tone=error]:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                    </svg>
+                </span>
+
+                <div class="min-w-0 flex-1">
+                    <!-- Only the state label is a live region: the counter changes several times per second
+                         and would make screen readers talk non-stop -->
+                    <p
+                        id="offlinePanelLabel"
+                        data-role="label"
+                        role="status"
+                        aria-live="polite"
+                        class="text-sm font-semibold text-slate-100
+                               group-data-[tone=progress]:text-indigo-200
+                               group-data-[tone=success]:text-emerald-300
+                               group-data-[tone=warning]:text-amber-300
+                               group-data-[tone=error]:text-rose-300
+                               group-data-[tone=off]:text-slate-300"
+                    >Comprovant les cobertes desades…</p>
+                    <p data-role="detail" class="text-xs text-slate-400 tabular-nums mt-0.5"></p>
+                </div>
+
+                <!-- Shown only when there is something useful to do (download, retry now, try again) -->
+                <button
+                    type="button"
+                    data-action="prefetch-covers"
+                    data-role="action"
+                    class="hidden w-full sm:w-auto flex-shrink-0 items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors cursor-pointer
+                           bg-indigo-600 hover:bg-indigo-500 text-white
+                           group-data-[tone=warning]:bg-amber-500 group-data-[tone=warning]:hover:bg-amber-400 group-data-[tone=warning]:text-slate-950
+                           group-data-[tone=error]:bg-rose-600 group-data-[tone=error]:hover:bg-rose-500
+                           focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300"
+                >
+                    <span data-role="action-label">Descarregar totes les cobertes</span>
+                </button>
+            </div>
+
+            <!-- Progress of covers stored on this device -->
+            <div
+                data-role="progress"
+                role="progressbar"
+                aria-label="Cobertes desades en aquest dispositiu"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+                class="hidden mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-700/70"
+            >
+                <div
+                    data-role="progress-fill"
+                    class="h-full w-0 rounded-full transition-[width] duration-300 motion-reduce:transition-none
+                           bg-slate-400
+                           group-data-[tone=progress]:bg-indigo-400
+                           group-data-[tone=success]:bg-emerald-400
+                           group-data-[tone=warning]:bg-amber-400
+                           group-data-[tone=error]:bg-rose-400"
+                ></div>
+            </div>
+        </section>
+
+        <!-- Without JavaScript the skeleton would spin forever: say why instead -->
+        <noscript>
+            <p class="mt-6 text-center text-amber-300">Aquesta pàgina necessita JavaScript per mostrar el catàleg.</p>
+        </noscript>
 
         <!-- Loading State (Responsive Skeleton Screen for CLS Optimization) -->
-        <div id="loadingIndicator" class="space-y-6 mt-6 min-h-[60vh]">
+        <div id="loadingIndicator" role="status" class="space-y-6 mt-6 min-h-[60vh]">
             <div class="text-center py-4 text-slate-400">
-                Carregant el catàleg del festival...
+                Carregant el catàleg del festival…
             </div>
-            <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 animate-pulse">
+            <!-- Decorative placeholders: hidden from screen readers, pulse only if the user allows motion -->
+            <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 motion-safe:animate-pulse" aria-hidden="true">
                 <!-- 10 skeleton cards (5 rows on PC) -->
                 <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
                 <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
@@ -70,6 +200,11 @@
             </div>
         </div>
 
+        <!-- Screen-reader-only live region: app.js announces the number of results after each search,
+             filter change or "load more". It must exist (empty) from page load: many screen readers
+             ignore live regions that are inserted later. -->
+        <p id="resultsAnnouncer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
+
         <!-- Results Container -->
         <div id="resultsContainer" class="space-y-6 hidden mt-6 min-h-[60vh]">
             <!-- Dynamic results will be injected here via JavaScript -->
@@ -77,12 +212,67 @@
 
     </main>
 
-    <!-- Scroll to Top Floating Button -->
-    <button id="scrollToTopBtn" class="fixed bottom-6 right-6 z-50 bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-full shadow-lg border border-indigo-500 transition-all duration-300 ease-in-out cursor-pointer flex items-center justify-center opacity-0 translate-y-4 pointer-events-none" aria-label="Tornar a dalt">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <!-- Scroll to Top Floating Button.
+         "invisible" while hidden: opacity-0 alone keeps it reachable with the Tab key. -->
+    <button
+        type="button"
+        id="scrollToTopBtn"
+        class="fixed bottom-6 right-6 z-50 bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-full shadow-lg border border-indigo-500 transition-all duration-300 ease-in-out motion-reduce:transition-none cursor-pointer flex items-center justify-center
+               focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300
+               invisible opacity-0 translate-y-4 pointer-events-none"
+        aria-label="Tornar a dalt"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
         </svg>
     </button>
+
+    <!-- New version notice (shown by app.js when a newer Service Worker takes control) -->
+    <!-- Mobile: top of the screen, away from the scroll-to-top button. Desktop: centered at the bottom. -->
+    <div
+        id="updateBanner"
+        class="fixed inset-x-4 top-4 z-50 sm:inset-x-auto sm:top-auto sm:bottom-6 sm:left-1/2 sm:-translate-x-1/2 sm:w-max sm:max-w-md
+               flex items-center gap-3 p-3 pr-2 rounded-2xl border border-indigo-500/60 bg-slate-800/95 backdrop-blur shadow-2xl shadow-black/40
+               transition-all duration-300 ease-out motion-reduce:transition-none
+               invisible opacity-0 scale-95 pointer-events-none"
+    >
+        <span class="hidden sm:flex flex-shrink-0 h-9 w-9 rounded-full bg-indigo-600/20 text-indigo-300 items-center justify-center" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+        </span>
+
+        <div class="min-w-0 flex-grow">
+            <p class="text-sm font-semibold text-white">Nova versió disponible</p>
+            <p class="text-xs text-slate-400">Actualitza per veure l'estoc més recent.</p>
+        </div>
+
+        <button
+            type="button"
+            data-action="reload-app"
+            class="flex-shrink-0 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-colors cursor-pointer
+                   disabled:opacity-70 disabled:cursor-wait
+                   focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300"
+        >
+            Actualitzar
+        </button>
+
+        <button
+            type="button"
+            data-action="dismiss-update"
+            aria-label="Més tard"
+            title="Més tard"
+            class="flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer
+                   focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-300"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+
+        <!-- Screen readers announce the notice when app.js fills this region -->
+        <span class="sr-only" role="status" aria-live="polite" data-role="update-announcer"></span>
+    </div>
 
     <!-- Footer -->
     <footer class="bg-slate-950 text-slate-400 py-6 text-sm border-t border-slate-800 px-4">
@@ -90,16 +280,16 @@
 
             <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-slate-300 text-xs sm:text-sm">
                 <span>&copy; 2026 <strong class="font-medium text-slate-100">Genís Riera Pérez</strong></span>
-                <span class="text-slate-600">|</span>
+                <span class="text-slate-600" aria-hidden="true">|</span>
                 <a href="https://github.com/griera" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400 transition-colors">GitHub</a>
-                <span class="text-slate-600">·</span>
+                <span class="text-slate-600" aria-hidden="true">·</span>
                 <a href="https://linkedin.com/in/genisrieraperez" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400 transition-colors">LinkedIn</a>
             </div>
 
             <div class="flex flex-col items-center justify-center gap-1.5 text-center">
                 <span class="bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 px-3 py-0.5 rounded-full font-semibold tracking-wide text-xs sm:text-sm inline-flex items-center gap-1.5">
                     <span>Prototip de proves</span>
-                    <span class="text-yellow-500/40">•</span>
+                    <span class="text-yellow-500/40" aria-hidden="true">•</span>
                     <span>v<span id="footer-version" class="font-mono">--</span></span>
                 </span>
 
@@ -109,19 +299,18 @@
                 </div>
             </div>
 
-            <div class="flex flex-wrap items-center justify-center sm:justify-end gap-3 text-xs text-slate-500 text-xs sm:text-sm">
+            <!-- text-slate-400 instead of 500: slate-500 on slate-950 is 4.24:1, below the 4.5:1 WCAG AA minimum -->
+            <div class="flex flex-wrap items-center justify-center sm:justify-end gap-3 text-slate-400 text-xs sm:text-sm">
                 <span>
                     Codi obert sota llicència
                     <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400 transition-colors">MIT</a>
                 </span>
-                <span class="text-slate-700">•</span>
+                <span class="text-slate-600" aria-hidden="true">•</span>
                 <a href="https://github.com/griera/test-festival42" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400 transition-colors">Repositori</a>
             </div>
 
         </div>
     </footer>
 
-    <!-- JavaScript Application Logic -->
-    <script src="app.js?v=0.9.25" defer> </script>
 </body>
 </html>
