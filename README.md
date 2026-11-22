@@ -26,7 +26,7 @@ Coming soon
 test-festival42/
 ├── index.html               # Public frontend interface (search, filters, rendering)
 ├── app.js                   # External frontend application logic (CSP compliant)
-├── sw.js                    # Service Worker: offline app shell, book cover caching and update detection
+├── sw.js                    # Service Worker: app shell + book cover caching and update detection
 ├── styles.css               # Compiled, purged, and minified production Tailwind CSS
 ├── src/
 │   └── input.css            # Tailwind CSS v4 source stylesheet (@import "tailwindcss";)
