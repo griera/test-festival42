@@ -10,7 +10,7 @@
     <!-- Crawler access rules definition -->
     <meta name="robots" content="noindex, nofollow">
     <!-- Preload JSON data file to speed up initial render -->
-    <link rel="preload" href="data.json?v=20261122222940" as="fetch" crossorigin>
+    <link rel="preload" href="data.json?v=20261122230053" as="fetch" crossorigin>
     <!-- Tailwind CSS -->
     <link rel="stylesheet" href="styles.css?v=0.9.37">
     <!-- Favicon -->
@@ -32,7 +32,7 @@
             <p class="text-indigo-300 font-medium text-lg mt-1">Festival Gèneres Fantàstics de Barcelona</p>
 
             <div class="mt-4 flex flex-wrap justify-center gap-4 text-sm text-slate-300">
-                <!-- Emojis are decorative: hidden from screen readers so they do not read "calendar", "pin"... -->
+                <!-- Decorative emojis: aria-hidden stops screen readers announcing "calendar", "pin"... -->
                 <p><span aria-hidden="true">📅</span> <strong>Dates:</strong> 4–8 de novembre de 2026</p>
                 <p><span aria-hidden="true">📍</span> <strong>Lloc:</strong> <a href="https://www.barcelona.cat/fabraicoats/ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Fabra i Coats</a></p>
                 <p><span aria-hidden="true">🌐</span> <strong>Web oficial:</strong> <a href="https://www.barcelona.cat/festival42/ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Festival 42</a></p>
@@ -188,7 +188,7 @@
             <div class="text-center py-4 text-slate-400">
                 Carregant el catàleg del festival…
             </div>
-            <!-- Decorative placeholders: hidden from screen readers, pulse only if the user allows motion -->
+            <!-- Decorative placeholders: aria-hidden for screen readers; pulse disabled with reduced motion -->
             <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 motion-safe:animate-pulse" aria-hidden="true">
                 <!-- 10 skeleton cards (5 rows on PC) -->
                 <div class="bg-slate-800/60 h-44 rounded-xl border border-slate-700/50"></div>
@@ -204,9 +204,9 @@
             </div>
         </div>
 
-        <!-- Screen-reader-only live region: app.js announces the number of results after each search,
-             filter change or "load more". It must exist (empty) from page load: many screen readers
-             ignore live regions that are inserted later. -->
+        <!-- Screen-reader-only live region: app.js announces the result count after each search,
+             filter change or "load more". It is present (empty) on page load because many screen
+             readers ignore live regions added afterwards. -->
         <p id="resultsAnnouncer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
 
         <!-- Results Container -->
@@ -217,10 +217,9 @@
     </main>
 
     <!-- Scroll to Top Floating Button.
-         Zero-height sticky anchor: it sticks 1.5rem above the bottom of the viewport while the content scrolls
-         and, at the end of the wrapper, stops 1.5rem above the footer and moves up with the page. Pure CSS:
-         no scroll or resize listeners, no layout reads, and the movement is as smooth as the scroll itself.
-         items-end makes the button grow upwards from the anchor line. -->
+         Zero-height sticky anchor: it sticks 1.5rem above the bottom of the viewport and, at the end of
+         the wrapper, stops 1.5rem above the footer and scrolls with the page. Pure CSS, no listeners.
+         items-end aligns the button's bottom edge with the anchor, so it extends upwards. -->
     <div class="sticky bottom-6 z-50 h-0 mb-6 flex justify-end items-end px-6 pointer-events-none">
         <!-- "invisible" while hidden: opacity-0 alone keeps it reachable with the Tab key -->
         <button
@@ -241,7 +240,7 @@
 
 
     <!-- New version notice (shown by app.js when a newer Service Worker takes control) -->
-    <!-- Mobile: top of the screen, away from the scroll-to-top button. Desktop: centered at the bottom. -->
+    <!-- Mobile: top of the screen, clear of the scroll-to-top button. Desktop: centered at the bottom. -->
     <div
         id="updateBanner"
         class="fixed inset-x-4 top-4 z-50 sm:inset-x-auto sm:top-auto sm:bottom-6 sm:left-1/2 sm:-translate-x-1/2 sm:w-max sm:max-w-md

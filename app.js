@@ -5,7 +5,7 @@
 // ==========================================
 
 // Constant for scripts/bump_version.py automation
-const TIMESTAMP_VERSION = '20261122222940';
+const TIMESTAMP_VERSION = '20261122230053';
 
 // Number of items shown per section and added by each "load more" click
 const PAGE_SIZE = 30;
@@ -75,7 +75,7 @@ const SECTION_META = {
         title: '🎤 Activitats',
         titleClass: 'text-teal-400',
         sectionClass: 'mt-6',
-        listClass: 'grid gap-4 sm:grid-cols-2',   // same grid as books: 1 column on mobile, 2 from 640px
+        listClass: 'grid gap-4 sm:grid-cols-2',   // same grid as books: 1 column on mobile, 2 on sm screens and up
         moreLabel: 'Carregar més activitats',
         moreClass: 'bg-teal-600 hover:bg-teal-500',
         renderItem: renderActivityCard
@@ -148,7 +148,7 @@ async function init() {
         `;
     }
 
-    // Registered in both cases: a later visit can still work offline
+    // Registered even if loading failed, so the next visit can work offline
     registerOfflineServiceWorker();
 }
 
@@ -160,7 +160,7 @@ function initFooter() {
     if (timestampEl) timestampEl.textContent = formatTimestamp(TIMESTAMP_VERSION);
 }
 
-// "invisible" removes the hidden button from the Tab order; opacity-0 alone would keep it focusable
+// "invisible" keeps the hidden button out of the Tab order; opacity-0 alone would leave it focusable
 const SCROLL_BTN_SHOWN = ['opacity-100', 'translate-y-0', 'pointer-events-auto'];
 const SCROLL_BTN_HIDDEN = ['invisible', 'opacity-0', 'translate-y-4', 'pointer-events-none'];
 
@@ -277,7 +277,7 @@ function prepareItem(item) {
         .map((field) => item[field])
         .filter((value) => value !== null && value !== undefined && value !== '')
         .map(normalizeText)
-        .join('\u0001'); // separator that a query can never contain, so matches never span two fields
+        .join('\u0001'); // separator that typed text never contains, so a match cannot span two fields
     return { ...item, _search: searchText };
 }
 
@@ -511,7 +511,7 @@ function loadMoreItems(type) {
         : `S'${added === 1 ? 'ha' : 'han'} carregat ${pluralize(added, 'activitat', 'activitats')} més.`);
 
     // The clicked button was replaced, so focus fell back to <body> and keyboard users lost their place.
-    // Move it to the first new card (or the new button); preventScroll keeps the page where it is.
+    // Move it to the first new card (or the new button); preventScroll keeps the scroll position.
     const firstNewCard = list.children[start];
     const focusTarget = (firstNewCard && firstNewCard.querySelector('button, a'))
         || section.querySelector('[data-role="more"] button');
@@ -716,7 +716,7 @@ function formatTimestamp(ts) {
     return `${formattedDate} ${tzName}`;
 }
 
-// Semantic version from the app.js script tag query parameter
+// Semantic version in the ?v= parameter of the app.js script tag
 function getAppVersion() {
     const sources = APP_SCRIPT_SRC
         ? [APP_SCRIPT_SRC]
@@ -756,7 +756,7 @@ function showOfflineUnavailable(detail) {
 async function registerOfflineServiceWorker() {
     if (!canUseServiceWorker()) return;
 
-    // Legacy key from the previous prefetch implementation
+    // Clean up the key left by the previous prefetch implementation
     try { localStorage.removeItem('fair_catalog_last_prefetch_data_version'); } catch (_) {}
 
     // A new worker took control: notify only if it serves other versions than the ones this page is running
@@ -833,7 +833,7 @@ function showUpdateBanner() {
     if (announcer) announcer.textContent = 'Nova versió disponible. Actualitza per veure l\'estoc més recent.';
 }
 
-// "Later" hides the notice for a while: stale stock must not be forgotten for the rest of the day
+// "Més tard" hides the notice for a while; it comes back so nobody works with stale stock all day
 function postponeUpdateBanner() {
     const banner = document.getElementById('updateBanner');
     if (!banner) return;
@@ -1035,7 +1035,7 @@ function waitForCoverStored(url, timeoutMs) {
     return new Promise((resolve) => {
         const timer = setTimeout(async () => {
             coverState.waiters.delete(url);
-            // No broadcast (old browser, or the response came from the cache): ask the cache directly
+            // No broadcast (old browser, or a response served by the cache): ask the cache directly
             try {
                 const cache = await caches.open(COVERS_CACHE);
                 if (await cache.match(url)) {
@@ -1254,7 +1254,7 @@ function repairBrokenRenderedCovers() {
         delete img.dataset.failed;
         img.classList.remove('hidden');
         try {
-            // _retry defeats the in-memory image cache; the Service Worker strips it from the cache key
+            // _retry bypasses the in-memory image cache; the Service Worker drops it when building the cache key
             const retryUrl = new URL(src, document.baseURI);
             retryUrl.searchParams.set('_retry', Date.now().toString());
             img.src = retryUrl.href;

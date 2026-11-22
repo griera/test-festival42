@@ -4,21 +4,21 @@
 const CACHE_PREFIX = 'fair-catalog-';
 const COVERS_CACHE = `${CACHE_PREFIX}covers-v1`; // also read and pruned by app.js
 
-// Read build/version tag from the Service Worker query string to rotate shell caches on release
+// Build/version tag (?v= in the registration URL), used to rotate shell caches on each release
 const BUILD_TAG = new URL(self.location.href).searchParams.get('v') || 'default';
 const SHELL_CACHE = `${CACHE_PREFIX}shell-${BUILD_TAG}`;
 
-// Keep query versions in sync with scripts/bump_version.py and index.html
+// Keep these ?v= versions in sync with scripts/bump_version.py and index.html
 const CORE_ASSETS = [
     './',
     './index.html',
     './styles.css?v=0.9.37',
     './app.js?v=0.9.37',
-    './data.json?v=20261122222940',
+    './data.json?v=20261122230053',
     './assets/icons/f42_32x32.png'
 ];
 
-// Versions this worker serves, read from the precache list that bump_version.py keeps up to date
+// Versions this worker serves, as listed in CORE_ASSETS (kept up to date by bump_version.py)
 const SERVED_VERSIONS = {
     app: precachedVersion('./app.js'),
     data: precachedVersion('./data.json')
@@ -96,7 +96,7 @@ self.addEventListener('fetch', (event) => {
     }
 });
 
-// <img> requests and fetch() calls from app.js ("download all covers") both count as covers
+// <img> requests and the fetch() calls of app.js ("download all covers") both count as covers
 function isCoverRequest(request, url) {
     if (request.headers.has(COVER_REQUEST_HEADER)) return true;
     if (PRECACHED_PATHS.has(url.pathname)) return false;
@@ -134,7 +134,7 @@ async function networkFirstPage(event, url) {
     return (await network) || new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
 }
 
-// Covers: cache first; a cover fetched from the network is validated and stored after it is returned
+// Covers: cache first; a network response is validated and stored after it reaches the page
 async function cacheFirstCover(event, url) {
     const key = coverKey(url);
     const cache = await caches.open(COVERS_CACHE);
