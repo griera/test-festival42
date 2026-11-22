@@ -26,6 +26,7 @@ Coming soon
 test-festival42/
 ├── index.html               # Public frontend interface (search, filters, rendering)
 ├── app.js                   # External frontend application logic (CSP compliant)
+├── sw.js                    # Service Worker: app shell + book cover caching and update detection
 ├── styles.css               # Compiled, purged, and minified production Tailwind CSS
 ├── src/
 │   └── input.css            # Tailwind CSS v4 source stylesheet (@import "tailwindcss";)
@@ -47,7 +48,7 @@ test-festival42/
 ├── scripts/                 # Python development and automation tools
 │   ├── generate_catalog.py  # Script for massive synthetic load testing data
 │   ├── process_catalog.py   # Script to process raw catalog CSV and convert it into a JSON payload
-│   ├── bump_version.py      # Script for versioning (semver for app & styles, timestamp for data)
+│   ├── bump_version.py      # Script for versioning (semver for app, sw & styles, timestamp for data)
 │   └── extract_covers.py    # Script to extract book covers from distributor's PDF catalogs
 ├── requirements.txt         # Python package dependencies
 ├── .venv/                   # Python virtual environment (ignored by Git)
@@ -226,14 +227,14 @@ This static prototype is audited locally using **OWASP ZAP** via Docker.
 ### Run local scan (baseline)
 
 ```bash
-docker run --rm -v $(pwd):/zap/wrk/:rw -t --add-host=host.docker.internal:host-gateway ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://host.docker.internal:8000 -J zap_report.json -r zap_report.html
+docker run --rm --network host -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:8000 -j --client-spider -m 2 -J zap_report.json -r zap_report.html
 
 ```
 
 ### Run local scan (full)
 
 ```bash
-docker run --rm -v $(pwd):/zap/wrk/:rw -t --add-host=host.docker.internal:host-gateway ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py -t http://host.docker.internal:8000 -j -J zap_report.json -r zap_report.html
+docker run --rm --network host -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py -t http://localhost:8000 -j --client-spider -m 2 -J zap_report.json -r zap_report.html
 
 ```
 
