@@ -5,7 +5,7 @@
 // ==========================================
 
 // Constant for scripts/bump_version.py automation
-const TIMESTAMP_VERSION = '20261122215104';
+const TIMESTAMP_VERSION = '20261122222940';
 
 // Number of items shown per section and added by each "load more" click
 const PAGE_SIZE = 30;
@@ -187,17 +187,7 @@ function initScrollToTop() {
         }
     }, { passive: true });
     update();
-
-    // IntersectionObserver to prevent footer overlap on mobile
-    const footer = document.querySelector('footer');
-    if (!footer) return;
-    new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-            scrollBtn.style.bottom = (window.innerWidth < 640 && entry.isIntersecting)
-                ? `${footer.offsetHeight + 20}px`
-                : '1.5rem';
-        });
-    }, { root: null, threshold: 0 }).observe(footer);
+    // Footer overlap is handled in CSS: the button lives in a sticky anchor that ends above the footer
 }
 
 function swapClasses(el, add, remove) {
