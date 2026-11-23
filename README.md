@@ -276,7 +276,7 @@ If a listed file is missing, the workflow fails instead of publishing an incompl
 
 ### Verify a Deployment
 
-* **Actions** tab: the run is green, and the log of the "Collect site files" step lists the published files.
+* **Actions** tab: the run is green. The log of the "Collect site files" step shows a summary (top-level files, number of covers, total size) and the full list in the collapsible group "All published files".
 * Published and unpublished files:
 
 ```bash

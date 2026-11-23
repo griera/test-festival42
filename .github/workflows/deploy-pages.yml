@@ -45,9 +45,15 @@ jobs:
           mkdir _site
           cp index.html 404.html app.js sw.js styles.css data.json _site/
           cp -r assets _site/assets
-          echo "Published files:"
-          find _site -type f | sort | sed 's|^_site/|  |' | head -50
+          # Summary, then the full list in a collapsible group of the log.
+          # No 'head' in pipes: closing a pipe early makes the writer fail, and pipefail would stop the job.
+          echo "Top-level files:"
+          find _site -maxdepth 1 -type f -printf '  %f\n' | sort
+          echo "Covers (.webp): $(find _site/assets -type f -name '*.webp' | wc -l)"
           echo "Total: $(find _site -type f | wc -l) files, $(du -sh _site | cut -f1)"
+          echo "::group::All published files"
+          find _site -type f | sort | sed 's|^_site/||'
+          echo "::endgroup::"
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
