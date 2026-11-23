@@ -888,12 +888,12 @@ function setOfflinePanel(view) {
     if (view.progress && view.progress.total > 0) {
         // floor: 100 % is shown only when every cover is really stored
         const percent = Math.floor((view.progress.cached / view.progress.total) * 100);
-        bar.classList.remove('hidden');
+        bar.classList.remove('invisible');
         bar.setAttribute('aria-valuenow', String(percent));
         bar.setAttribute('aria-valuetext', `${view.progress.cached} de ${view.progress.total} cobertes`);
         panel.querySelector('[data-role="progress-fill"]').style.width = `${percent}%`;
     } else {
-        bar.classList.add('hidden');
+        bar.classList.add('invisible');
     }
 
     const button = panel.querySelector('[data-role="action"]');
