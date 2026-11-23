@@ -939,7 +939,9 @@ function initCoverTracking() {
         };
     }
 
-    refreshCachedCoverSet();
+    // Remove covers no longer referenced by data.json (e.g. old URLs after a covers version change),
+    // so devices do not keep both versions even if nobody presses "download all covers"
+    pruneOrphanCovers().catch(() => {}).finally(refreshCachedCoverSet);
 
     // Re-read the cache when the tablet wakes up or the tab comes back (e.g. data cleared meanwhile)
     document.addEventListener('visibilitychange', () => {

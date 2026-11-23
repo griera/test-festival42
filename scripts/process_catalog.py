@@ -22,6 +22,13 @@ OUTPUT_HEADER = [
     "price", "theme", "schedule", "quantity", "location", "datetime",
 ]
 
+# Version of the cover images, appended to their URLs (assets/covers/<EAN>.webp?v=<version>).
+# Covers are cached for a long time by Cloudflare, browsers and the Service Worker, and only a new URL
+# makes them download a new image. Increase it whenever existing covers are regenerated with a different
+# content (e.g. another WebP quality in extract_covers.py); new or removed covers do not need it.
+# Version 2: covers re-encoded at WebP quality 75, method 6 (about half the size of version 1).
+COVERS_VERSION = "2"
+
 # Fair date boundaries for disambiguating mixed date formats (dd/mm vs mm/dd)
 FAIR_START = date(2026, 11, 4)
 FAIR_END = date(2026, 11, 8)
@@ -257,10 +264,10 @@ Examples:
                 "datetime": datetime_val,
             }
 
-            # Add local cover image path based on the EAN field
+            # Add the versioned URL of the local cover image, based on the EAN field
             cover_path = f"assets/covers/{ean}.webp"
             if ean and os.path.exists(cover_path):
-                item["cover"] = cover_path
+                item["cover"] = f"{cover_path}?v={COVERS_VERSION}" if COVERS_VERSION else cover_path
             else:
                 item["cover"] = ""
 
@@ -289,7 +296,7 @@ Examples:
         except FileNotFoundError:
             raise SystemExit(f"[ERROR]: Extra data file '{args.extra_data}' not found.")
         except json.JSONDecodeError as e:
-            raise SystemExit(f"[ERROR]: Failed to parse JSON from extra data file '{args.extra_events}': {e}")
+            raise SystemExit(f"[ERROR]: Failed to parse JSON from extra data file '{args.extra_data}': {e}")
 
     # Determine indentation and separators for strict minification or readability
     if args.minify:

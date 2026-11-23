@@ -132,7 +132,7 @@ EAN;LLIBRE;AUTORI;EDITORIAL;DISTRIBUÏDOR;TIPUS;PVP;TEMA;HORARIS
 ```
 
 * **Price (`PVP`)**: Automatically defaults to `0.0` if empty or blank.
-* **Quantity**: Defaults to `0` since it is absent in the raw source.
+* **Quantity**: Set to `No Disponible` since it is absent in the raw source.
 * **Schedule (`HORARIS`) / Datetime:** Automatically normalized to strict `dd/mm/yyyy` format, handling mixed format ambiguities (`dd/mm` vs `mm/dd`) using the fair date bounds (04/11/2026 - 08/11/2026). Also, automatically formatted to strict `HH:MM` by dropping trailing seconds.
 * **Text Values**: Cleaned, Unicode-normalized, and stripped of trailing whitespace while preserving original raw text.
 
@@ -141,7 +141,7 @@ EAN;LLIBRE;AUTORI;EDITORIAL;DISTRIBUÏDOR;TIPUS;PVP;TEMA;HORARIS
 ## 🔄 How to Update the Catalog & Test Performance
 
 1. Place your raw semicolon-delimited CSV source file (exported from booksellers, typically in legacy `cp1252` encoding) inside your workspace.
-2. **Process and convert the catalog:** Clean text, fix encoding, normalize Unicode, map headers, default missing quantities and prices to 0, verify local cover files, and generate the public `data.json` payload:
+2. **Process and convert the catalog:** Clean text, fix encoding, normalize Unicode, map headers, set missing quantities to `No Disponible` and missing prices to 0, link each book to its local cover file through a versioned URL (see the covers note below), and generate the public `data.json` payload:
 
 ```bash
 python3 scripts/process_catalog.py data/catalog_raw.csv data.json --encoding cp1252
@@ -170,9 +170,16 @@ python3 scripts/extract_covers.py data/catalog.pdf
 
 ```
 
+Covers are saved as WebP at **quality 75** with the most efficient encoder effort (**method 6**): about half the size of quality 85, with no visible difference at the 96×144 px size they are shown at. Images taller than 432 px (3× that height, enough for the densest phone screens) are downscaled, never upscaled. At the end, the script prints the total and average size, which helps compare settings:
+
+```bash
+python3 scripts/extract_covers.py data/catalog.pdf --quality 65 --output /tmp/covers_q65/
+
+```
+
 *(You can also check available options using `python3 scripts/extract_covers.py --help`)*.
 
-> ⚠️ Covers are cached for one week (see [Cloudflare Configuration](#️-cloudflare-configuration)) on the assumption that a cover never changes for the same EAN. If you ever regenerate existing covers (e.g. with better quality), publish them under a new URL (for example a new `assets/covers-v2/` folder), otherwise devices that already have them will keep showing the old images.
+> ⚠️ **Covers version.** Covers are cached for one week by Cloudflare and browsers, and kept by the Service Worker for offline use (see [Cloudflare Configuration](#️-cloudflare-configuration)), so a changed image under the same URL would not reach devices that already have it. Cover URLs therefore carry a version, `assets/covers/<EAN>.webp?v=<version>`, set by `COVERS_VERSION` in `scripts/process_catalog.py`. If you ever **regenerate existing covers with a different content** (another quality, a new catalog edition…), increase `COVERS_VERSION`, run `process_catalog.py` and then `bump_version.py data`: every device downloads the new images and deletes the old ones on its next visit. New or removed covers do not need a new version.
 
 4. Compile your CSS changes if necessary (see [Tailwind CSS Local Compilation](#-tailwind-css-local-compilation)).
 5. **Bump the versions** (see [Version Management Workflow](#️-version-management-workflow)): `data` if `data.json` changed, `code` if `app.js` or `styles.css` changed.
@@ -478,7 +485,7 @@ Browsers follow this `Cache-Control` header, not the Browser TTL of the Cache Ru
 
 * `sw.js` and `index.html` are never cached by Cloudflare, so a new release is visible as soon as GitHub Pages publishes it.
 * `app.js?v=…`, `styles.css?v=…` and `data.json?v=…` get a new URL on every change (see [Version Management Workflow](#️-version-management-workflow)), so they can be cached for a week without serving stale content.
-* Covers never change for the same EAN: new books bring new URLs and removed covers are simply no longer requested.
+* Cover URLs carry a version (`?v=`, from `COVERS_VERSION` in `scripts/process_catalog.py`): new books bring new URLs, removed covers are no longer requested (devices delete them on their next visit), and regenerated covers get a new version.
 
 ### Verify the configuration
 

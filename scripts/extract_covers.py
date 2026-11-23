@@ -9,11 +9,19 @@ import pymupdf  # Modern PyMuPDF API
 # Minimum dimension thresholds adjusted to support smaller catalog grid thumbnails
 MIN_COVER_WIDTH = 40
 MIN_COVER_HEIGHT = 60
-WEBP_QUALITY = 85  # Optimal balance between visual quality and file size
+# WebP encoding. Covers are small thumbnails (96x144 CSS px on screen): quality 75 halves the file size of
+# quality 85 with no visible difference at that size, and method 6 (slowest, most efficient encoder effort)
+# saves about 10% more at the same quality. Use --quality to try other values.
+WEBP_QUALITY = 75
+WEBP_METHOD = 6
+
+# Covers are shown 144 CSS px tall; 3x that height is enough for the densest phone screens.
+# Taller embedded images are downscaled (never upscaled), so an oversized catalog image is never published.
+MAX_COVER_HEIGHT = 432
 
 
 def extract_covers_from_pdf(
-    pdf_path, output_dir="assets/covers/", force_include_xrefs=None, debug=False
+    pdf_path, output_dir="assets/covers/", force_include_xrefs=None, debug=False, quality=WEBP_QUALITY
 ):
     """Extracts unique book cover images from a PDF catalog, converts them to WebP,
 
@@ -28,6 +36,8 @@ def extract_covers_from_pdf(
     # Open the PDF document using the modern pymupdf API
     doc = pymupdf.open(pdf_path)
     image_counter = 0
+    total_bytes = 0  # Size of all saved covers, to compare quality settings
+    resized_counter = 0
     processed_instances = (
         set()
     )  # Track unique cover bounding boxes per page to avoid duplicate processing
@@ -131,7 +141,14 @@ def extract_covers_from_pdf(
                             if image.mode in ("RGBA", "P"):
                                 image = image.convert("RGB")
 
-                            image.save(image_path, "WEBP", quality=WEBP_QUALITY)
+                            # Downscale oversized images, keeping the aspect ratio
+                            if image.height > MAX_COVER_HEIGHT:
+                                new_width = round(image.width * MAX_COVER_HEIGHT / image.height)
+                                image = image.resize((new_width, MAX_COVER_HEIGHT), Image.Resampling.LANCZOS)
+                                resized_counter += 1
+
+                            image.save(image_path, "WEBP", quality=quality, method=WEBP_METHOD)
+                            total_bytes += os.path.getsize(image_path)
                             image_counter += 1
                             page_cover_counter += (
                                 1  # Increment per-page counter upon success
@@ -167,6 +184,28 @@ def extract_covers_from_pdf(
     print(
         f"\nExtraction completed! Saved {image_counter} optimized WebP covers to '{output_dir}'."
     )
+    if image_counter:
+        print(
+            f"Total size: {format_size(total_bytes)} "
+            f"(average {total_bytes / image_counter / 1024:.1f} KB per cover, WebP quality {quality}, method {WEBP_METHOD})."
+        )
+    if resized_counter:
+        print(f"Downscaled {resized_counter} cover(s) taller than {MAX_COVER_HEIGHT}px.")
+
+
+def format_size(num_bytes):
+    """Human-readable size: KB below 1 MB, MB above."""
+    if num_bytes < 1024 * 1024:
+        return f"{num_bytes / 1024:.1f} KB"
+    return f"{num_bytes / 1024 / 1024:.1f} MB"
+
+
+def webp_quality(value):
+    """argparse type: an integer WebP quality between 1 and 100."""
+    quality = int(value)
+    if not 1 <= quality <= 100:
+        raise argparse.ArgumentTypeError("quality must be between 1 and 100")
+    return quality
 
 
 def main():
@@ -185,6 +224,12 @@ def main():
         help="Comma-separated list of image xref IDs to forcefully include, bypassing size/proportion filters (e.g., '393,412')",
     )
     parser.add_argument(
+        "--quality",
+        type=webp_quality,
+        default=WEBP_QUALITY,
+        help=f"WebP quality from 1 to 100 (default: {WEBP_QUALITY}). Lower values give smaller files.",
+    )
+    parser.add_argument(
         "--debug",
         action="store_true",
         help="Show detailed debug information to audit each image and text",
@@ -197,7 +242,7 @@ def main():
     }
 
     extract_covers_from_pdf(
-        args.pdf_file, args.output, force_include_xrefs, args.debug
+        args.pdf_file, args.output, force_include_xrefs, args.debug, args.quality
     )
 
 
