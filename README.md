@@ -53,7 +53,10 @@ test-festival42/
 │   └── extract_covers.py    # Script to extract book covers from distributor's PDF catalogs
 ├── requirements.txt         # Python package dependencies
 ├── .venv/                   # Python virtual environment (ignored by Git)
-├── .gitignore               # Git exclusion rules
+├── .github/
+│   └── workflows/
+│       └── deploy-pages.yml # GitHub Actions workflow: publishes only the static site files to GitHub Pages
+├── .gitignore               # Git exclusion rules (including the temporary _site/ folder of the deploy workflow)
 └── README.md                # Project documentation
 
 ```
@@ -173,7 +176,7 @@ python3 scripts/extract_covers.py data/catalog.pdf
 
 4. Compile your CSS changes if necessary (see [Tailwind CSS Local Compilation](#-tailwind-css-local-compilation)).
 5. **Bump the versions** (see [Version Management Workflow](#️-version-management-workflow)): `data` if `data.json` changed, `code` if `app.js` or `styles.css` changed.
-6. Commit and push `index.html`, `404.html`, `app.js`, `sw.js`, `styles.css`, `src/input.css`, `data.json`, and cover assets (`assets/covers/`) to deploy changes via GitHub Pages.
+6. Commit and push `index.html`, `404.html`, `app.js`, `sw.js`, `styles.css`, `src/input.css`, `data.json`, and cover assets (`assets/covers/`) to `main`. The [deploy workflow](#-deployment-github-actions) publishes the site automatically, usually within a couple of minutes.
 
 ---
 
@@ -226,6 +229,87 @@ python3 scripts/bump_version.py check
 If both code and data changed, run `code` first and then `data`.
 
 *(You can also check available options using `python3 scripts/bump_version.py --help`)*.
+
+---
+
+## 🚢 Deployment (GitHub Actions)
+
+The site is published to GitHub Pages by the workflow `.github/workflows/deploy-pages.yml`. Only the files the website needs are published: the rest of the repository (scripts, raw data, sources, documentation) stays in GitHub but is not reachable from the website domain.
+
+### One-time Setup
+
+1. **Settings → Pages → Build and deployment → Source:** `GitHub Actions` (instead of "Deploy from a branch").
+2. **Settings → Pages → Custom domain:** keep the custom domain configured there. Deployments made with GitHub Actions take the domain from this setting, so the `CNAME` file does not need to be published. It stays in the repository because the commands of this README read it (`$(cat CNAME)`).
+
+### What Gets Published
+
+The workflow uses an **allowlist**: only these files are copied to the published site.
+
+| Published | Not published |
+|---|---|
+| `index.html`, `404.html`, `app.js`, `sw.js`, `styles.css`, `data.json`, `assets/` (covers and icons) | `README.md`, `CNAME`, `scripts/`, `data/`, `src/`, `docs/`, `package.json`, `package-lock.json`, `requirements.txt`, ZAP reports and any other file |
+
+If a listed file is missing, the workflow fails instead of publishing an incomplete site. If the website ever needs a new file (e.g. a `manifest.webmanifest`), add it in **two places** of the workflow: the `cp` command of the "Collect site files" step and the `paths` list of the trigger.
+
+### How It Works
+
+**Triggers:**
+
+* A push to `main` that changes a published file (or the workflow itself). Pushes that only change the README, the scripts or the raw data do not deploy anything.
+* A manual run: **Actions → Deploy to GitHub Pages → Run workflow**.
+
+**Job `build`:**
+
+1. Checks out the repository.
+2. Runs `python3 scripts/bump_version.py check`: if `index.html` and `sw.js` reference different versions, the deployment stops and the website keeps its previous version.
+3. Copies the allowlisted files to a temporary `_site/` folder, keeping their paths, and lists them in the log.
+4. Uploads the **contents** of `_site/` as the Pages artifact. They become the root of the website, so every URL stays the same (`_site/assets/covers/x.webp` → `/assets/covers/x.webp`).
+
+**Job `deploy`:** publishes the artifact to the `github-pages` environment.
+
+**Other details:**
+
+* **Least privilege:** the `build` job can only read the repository; only the `deploy` job gets the `pages: write` and `id-token: write` permissions required to publish.
+* **One deployment at a time:** a new run waits for the current one, which is never cancelled halfway.
+* **No Jekyll processing:** files are published exactly as they are in the repository (publishing from a branch runs them through Jekyll unless a `.nojekyll` file exists).
+* **`_site/` is temporary:** it only exists on the GitHub Actions runner. It is ignored in `.gitignore` (`/_site/`) and must never be committed, otherwise the workflow fails when creating it.
+
+### Verify a Deployment
+
+* **Actions** tab: the run is green, and the log of the "Collect site files" step lists the published files.
+* Published and unpublished files:
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" https://$(cat CNAME)/
+curl -s -o /dev/null -w "%{http_code}\n" https://$(cat CNAME)/README.md
+curl -s -o /dev/null -w "%{http_code}\n" https://$(cat CNAME)/scripts/bump_version.py
+
+```
+
+Expected: `200` for the site, `404` (custom 404 page) for the other two.
+
+### Optional: Purge Cloudflare After Each Deployment
+
+The Cloudflare purge after a deployment is only a safety net (see [Caching](#caching)), but it can be automated by adding this step at the end of the `deploy` job:
+
+```yaml
+      - name: Purge Cloudflare cache
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        run: |
+          curl -fsS -X POST "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/purge_cache" \
+            -H "Authorization: Bearer ${CF_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}'
+```
+
+It needs two repository secrets (**Settings → Secrets and variables → Actions**):
+
+* `CLOUDFLARE_API_TOKEN`: a Cloudflare API token with only the **Zone → Cache Purge → Purge** permission, limited to this zone.
+* `CLOUDFLARE_ZONE_ID`: the zone ID, shown on the domain overview page in Cloudflare.
+
+`purge_everything` empties the cache of the **whole zone** (`genisgrp.xyz`), including any other subdomain.
 
 ---
 
@@ -351,7 +435,7 @@ Files without a rule (favicon, error pages) use the 10-minute TTL sent by GitHub
 
 Browsers follow this `Cache-Control` header, not the Browser TTL of the Cache Rule, so `max-age` must match the intended duration (`604800` seconds = 1 week).
 
-**4. Purge:** run **Caching → Configuration → Purge Everything** once after changing these rules. After that, a purge after each deploy is optional: it only acts as a safety net if a file was changed without bumping its version.
+**4. Purge:** run **Caching → Configuration → Purge Everything** once after changing these rules. After that, a purge after each deploy is optional: it only acts as a safety net if a file was changed without bumping its version. It can be automated in the deploy workflow (see [Optional: Purge Cloudflare After Each Deployment](#optional-purge-cloudflare-after-each-deployment)).
 
 ### Why this works
 
@@ -462,7 +546,7 @@ docker run --rm -v $(pwd):/zap/wrk/:rw ghcr.io/zaproxy/zaproxy:stable zap-full-s
 
 ### Custom 404 page
 
-GitHub Pages serves `404.html` (repository root) for any missing URL, with a `404` status. It replaces the generic GitHub error page, which identifies the hosting, and offers a link back to the catalog in Catalan. It follows the same security measures as the rest of the site: no scripts, no inline styles (it only uses `styles.css`), and root-relative URLs, so it also works for nested missing paths such as `/a/b/c`. The security headers are added by Cloudflare as for any other response. The Service Worker shows this page as it is: only the app page itself falls back to the cached copy when the network fails.
+GitHub Pages serves `404.html` (root of the published site) for any missing URL, with a `404` status. It replaces the generic GitHub error page, which identifies the hosting, and offers a link back to the catalog in Catalan. It follows the same security measures as the rest of the site: no scripts, no inline styles (it only uses `styles.css`), and root-relative URLs, so it also works for nested missing paths such as `/a/b/c`. The security headers are added by Cloudflare as for any other response. The Service Worker shows this page as it is: only the app page itself falls back to the cached copy when the network fails.
 
 ### 🔒 Security & CSP Compliance
 To comply with a strict Content-Security-Policy (CSP) that blocks inline scripts (`unsafe-eval` / inline `<script>` tags), all application logic is completely externalized into `app.js` and loaded securely via the frontend interface. The CSP and the other security headers are set in Cloudflare (see [Security Headers](#security-headers)).

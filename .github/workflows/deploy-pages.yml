@@ -1,0 +1,72 @@
+# Publishes only the files the static site needs to GitHub Pages.
+# Requires Settings → Pages → Build and deployment → Source: "GitHub Actions".
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    # Deploy only when something that is published changes (README, scripts, data sources... do not trigger it)
+    paths:
+      - 'index.html'
+      - '404.html'
+      - 'app.js'
+      - 'sw.js'
+      - 'styles.css'
+      - 'data.json'
+      - 'assets/**'
+      - '.github/workflows/deploy-pages.yml'
+  # Manual run from the Actions tab
+  workflow_dispatch:
+
+# Least privilege by default; the deploy job asks for what it needs
+permissions:
+  contents: read
+
+# One deployment at a time; a running deployment is never cancelled halfway
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      # Stops the deployment if index.html and sw.js reference different versions
+      - name: Check version alignment
+        run: python3 scripts/bump_version.py check
+
+      # Allowlist: only these files end up on the website. A missing file makes the job fail.
+      - name: Collect site files
+        run: |
+          set -euo pipefail
+          mkdir _site
+          cp index.html 404.html app.js sw.js styles.css data.json _site/
+          cp -r assets _site/assets
+          echo "Published files:"
+          find _site -type f | sort | sed 's|^_site/|  |' | head -50
+          echo "Total: $(find _site -type f | wc -l) files, $(du -sh _site | cut -f1)"
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

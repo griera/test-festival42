@@ -31,3 +31,7 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 .npm/
+
+# Temporary output folder of the GitHub Pages workflow (.github/workflows/deploy-pages.yml).
+# The workflow creates it from scratch on every run, so it must never be committed.
+/_site/
