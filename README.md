@@ -304,6 +304,8 @@ npm install --save-dev --save-exact esbuild html-minifier-terser
 
 ```
 
+> ⚠️ When the minification tools or their settings change (including the first deployment with minification), run `python3 scripts/bump_version.py code`. The published content of `app.js` changes while its source, and therefore its `?v=` URL, does not, so Cloudflare, browsers and Service Workers would keep serving their cached copy for up to a week.
+
 Notes:
 
 * Error messages and stack traces in production refer to the minified code. Reproduce problems locally, where the readable sources are served.

@@ -12,8 +12,8 @@ const SHELL_CACHE = `${CACHE_PREFIX}shell-${BUILD_TAG}`;
 const CORE_ASSETS = [
     './',
     './index.html',
-    './styles.css?v=0.9.39',
-    './app.js?v=0.9.39',
+    './styles.css?v=0.9.40',
+    './app.js?v=0.9.40',
     './data.json?v=20261122230053',
     './assets/icons/f42_32x32.png'
 ];
