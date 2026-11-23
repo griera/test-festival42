@@ -15,6 +15,8 @@ on:
       - 'data.json'
       - 'assets/**'
       - '.github/workflows/deploy-pages.yml'
+      - 'package.json'
+      - 'package-lock.json'
   # Manual run from the Actions tab
   workflow_dispatch:
 
@@ -38,6 +40,10 @@ jobs:
       - name: Check version alignment
         run: python3 scripts/bump_version.py check
 
+      # Minifiers pinned in package.json / package-lock.json (installed with integrity checks)
+      - name: Install build tools
+        run: npm ci --no-audit --no-fund
+
       # Allowlist: only these files end up on the website. A missing file makes the job fail.
       - name: Collect site files
         run: |
@@ -45,10 +51,32 @@ jobs:
           mkdir _site
           cp index.html 404.html app.js sw.js styles.css data.json _site/
           cp -r assets _site/assets
-          # Summary, then the full list in a collapsible group of the log.
-          # No 'head' in pipes: closing a pipe early makes the writer fail, and pipefail would stop the job.
+
+      # Only the published copies are minified: the repository keeps the readable, commented sources.
+      # styles.css is already minified by the Tailwind CLI; covers are already compressed WebP.
+      - name: Minify JS, HTML and JSON
+        run: |
+          set -euo pipefail
+          npx --no-install esbuild app.js --minify --outfile=_site/app.js --log-level=warning
+          npx --no-install esbuild sw.js --minify --outfile=_site/sw.js --log-level=warning
+          for page in index.html 404.html; do
+            npx --no-install html-minifier-terser --collapse-whitespace --conservative-collapse \
+              --remove-comments -o "_site/$page" "$page"
+          done
+          # Compact JSON; also stops the deployment if data.json is not valid JSON
+          python3 -c "import json; json.dump(json.load(open('data.json', encoding='utf-8')), open('_site/data.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))"
+          # Sanity checks on the minified output
+          node --check _site/app.js
+          node --check _site/sw.js
+          grep -q 'id="dataPreload"' _site/index.html
+
+      # Summary, then the full list in a collapsible group of the log.
+      # No 'head' in pipes: closing a pipe early makes the writer fail, and pipefail would stop the job.
+      - name: List published files
+        run: |
+          set -euo pipefail
           echo "Top-level files:"
-          find _site -maxdepth 1 -type f -printf '  %f\n' | sort
+          find _site -maxdepth 1 -type f -printf '  %-12f %6s bytes\n' | sort
           echo "Covers (.webp): $(find _site/assets -type f -name '*.webp' | wc -l)"
           echo "Total: $(find _site -type f | wc -l) files, $(du -sh _site | cut -f1)"
           echo "::group::All published files"

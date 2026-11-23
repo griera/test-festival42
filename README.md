@@ -31,7 +31,7 @@ test-festival42/
 ├── styles.css               # Compiled, purged, and minified production Tailwind CSS
 ├── src/
 │   └── input.css            # Tailwind CSS v4 source stylesheet (@import "tailwindcss";)
-├── package.json             # Node.js project and dependencies configuration
+├── package.json             # Node.js project and dev dependencies (Tailwind CLI, esbuild, html-minifier-terser)
 ├── package-lock.json        # Node.js locked dependency versions for exact deterministic installs
 ├── data.json                # Public processed dataset consumed by the web app
 ├── node_modules/            # Node.js local dependencies (ignored by Git)
@@ -249,21 +249,24 @@ The workflow uses an **allowlist**: only these files are copied to the published
 |---|---|
 | `index.html`, `404.html`, `app.js`, `sw.js`, `styles.css`, `data.json`, `assets/` (covers and icons) | `README.md`, `CNAME`, `scripts/`, `data/`, `src/`, `docs/`, `package.json`, `package-lock.json`, `requirements.txt`, ZAP reports and any other file |
 
-If a listed file is missing, the workflow fails instead of publishing an incomplete site. If the website ever needs a new file (e.g. a `manifest.webmanifest`), add it in **two places** of the workflow: the `cp` command of the "Collect site files" step and the `paths` list of the trigger.
+If a listed file is missing, the workflow fails instead of publishing an incomplete site. If the website ever needs a new file (e.g. a `manifest.webmanifest`), add it in **two places** of the workflow: the `cp` command of the "Collect site files" step and the `paths` list of the trigger. If it is a JavaScript or HTML file, also add it to the "Minify JS, HTML and JSON" step.
 
 ### How It Works
 
 **Triggers:**
 
-* A push to `main` that changes a published file (or the workflow itself). Pushes that only change the README, the scripts or the raw data do not deploy anything.
+* A push to `main` that changes a published file, the workflow itself or the build tools (`package.json` / `package-lock.json`). Pushes that only change the README, the scripts or the raw data do not deploy anything.
 * A manual run: **Actions → Deploy to GitHub Pages → Run workflow**.
 
 **Job `build`:**
 
 1. Checks out the repository.
 2. Runs `python3 scripts/bump_version.py check`: if `index.html` and `sw.js` reference different versions, the deployment stops and the website keeps its previous version.
-3. Copies the allowlisted files to a temporary `_site/` folder, keeping their paths, and lists them in the log.
-4. Uploads the **contents** of `_site/` as the Pages artifact. They become the root of the website, so every URL stays the same (`_site/assets/covers/x.webp` → `/assets/covers/x.webp`).
+3. Installs the build tools with `npm ci` (exact versions and integrity hashes from `package-lock.json`).
+4. Copies the allowlisted files to a temporary `_site/` folder, keeping their paths.
+5. Minifies the published copies of the JavaScript, HTML and JSON files (see [Minification](#minification)).
+6. Lists the published files in the log.
+7. Uploads the **contents** of `_site/` as the Pages artifact. They become the root of the website, so every URL stays the same (`_site/assets/covers/x.webp` → `/assets/covers/x.webp`).
 
 **Job `deploy`:** publishes the artifact to the `github-pages` environment.
 
@@ -274,9 +277,41 @@ If a listed file is missing, the workflow fails instead of publishing an incompl
 * **No Jekyll processing:** files are published exactly as they are in the repository (publishing from a branch runs them through Jekyll unless a `.nojekyll` file exists).
 * **`_site/` is temporary:** it only exists on the GitHub Actions runner. It is ignored in `.gitignore` (`/_site/`) and must never be committed, otherwise the workflow fails when creating it.
 
+### Minification
+
+Only the **published copies** are minified: the repository keeps the readable, commented sources.
+
+| File | Tool | Settings |
+|---|---|---|
+| `app.js`, `sw.js` | [esbuild](https://esbuild.github.io/) | `--minify` |
+| `index.html`, `404.html` | [html-minifier-terser](https://github.com/terser/html-minifier-terser) | `--collapse-whitespace --conservative-collapse --remove-comments` |
+| `data.json` | Python `json` | Compact separators (also stops the deployment if the JSON is invalid) |
+| `styles.css` | — | Already minified by the Tailwind CLI |
+| Covers | — | Already compressed WebP images |
+
+Measured on the first load, after the Brotli compression that Cloudflare applies anyway: about 21 KB → 13 KB transferred for the JS and HTML files (≈ 37 % less). Later visits download nothing, since the Service Worker serves the cached files. Comments are also left out of production.
+
+Guarantees:
+
+* **Safe settings only:** whitespace is collapsed conservatively (single spaces between inline elements are kept), and attributes, quotes and URLs are left untouched, so `id="dataPreload"` and every `?v=` value stay exactly as in the sources.
+* **Checks before publishing:** the minified JavaScript is syntax-checked (`node --check`) and the data preload link is verified; any failure stops the deployment.
+* **Deterministic output:** the tool versions are pinned with exact versions (`--save-exact`), so the same sources always produce the same bytes. Otherwise a new `sw.js` byte sequence would make every browser install the Service Worker again on each deployment.
+
+Setup (once, then commit `package.json` and `package-lock.json`):
+
+```bash
+npm install --save-dev --save-exact esbuild html-minifier-terser
+
+```
+
+Notes:
+
+* Error messages and stack traces in production refer to the minified code. Reproduce problems locally, where the readable sources are served.
+* Local OWASP ZAP scans analyze the readable sources (with comments), while production scans analyze the minified files.
+
 ### Verify a Deployment
 
-* **Actions** tab: the run is green. The log of the "Collect site files" step shows a summary (top-level files, number of covers, total size) and the full list in the collapsible group "All published files".
+* **Actions** tab: the run is green. The log of the "List published files" step shows a summary (top-level files with their published size, number of covers, total size) and the full list in the collapsible group "All published files".
 * Published and unpublished files:
 
 ```bash
