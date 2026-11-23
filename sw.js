@@ -12,13 +12,13 @@ const SHELL_CACHE = `${CACHE_PREFIX}shell-${BUILD_TAG}`;
 const CORE_ASSETS = [
     './',
     './index.html',
-    './styles.css?v=0.9.37',
-    './app.js?v=0.9.37',
+    './styles.css?v=0.9.38',
+    './app.js?v=0.9.38',
     './data.json?v=20261122230053',
     './assets/icons/f42_32x32.png'
 ];
 
-// Versions this worker serves, as listed in CORE_ASSETS (kept up to date by bump_version.py)
+// Versions this worker serves, as listed in CORE_ASSETS (kept up to date by scripts/bump_version.py)
 const SERVED_VERSIONS = {
     app: precachedVersion('./app.js'),
     data: precachedVersion('./data.json')

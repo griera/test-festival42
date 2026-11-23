@@ -48,7 +48,7 @@ test-festival42/
 ├── scripts/                 # Python development and automation tools
 │   ├── generate_catalog.py  # Script for massive synthetic load testing data
 │   ├── process_catalog.py   # Script to process raw catalog CSV and convert it into a JSON payload
-│   ├── bump_version.py      # Script for versioning (semver for app, sw & styles, timestamp for data)
+│   ├── bump_version.py      # Script for versioning (semver for app & styles, timestamp for data; syncs index.html and sw.js)
 │   └── extract_covers.py    # Script to extract book covers from distributor's PDF catalogs
 ├── requirements.txt         # Python package dependencies
 ├── .venv/                   # Python virtual environment (ignored by Git)
@@ -227,14 +227,28 @@ This static prototype is audited locally using **OWASP ZAP** via Docker.
 ### Run local scan (baseline)
 
 ```bash
-docker run --rm --network host -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:8000 -j --client-spider -m 2 -J zap_report.json -r zap_report.html
+docker run --rm --network host -v $(pwd):/zap/wrk/:rw ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:8000 -j --client-spider -m 2 -J zap_report.json -r zap_report.html
 
 ```
 
 ### Run local scan (full)
 
 ```bash
-docker run --rm --network host -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py -t http://localhost:8000 -j --client-spider -m 2 -J zap_report.json -r zap_report.html
+docker run --rm --network host -v $(pwd):/zap/wrk/:rw ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py -t http://localhost:8000 -j --client-spider -m 2 -J zap_report.json -r zap_report.html
+
+```
+
+### Run production scan (baseline)
+
+```bash
+docker run --rm -v $(pwd):/zap/wrk/:rw ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t https://$(cat CNAME) -j --client-spider -m 2 -J zap_report.json -r zap_report.html
+
+```
+
+### Run production scan (full)
+
+```bash
+docker run --rm -v $(pwd):/zap/wrk/:rw ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py -t https://$(cat CNAME) -j --client-spider -m 2 -J zap_report.json -r zap_report.html
 
 ```
 

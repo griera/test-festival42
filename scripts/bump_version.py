@@ -1,18 +1,28 @@
-import os
-import re
-from datetime import datetime
-from zoneinfo import ZoneInfo
 import argparse
+import re
+import sys
+from datetime import datetime
+from pathlib import Path
+from zoneinfo import ZoneInfo
 
-# File paths (adjust if files are located in subdirectories)
-INDEX_FILE = "index.html"
-APP_JS_FILE = "app.js"
-SW_FILE = "sw.js"
+# Paths resolved against the repository root (this script lives in scripts/),
+# so it works no matter which directory it is launched from
+ROOT = Path(__file__).resolve().parent.parent
+INDEX_FILE = ROOT / "index.html"
+SW_FILE = ROOT / "sw.js"
 TIMEZONE = "Europe/Madrid"
+
+# Versioned URLs kept in sync between index.html and the Service Worker precache list (sw.js).
+# The data version lives only in these two files: app.js reads it from the data.json preload link
+# in index.html, so a data update never changes app.js and its long-lived cache stays valid.
+CODE_VERSION_PATTERN = r'((?:app\.js|styles\.css)\s*\?v=)\d+\.\d+\.\d+'
+DATA_VERSION_PATTERN = r'(data\.json\?v=)\d{14}'
+
 
 def get_current_timestamp():
     """Generates the current timestamp in YYYYMMDDHHMMSS format using CET/CEST timezone."""
     return datetime.now(ZoneInfo(TIMEZONE)).strftime("%Y%m%d%H%M%S")
+
 
 def parse_version(version_str):
     """Converts a version string like '1.2.3' into a list of integers [1, 2, 3]."""
@@ -20,6 +30,7 @@ def parse_version(version_str):
         return list(map(int, version_str.split('.')))
     except ValueError:
         return [1, 0, 0]
+
 
 def bump_version(version_list, bump_type):
     """Increments the semantic version based on the specified bump type (patch, minor, major)."""
@@ -35,67 +46,88 @@ def bump_version(version_list, bump_type):
         patch += 1
     return f"{major}.{minor}.{patch}"
 
+
 def update_file_content(filepath, pattern, replacement):
-    """Replaces text in a file using regular expressions. Returns the match count."""
-    if not os.path.exists(filepath):
-        print(f"     └─ ⚠️ Warning: File {filepath} not found.")
+    """Replaces text in a file using regular expressions. Returns the match count (0 if the file is missing)."""
+    if not filepath.exists():
+        print(f"     └─ ❌ File {filepath.name} not found.")
         return 0
 
-    with open(filepath, 'r', encoding='utf-8') as f:
-        content = f.read()
-
+    content = filepath.read_text(encoding='utf-8')
     new_content, count = re.subn(pattern, replacement, content)
-
     if count > 0:
-        with open(filepath, 'w', encoding='utf-8') as f:
-            f.write(new_content)
-
+        filepath.write_text(new_content, encoding='utf-8')
     return count
 
+
 def update_code_version(bump_type):
-    """Updates the semantic version for app.js and styles.css in index.html and sw.js."""
-    if not os.path.exists(INDEX_FILE):
-        print(f"     └─ ⚠️ Warning: File {INDEX_FILE} not found.")
+    """Bumps the semantic version of app.js and styles.css in index.html and sw.js. Returns True on success."""
+    if not INDEX_FILE.exists():
+        print(f"     └─ ❌ File {INDEX_FILE.name} not found.")
         return False
 
-    with open(INDEX_FILE, 'r', encoding='utf-8') as f:
-        html_content = f.read()
+    match = re.search(r'(?:app\.js|styles\.css)\s*\?v=(\d+\.\d+\.\d+)', INDEX_FILE.read_text(encoding='utf-8'))
+    if not match:
+        print(f"     └─ ❌ Could not detect a prior semantic version in {INDEX_FILE.name} (e.g., app.js?v=1.0.0)")
+        return False
 
-    match = re.search(r'(app\.js|styles\.css)\s*\?v=(\d+\.\d+\.\d+)', html_content)
-    if match:
-        current_ver_str = match.group(2)
-        current_ver_list = parse_version(current_ver_str)
-        new_ver_str = bump_version(current_ver_list, bump_type)
+    current_ver_str = match.group(1)
+    new_ver_str = bump_version(parse_version(current_ver_str), bump_type)
+    print(f"     ├─ SemVer version: {current_ver_str} ➔ {new_ver_str} (Type: {bump_type})")
 
-        print(f"     ├─ SemVer version: {current_ver_str} ➔ {new_ver_str} (Type: {bump_type})")
+    html_matches = update_file_content(INDEX_FILE, CODE_VERSION_PATTERN, rf'\g<1>{new_ver_str}')
+    print(f"     ├─ {'✔' if html_matches else '❌'} {INDEX_FILE.name}: {html_matches} match(es)")
 
-        html_pattern = r'((?:app\.js|styles\.css)\s*\?v=)\d+\.\d+\.\d+'
-        matches_count = update_file_content(INDEX_FILE, html_pattern, rf'\g<1>{new_ver_str}')
+    sw_matches = update_file_content(SW_FILE, CODE_VERSION_PATTERN, rf'\g<1>{new_ver_str}')
+    print(f"     └─ {'✔' if sw_matches else '❌'} {SW_FILE.name}: {sw_matches} match(es)")
 
-        if matches_count > 0:
-            print(f"     ├─ ✔ {INDEX_FILE} successfully updated ({matches_count} match(es))")
+    return html_matches > 0 and sw_matches > 0
 
-        # Keep Service Worker precache asset versions aligned with index.html
-        if os.path.exists(SW_FILE):
-            sw_matches = update_file_content(SW_FILE, html_pattern, rf'\g<1>{new_ver_str}')
-            if sw_matches > 0:
-                print(f"     └─ ✔ {SW_FILE} code asset versions updated ({sw_matches} match(es))")
-            else:
-                print(f"     └─ ⚠️ Code asset version pattern not found in {SW_FILE}")
-        else:
-            print(f"     └─ ℹ️ Optional file {SW_FILE} not found yet, skipping.")
 
-        return matches_count > 0
-    else:
-        print("     └─ ⚠️ Could not detect a prior semantic version in index.html (e.g., app.js?v=1.0.0)")
-    return False
+def update_data_version():
+    """Sets a new data timestamp in index.html (data.json preload link) and sw.js. Returns True on success."""
+    new_timestamp = get_current_timestamp()
+    print(f"     ├─ New timestamp (CET/CEST): {new_timestamp}")
+
+    html_matches = update_file_content(INDEX_FILE, DATA_VERSION_PATTERN, rf'\g<1>{new_timestamp}')
+    print(f"     ├─ {'✔' if html_matches else '❌'} {INDEX_FILE.name} data.json preload link: {html_matches} match(es)")
+
+    sw_matches = update_file_content(SW_FILE, DATA_VERSION_PATTERN, rf'\g<1>{new_timestamp}')
+    print(f"     └─ {'✔' if sw_matches else '❌'} {SW_FILE.name} data.json precache entry: {sw_matches} match(es)")
+
+    return html_matches > 0 and sw_matches > 0
+
+
+def check_consistency():
+    """Verifies that index.html and sw.js reference exactly the same versioned URLs. Returns True if aligned."""
+    print("  └─ Checking that index.html and sw.js are aligned...")
+    if not INDEX_FILE.exists() or not SW_FILE.exists():
+        print("     └─ ❌ index.html or sw.js not found.")
+        return False
+
+    html = INDEX_FILE.read_text(encoding='utf-8')
+    sw = SW_FILE.read_text(encoding='utf-8')
+    aligned = True
+    for name, pattern in [("app.js", r'app\.js\?v=([\w.-]+)'),
+                          ("styles.css", r'styles\.css\?v=([\w.-]+)'),
+                          ("data.json", r'data\.json\?v=(\d+)')]:
+        html_versions = set(re.findall(pattern, html))
+        sw_versions = set(re.findall(pattern, sw))
+        ok = len(html_versions) == 1 and html_versions == sw_versions
+        aligned = aligned and ok
+        print(f"     ├─ {'✔' if ok else '❌'} {name}: index.html {sorted(html_versions)} | sw.js {sorted(sw_versions)}")
+    print(f"     └─ {'✔ Aligned' if aligned else '❌ Not aligned: fix the files above before deploying'}")
+    return aligned
+
 
 def main():
     parser = argparse.ArgumentParser(description="Automates versioning and timestamps for the fair web app.")
     parser.add_argument(
         "action",
-        choices=["data", "code"],
-        help="Specify what changed: 'data' (updates timestamp and auto-bumps code patch) or 'code' (bumps code version)."
+        choices=["data", "code", "check"],
+        help="'data': new data timestamp (app.js is not touched); "
+             "'code': bump the app.js/styles.css version; "
+             "'check': only verify that index.html and sw.js are aligned."
     )
     parser.add_argument(
         "--type",
@@ -103,54 +135,26 @@ def main():
         default="patch",
         help="Semantic version bump type (only used when action is 'code', default: patch)"
     )
-
     args = parser.parse_args()
 
     print("🚀 Running version manager...")
+    ok = True
 
     if args.action == "data":
-        new_timestamp = get_current_timestamp()
-        print("  └─ Data change detected. Updating app.js timestamp, index.html preload, and sw.js...")
-        print(f"     ├─ New timestamp (CET/CEST): {new_timestamp}")
-
-        # Update TIMESTAMP_VERSION in app.js
-        js_pattern = r"(const\s+TIMESTAMP_VERSION\s*=\s*['\"])\d{14}(['\"])"
-        js_replacement = rf"\g<1>{new_timestamp}\g<2>"
-        js_matches = update_file_content(APP_JS_FILE, js_pattern, js_replacement)
-
-        if js_matches > 0:
-            print(f"     ├─ ✔ {APP_JS_FILE} successfully updated ({js_matches} match(es))")
-        else:
-            print(f"     ├─ ⚠️ Pattern not found in {APP_JS_FILE}")
-
-        # Update data.json preload version in index.html
-        html_preload_pattern = r'(data\.json\?v=)\d{14}'
-        html_preload_replacement = rf'\g<1>{new_timestamp}'
-        html_matches = update_file_content(INDEX_FILE, html_preload_pattern, html_preload_replacement)
-
-        if html_matches > 0:
-            print(f"     ├─ ✔ {INDEX_FILE} preload link successfully updated ({html_matches} match(es))")
-        else:
-            print(f"     └─ ⚠️ Preload pattern for data.json not found in {INDEX_FILE}")
-
-        # Update data.json version in sw.js if present
-        if os.path.exists(SW_FILE):
-            sw_data_matches = update_file_content(SW_FILE, html_preload_pattern, html_preload_replacement)
-            if sw_data_matches > 0:
-                print(f"     └─ ✔ {SW_FILE} data.json version updated ({sw_data_matches} match(es))")
-            else:
-                print(f"     └─ ⚠️ data.json version pattern not found in {SW_FILE}")
-
-        # If data changed, automatically bump code patch version as before
-        if js_matches > 0 or html_matches > 0:
-            print("  └─ Data update implies a code change. Bumping code version (patch)...")
-            update_code_version("patch")
-
+        print("  └─ Data change. Updating the data.json version in index.html and sw.js...")
+        ok = update_data_version()
     elif args.action == "code":
-        print(f"  └─ Code-only change detected. Bumping version ({args.type})...")
-        update_code_version(args.type)
+        print(f"  └─ Code change. Bumping version ({args.type})...")
+        ok = update_code_version(args.type)
 
-    print("✨ Versioning process completed successfully!")
+    ok = check_consistency() and ok
+
+    if ok:
+        print("✨ Versioning process completed successfully!")
+    else:
+        print("💥 Versioning process finished with errors (see ❌ above).")
+        sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

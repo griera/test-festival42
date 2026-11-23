@@ -4,8 +4,11 @@
 // CONFIGURATION
 // ==========================================
 
-// Constant for scripts/bump_version.py automation
-const TIMESTAMP_VERSION = '20261122230053';
+// Data file URL and version, taken off the data.json preload link in index.html.
+// The data version is kept out of this file on purpose: app.js only changes when the code changes,
+// so app.js?v=<semver> always identifies the same content and can be cached for a long time.
+const DATA_URL = getDataUrl();
+const TIMESTAMP_VERSION = new URL(DATA_URL, document.baseURI).searchParams.get('v') || '';
 
 // Number of items shown per section and added by each "load more" click
 const PAGE_SIZE = 30;
@@ -262,7 +265,8 @@ function bindGlobalEvents() {
 // ==========================================
 
 async function loadData() {
-    const response = await fetch(`data.json?v=${TIMESTAMP_VERSION}`);
+    // Same URL as the preload link, so the browser reuses that download instead of starting a new one
+    const response = await fetch(DATA_URL);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const json = await response.json();
     if (!Array.isArray(json)) throw new Error('data.json must contain an array');
@@ -714,6 +718,13 @@ function formatTimestamp(ts) {
         tzName = (m > 3 && m < 10) ? 'CEST' : 'CET';
     }
     return `${formattedDate} ${tzName}`;
+}
+
+// The data.json preload link in index.html carries the versioned data URL (see the comment there).
+// Fallback without version keeps the app working if the link is ever removed.
+function getDataUrl() {
+    const link = document.getElementById('dataPreload');
+    return (link && link.getAttribute('href')) || 'data.json';
 }
 
 // Semantic version in the ?v= parameter of the app.js script tag
