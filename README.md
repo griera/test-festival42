@@ -25,6 +25,7 @@ Coming soon
 ```text
 test-festival42/
 ├── index.html               # Public frontend interface (search, filters, rendering)
+├── 404.html                 # Custom "not found" page served by GitHub Pages (no scripts, CSP compliant)
 ├── app.js                   # External frontend application logic (CSP compliant)
 ├── sw.js                    # Service Worker: app shell + book cover caching and update detection
 ├── styles.css               # Compiled, purged, and minified production Tailwind CSS
@@ -172,7 +173,7 @@ python3 scripts/extract_covers.py data/catalog.pdf
 
 4. Compile your CSS changes if necessary (see [Tailwind CSS Local Compilation](#-tailwind-css-local-compilation)).
 5. **Bump the versions** (see [Version Management Workflow](#️-version-management-workflow)): `data` if `data.json` changed, `code` if `app.js` or `styles.css` changed.
-6. Commit and push `index.html`, `app.js`, `sw.js`, `styles.css`, `src/input.css`, `data.json`, and cover assets (`assets/covers/`) to deploy changes via GitHub Pages.
+6. Commit and push `index.html`, `404.html`, `app.js`, `sw.js`, `styles.css`, `src/input.css`, `data.json`, and cover assets (`assets/covers/`) to deploy changes via GitHub Pages.
 
 ---
 
@@ -305,6 +306,25 @@ Three sets of rules work together: custom headers for this app, Cloudflare manag
 
 GitHub Pages sends `Access-Control-Allow-Origin: *` on every response, which lets any website read the files of this site with `fetch()` (data, catalog, scripts). The app itself only makes same-origin requests, which never need CORS, so removing the header breaks nothing and closes that door. It also clears the "Cross-Domain Misconfiguration" alert reported by OWASP ZAP. If the custom domain ever changes, update the expression.
 
+### WAF
+
+**Security → WAF → Custom rules**, rule **Allow only GET and HEAD**:
+
+* Expression: `(http.host eq "test-festival42.genisgrp.xyz" and not http.request.method in {"GET" "HEAD"})`
+* Action: **Block**
+
+The site is static and only needs `GET` (and `HEAD` for header checks such as the `curl -I` commands below), so every other method is rejected at the edge before reaching GitHub Pages. This reduces what can be probed against the site and answers the "Proxy Disclosure" recommendation of OWASP ZAP about `TRACE` and `OPTIONS` (see [Accepted findings](#accepted-findings)). If a form or an API that needs `POST` is ever added, extend the list.
+
+Each method is handled at a different point:
+
+| Method | Answered by | Result |
+|---|---|---|
+| `GET`, `HEAD` | GitHub Pages | `200` |
+| `OPTIONS`, `POST`, `PUT`… | This rule | `403` with the Cloudflare block page |
+| `TRACE` | Cloudflare itself, before custom rules run | `405 Not Allowed` (no configuration needed) |
+
+> If the rule seems not to apply, check that no **Skip** custom rule or **IP Access** rule with **Allow** for your IP (e.g. one created for a ZAP scan) is evaluated before it: both make your requests bypass the remaining custom rules.
+
 ### Caching
 
 Goal: versioned files and covers are cached for a week, while the app shell (`index.html` and `sw.js`) is always revalidated, so open pages detect a new release within the app update check interval (`UPDATE_CHECK_INTERVAL_MS` in `app.js`, 10 minutes) after GitHub Pages publishes it.
@@ -355,6 +375,17 @@ Expected:
 * The `http://` request answers with a `301` redirect whose `location` starts with `https://`.
 * `strict-transport-security: max-age=15552000; includeSubDomains` (without `preload`).
 * The connection uses `TLSv1.3`.
+
+HTTP methods:
+
+```bash
+curl -s -o /dev/null -w "GET     %{http_code}\n" https://$(cat CNAME)/
+curl -s -o /dev/null -w "OPTIONS %{http_code}\n" -X OPTIONS https://$(cat CNAME)/
+curl -s -o /dev/null -w "TRACE   %{http_code}\n" -X TRACE https://$(cat CNAME)/
+
+```
+
+Expected: `GET 200`, `OPTIONS 403`, `TRACE 405`.
 
 Cache headers:
 
@@ -422,6 +453,16 @@ The production scan checks the real security and cache headers added by Cloudfla
 docker run --rm -v $(pwd):/zap/wrk/:rw ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py -t https://$(cat CNAME) -j --client-spider -m 2 -J zap_report_prod_full.json -r zap_report_prod_full.html
 
 ```
+
+### Accepted findings
+
+| Alert | ZAP risk | Assessed risk | Reason |
+|---|---|---|---|
+| Proxy Disclosure | Medium | Info | The detected proxies are Cloudflare and the GitHub Pages CDN: managed services, kept up to date by their providers, publicly visible by design (DNS, footer, this README) and without version numbers. Cloudflare does not allow removing its `server` and `cf-*` headers, so the alert cannot disappear completely. Its recommendations are applied where possible: only `GET` and `HEAD` are allowed (see [WAF](#waf)), `X-Powered-By` is removed, and a custom `404.html` replaces the generic GitHub Pages error page. |
+
+### Custom 404 page
+
+GitHub Pages serves `404.html` (repository root) for any missing URL, with a `404` status. It replaces the generic GitHub error page, which identifies the hosting, and offers a link back to the catalog in Catalan. It follows the same security measures as the rest of the site: no scripts, no inline styles (it only uses `styles.css`), and root-relative URLs, so it also works for nested missing paths such as `/a/b/c`. The security headers are added by Cloudflare as for any other response. The Service Worker shows this page as it is: only the app page itself falls back to the cached copy when the network fails.
 
 ### 🔒 Security & CSP Compliance
 To comply with a strict Content-Security-Policy (CSP) that blocks inline scripts (`unsafe-eval` / inline `<script>` tags), all application logic is completely externalized into `app.js` and loaded securely via the frontend interface. The CSP and the other security headers are set in Cloudflare (see [Security Headers](#security-headers)).

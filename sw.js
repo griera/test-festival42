@@ -12,8 +12,8 @@ const SHELL_CACHE = `${CACHE_PREFIX}shell-${BUILD_TAG}`;
 const CORE_ASSETS = [
     './',
     './index.html',
-    './styles.css?v=0.9.38',
-    './app.js?v=0.9.38',
+    './styles.css?v=0.9.39',
+    './app.js?v=0.9.39',
     './data.json?v=20261122230053',
     './assets/icons/f42_32x32.png'
 ];
@@ -37,6 +37,9 @@ const COVER_REQUEST_HEADER = 'X-Fair-Cover';
 
 // Every stored or rejected cover is announced to all open tabs, so their counters mirror the real cache
 const coverChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('fair-catalog-covers') : null;
+
+// Paths of the app page: the only navigations that may fall back to the cached app shell
+const APP_PAGE_PATHS = new Set(['./', './index.html'].map((path) => new URL(path, self.location.href).pathname));
 
 const PRECACHED_PATHS = new Set(CORE_ASSETS.map((asset) => new URL(asset, self.location.href).pathname));
 const IMAGE_EXTENSIONS = /\.(avif|gif|jpe?g|png|webp)$/i;
@@ -103,10 +106,12 @@ function isCoverRequest(request, url) {
     return request.destination === 'image' || IMAGE_EXTENSIONS.test(url.pathname);
 }
 
-// HTML: network first with a timeout, then the cached page
+// HTML: network first with a timeout. Only the app page itself may fall back to the cached shell:
+// any other path must show the real server answer, such as the custom 404 page.
 async function networkFirstPage(event, url) {
     // One cache entry per page, whatever ?search=&type=&day= it was opened with
     const cacheKey = `${url.origin}${url.pathname}`;
+    const isAppPage = APP_PAGE_PATHS.has(url.pathname);
 
     const network = (async () => {
         try {
@@ -122,15 +127,20 @@ async function networkFirstPage(event, url) {
             : null
     )));
 
+    // A deliberate answer of the server (page, redirect, 404...) is shown as it is.
+    // Redirects arrive as 'opaqueredirect' responses with status 0, so they are not treated as failures.
     const fast = await withTimeout(network, NAVIGATION_TIMEOUT_MS);
-    if (fast && fast.ok) return fast;
+    if (fast && fast.status < 500) return fast;
 
-    const cached = await caches.match(cacheKey)
-        || await caches.match(new URL('./index.html', self.location.href).href)
-        || await caches.match(new URL('./', self.location.href).href);
-    if (cached) return cached;
+    // Network down, too slow, or server error (5xx): serve the cached app if this is the app page
+    if (isAppPage) {
+        const cached = await caches.match(cacheKey)
+            || await caches.match(new URL('./index.html', self.location.href).href)
+            || await caches.match(new URL('./', self.location.href).href);
+        if (cached) return cached;
+    }
 
-    // First visit, nothing cached yet: wait for the network as long as it takes
+    // Nothing better to offer: wait for the network as long as it takes
     return (await network) || new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
 }
 
