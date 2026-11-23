@@ -168,7 +168,7 @@ python3 scripts/extract_covers.py data/catalog.pdf
 
 *(You can also check available options using `python3 scripts/extract_covers.py --help`)*.
 
-> ⚠️ Covers are cached for one year (see [Cloudflare Configuration](#️-cloudflare-configuration)) on the assumption that a cover never changes for the same EAN. If you ever regenerate existing covers (e.g. with better quality), publish them under a new URL (for example a new `assets/covers-v2/` folder), otherwise devices that already have them will keep showing the old images.
+> ⚠️ Covers are cached for one week (see [Cloudflare Configuration](#️-cloudflare-configuration)) on the assumption that a cover never changes for the same EAN. If you ever regenerate existing covers (e.g. with better quality), publish them under a new URL (for example a new `assets/covers-v2/` folder), otherwise devices that already have them will keep showing the old images.
 
 4. Compile your CSS changes if necessary (see [Tailwind CSS Local Compilation](#-tailwind-css-local-compilation)).
 5. **Bump the versions** (see [Version Management Workflow](#️-version-management-workflow)): `data` if `data.json` changed, `code` if `app.js` or `styles.css` changed.
@@ -178,7 +178,7 @@ python3 scripts/extract_covers.py data/catalog.pdf
 
 ## 🏷️ Version Management Workflow
 
-Versioned URLs (`app.js?v=…`, `styles.css?v=…`, `data.json?v=…`) let browsers and Cloudflare cache files for a year while still picking up every new release. The script `scripts/bump_version.py` keeps those versions in sync in `index.html` and in the Service Worker precache list (`sw.js`), with timezone-aware timestamps (`CET/CEST` via `Europe/Madrid`) and semantic versioning (`MAJOR.MINOR.PATCH`).
+Versioned URLs (`app.js?v=…`, `styles.css?v=…`, `data.json?v=…`) let browsers and Cloudflare cache files for a week while still picking up every new release. The script `scripts/bump_version.py` keeps those versions in sync in `index.html` and in the Service Worker precache list (`sw.js`), with timezone-aware timestamps (`CET/CEST` via `Europe/Madrid`) and semantic versioning (`MAJOR.MINOR.PATCH`).
 
 ### Business Rules
 
@@ -186,7 +186,7 @@ Versioned URLs (`app.js?v=…`, `styles.css?v=…`, `data.json?v=…`) let brows
 2. **Code updates (`app.js` / `styles.css`)**: you choose whether the change is a `patch`, `minor`, or `major` increment. Both files share the same version.
 3. **Consistency check**: every run verifies that `index.html` and `sw.js` reference the same versions, and exits with code `1` if they do not or if a file or pattern is missing.
 
-> ⚠️ Never change `app.js` or `styles.css` without bumping the code version, and never edit `?v=` values by hand: versioned files are cached for a year, so a changed file under an unchanged URL would keep being served in its old version.
+> ⚠️ Never change `app.js` or `styles.css` without bumping the code version, and never edit `?v=` values by hand: versioned files are cached for a week, so a changed file under an unchanged URL would keep being served in its old version.
 
 ### Usage Instructions
 
@@ -230,9 +230,41 @@ If both code and data changed, run `code` first and then `data`.
 
 ## ☁️ Cloudflare Configuration
 
-The site is served by GitHub Pages behind Cloudflare (custom domain in `CNAME`). GitHub Pages does not allow custom response headers, so security headers and caching are configured in Cloudflare.
+The site is served by GitHub Pages behind Cloudflare (custom domain in `CNAME`, proxied by Cloudflare). GitHub Pages does not allow custom response headers, so encryption, security headers and caching are configured in Cloudflare.
+
+### SSL/TLS
+
+**SSL/TLS → Overview → Encryption mode:** `Full (strict)`
+
+Cloudflare connects to GitHub Pages over HTTPS **and** validates its certificate, so the whole path from the visitor to GitHub Pages is encrypted and authenticated:
+
+* `Flexible` would send the requests from Cloudflare to GitHub Pages over plain HTTP. Anyone on that path could read or modify the page, and with **Enforce HTTPS** enabled in GitHub Pages it causes an endless redirect loop.
+* `Full` (non-strict) encrypts the connection but accepts any certificate, so it does not prove that Cloudflare is talking to the real GitHub Pages.
+
+**SSL/TLS → Edge Certificates** (connection between visitors and Cloudflare):
+
+| Setting | Value |
+|---|---|
+| Always Use HTTPS | `On` |
+| TLS 1.3 | `On` |
+| HTTP Strict Transport Security (HSTS) | `On` · Max-Age: 6 months (`15552000` s, recommended) · Include subdomains: `On` · Preload: `Off` |
+| Automatic HTTPS Rewrites | `On` |
+| Opportunistic Encryption | `On` |
+
+* **Always Use HTTPS:** any `http://` request is redirected to `https://` at the edge, so the page, the data and the Service Worker are always served encrypted. Service Workers only run on HTTPS, so without it a visitor arriving through an `http://` link would get no offline mode.
+* **TLS 1.3:** the latest TLS version. It needs fewer round trips to open a connection than TLS 1.2, which noticeably speeds up the first load on high-latency or saturated networks like the one at the fair, and it only allows modern ciphers. Older clients automatically fall back to TLS 1.2.
+* **HSTS:** once a browser has visited the site over HTTPS, it refuses to use plain HTTP for it for the next 6 months, even if the user types `http://` or follows an old link. This closes the gap that **Always Use HTTPS** leaves open: the very first unencrypted request, which an attacker on the same Wi-Fi could intercept before the redirect.
+  * **Include subdomains** extends the rule to every subdomain. Cloudflare applies HSTS to the whole zone (`genisgrp.xyz`), so **every current and future subdomain of the zone must work over HTTPS**. Otherwise browsers that visited this site will refuse to open them.
+  * **Preload** is off, so the domain is not hard-coded in browsers: the very first visit of a new browser still relies on the **Always Use HTTPS** redirect. Being on the preload list is hard to undo (removal takes months), so it is only worth enabling for a long-term domain.
+  * To disable HSTS, lower **Max-Age** to `0` and keep it like that until visitors' browsers have seen the new value. Browsers that never come back keep the old rule until it expires.
+* **Automatic HTTPS Rewrites:** Cloudflare rewrites `http://` links and resources in the HTML to `https://` when they are available over HTTPS, preventing "mixed content" errors. This site only loads its own files with relative URLs and its external links already use `https://`, so it acts as a safety net for future content.
+* **Opportunistic Encryption:** lets browsers that request an `http://` URL use an encrypted connection without changing the URL. With **Always Use HTTPS** on, every `http://` request is redirected anyway, so it has practically no effect here. It is kept enabled because it is harmless.
 
 ### Security Headers
+
+Three sets of rules work together: custom headers for this app, Cloudflare managed transforms for generic hardening, and a rule that removes a permissive header sent by GitHub Pages.
+
+#### Custom headers
 
 **Rules → Transform Rules → Modify Response Header**, applied to all requests, with **Set static** for each header:
 
@@ -243,15 +275,39 @@ The site is served by GitHub Pages behind Cloudflare (custom domain in `CNAME`).
 | `Cross-Origin-Resource-Policy` | `same-origin` |
 | `Cross-Origin-Embedder-Policy` | `require-corp` |
 
-Notes:
+* **CSP:** only resources of this site can be loaded, which blocks injected scripts, styles or images from other domains. `worker-src 'self'` is required: with `'none'` the Service Worker cannot be registered and the offline mode never starts.
+* **COOP:** cuts the link between this tab and windows of other sites (`window.opener`), preventing tabnabbing and cross-site leaks.
+* **CORP:** prevents other websites from embedding the covers and files of this site (hotlinking) and keeps them out of other sites' browser processes (Spectre-type attacks). If covers are ever moved to a subdomain or another CDN, those files need `same-site` or `cross-origin` instead.
+* **COEP:** the page may only load external resources that explicitly allow it. Today the CSP already blocks every external resource, so it adds little, but it costs nothing. If you ever add one (fonts, analytics, embedded videos…), allow it in the CSP **and** make sure it sends CORP or CORS headers, or it will fail to load.
 
-* `worker-src 'self'` is required: with `'none'` the Service Worker cannot be registered and the offline mode never starts.
-* `Cross-Origin-Embedder-Policy: require-corp` and the CSP both block external resources. If you ever add one (fonts, analytics, embedded videos…), allow it in the CSP **and** make sure it sends CORP or CORS headers, or it will fail to load.
-* `Cross-Origin-Resource-Policy: same-origin` prevents other websites from embedding the covers and files of this site. If covers are ever moved to a subdomain or another CDN, those files need `same-site` or `cross-origin` instead.
+#### Managed transforms
+
+**Rules → Settings → Managed Transforms** (pre-built rules maintained by Cloudflare, applied to all requests):
+
+* **Remove "X-Powered-By" headers:** `Enabled`. This header reveals the server technology. GitHub Pages does not send it today, but the transform keeps it out if the hosting ever changes, and it is the kind of detail security scanners report.
+* **Add security headers:** `Enabled`. It adds these response headers:
+
+| Header | Value | Purpose on this site |
+|---|---|---|
+| `X-Content-Type-Options` | `nosniff` | Browsers trust the declared `Content-Type` and never treat a file as a different type (e.g. a JSON or image file run as a script). |
+| `X-Frame-Options` | `SAMEORIGIN` | Blocks embedding the page in other sites' frames (clickjacking). It duplicates `frame-ancestors 'self'` of the CSP for older browsers. |
+| `Referrer-Policy` | `same-origin` | Links to other sites (festival website, GitHub, LinkedIn…) do not receive the page URL, which can contain the user's search terms (`?search=…`). |
+| `X-XSS-Protection` | `1; mode=block` | Legacy header, ignored by current browsers (the CSP provides the real protection). Harmless. |
+| `Expect-CT` | `max-age=86400, enforce` | Deprecated and ignored by current browsers, since Certificate Transparency is now always enforced. Harmless. |
+
+#### Remove the CORS wildcard
+
+**Rules → Transform Rules → Modify Response Header**, rule **Remove CORS Wildcard**:
+
+* Expression: `(http.host eq "test-festival42.genisgrp.xyz")`
+* Action: **Remove** `access-control-allow-origin`
+* Position: after the cache-control rules (see [Caching](#caching)). The order does not change the result, because each rule handles a different header.
+
+GitHub Pages sends `Access-Control-Allow-Origin: *` on every response, which lets any website read the files of this site with `fetch()` (data, catalog, scripts). The app itself only makes same-origin requests, which never need CORS, so removing the header breaks nothing and closes that door. It also clears the "Cross-Domain Misconfiguration" alert reported by OWASP ZAP. If the custom domain ever changes, update the expression.
 
 ### Caching
 
-Goal: versioned files and covers are cached for a year, while the app shell (`index.html` and `sw.js`) is always revalidated, so open pages detect a new release within the app update check interval (`UPDATE_CHECK_INTERVAL_MS` in `app.js`, 10 minutes) after GitHub Pages publishes it.
+Goal: versioned files and covers are cached for a week, while the app shell (`index.html` and `sw.js`) is always revalidated, so open pages detect a new release within the app update check interval (`UPDATE_CHECK_INTERVAL_MS` in `app.js`, 10 minutes) after GitHub Pages publishes it.
 
 **1. Caching → Configuration → Browser Cache TTL:** `Respect Existing Headers`
 
@@ -261,7 +317,7 @@ By default Cloudflare raises any browser TTL below 4 hours to 4 hours, which cou
 
 | # | Rule | Expression | Settings |
 |---|---|---|---|
-| 1 | Immutable files | `(http.request.uri.query contains "v=" and not http.request.uri.path in {"/sw.js"}) or http.request.uri.path contains "/assets/covers/"` | Eligible for cache · Edge TTL: ignore cache-control header, 1 year · Browser TTL: override origin, 1 year |
+| 1 | Immutable files | `(http.request.uri.query contains "v=" and not http.request.uri.path in {"/sw.js"}) or http.request.uri.path contains "/assets/covers/"` | Eligible for cache · Edge TTL: ignore cache-control header, 1 week · Browser TTL: override origin, 1 week |
 | 2 | Bypass app shell | `http.request.uri.path in {"/" "/index.html" "/sw.js"}` | Bypass cache |
 
 Files without a rule (favicon, error pages) use the 10-minute TTL sent by GitHub Pages.
@@ -271,17 +327,36 @@ Files without a rule (favicon, error pages) use the 10-minute TTL sent by GitHub
 | Rule | Expression | Header |
 |---|---|---|
 | App shell | `http.request.uri.path in {"/" "/index.html" "/sw.js"}` | `Cache-Control: no-cache, must-revalidate` |
-| Immutable files | Same expression as Cache Rule 1 | `Cache-Control: public, max-age=31536000, immutable` |
+| Immutable files | Same expression as Cache Rule 1 | `Cache-Control: public, max-age=604800, immutable` |
+
+Browsers follow this `Cache-Control` header, not the Browser TTL of the Cache Rule, so `max-age` must match the intended duration (`604800` seconds = 1 week).
 
 **4. Purge:** run **Caching → Configuration → Purge Everything** once after changing these rules. After that, a purge after each deploy is optional: it only acts as a safety net if a file was changed without bumping its version.
 
 ### Why this works
 
 * `sw.js` and `index.html` are never cached by Cloudflare, so a new release is visible as soon as GitHub Pages publishes it.
-* `app.js?v=…`, `styles.css?v=…` and `data.json?v=…` get a new URL on every change (see [Version Management Workflow](#️-version-management-workflow)), so they can be cached for a year without serving stale content.
+* `app.js?v=…`, `styles.css?v=…` and `data.json?v=…` get a new URL on every change (see [Version Management Workflow](#️-version-management-workflow)), so they can be cached for a week without serving stale content.
 * Covers never change for the same EAN: new books bring new URLs and removed covers are simply no longer requested.
 
-### Verify the headers
+### Verify the configuration
+
+Encryption:
+
+```bash
+curl -sI http://$(cat CNAME)/ | grep -iE "^HTTP|^location"
+curl -sI https://$(cat CNAME)/ | grep -i "strict-transport-security"
+curl -sv -o /dev/null https://$(cat CNAME)/ 2>&1 | grep -i "SSL connection using"
+
+```
+
+Expected:
+
+* The `http://` request answers with a `301` redirect whose `location` starts with `https://`.
+* `strict-transport-security: max-age=15552000; includeSubDomains` (without `preload`).
+* The connection uses `TLSv1.3`.
+
+Cache headers:
 
 ```bash
 curl -sI https://$(cat CNAME)/sw.js | grep -iE "cache-control|cf-cache-status"
@@ -292,7 +367,16 @@ curl -sI "https://$(cat CNAME)/app.js?v=<current version>" | grep -iE "cache-con
 Expected:
 
 * `sw.js` and `/`: `cache-control: no-cache, must-revalidate` and `cf-cache-status: BYPASS` or `DYNAMIC`.
-* Versioned files and covers: `cache-control: public, max-age=31536000, immutable` and `cf-cache-status: HIT` from the second request on.
+* Versioned files and covers: `cache-control: public, max-age=604800, immutable` and `cf-cache-status: HIT` from the second request on.
+
+Security headers:
+
+```bash
+curl -sI https://$(cat CNAME)/ | grep -iE "content-security-policy|cross-origin|x-content-type-options|x-frame-options|referrer-policy|x-powered-by|access-control-allow-origin"
+
+```
+
+Expected: the CSP, the three `cross-origin-*` headers, `x-content-type-options`, `x-frame-options` and `referrer-policy` are present, and there is **no** `x-powered-by` nor `access-control-allow-origin`.
 
 ---
 
