@@ -47,7 +47,7 @@ const FILTER_BTN_IDLE = 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-s
 const eventTypesConfig = [
     { id: 'all', label: 'Tots', activeClass: 'bg-slate-100 text-slate-900 border-white shadow-sm' },
     { id: 'book', label: '📚 Llibres', activeClass: 'bg-indigo-600 text-white border-indigo-500' },
-    { id: 'activity', label: '🎤 Activitats', activeClass: 'bg-teal-600 text-white border-teal-500' }
+    { id: 'activity', label: '🎤 Activitats', activeClass: 'bg-teal-700 text-white border-teal-600' }
 ];
 
 // Configured event dates array for dynamic selector rendering
@@ -78,9 +78,9 @@ const SECTION_META = {
         title: '🎤 Activitats',
         titleClass: 'text-teal-400',
         sectionClass: 'mt-6',
-        listClass: 'grid gap-4 sm:grid-cols-2',   // same grid as books: 1 column on mobile, 2 on sm screens and up
+        listClass: 'grid gap-4 sm:grid-cols-2',
         moreLabel: 'Carregar més activitats',
-        moreClass: 'bg-teal-600 hover:bg-teal-500',
+        moreClass: 'bg-teal-700 hover:bg-teal-800',
         renderItem: renderActivityCard
     }
 };
@@ -487,7 +487,7 @@ function renderLoadMore(type, remaining) {
         <div class="text-center mt-6">
             <button type="button" data-action="load-more" data-type="${type}" class="${meta.moreClass} text-white font-medium px-5 py-2 rounded-xl text-sm transition-colors shadow-sm cursor-pointer inline-flex flex-col items-center justify-center">
                 <span>${meta.moreLabel}</span>
-                <span class="text-xs opacity-80 font-normal">(${remaining} restants)</span>
+                <span class="text-xs opacity-90 font-normal">(${remaining} restants)</span>
             </button>
         </div>
     `;
@@ -562,10 +562,14 @@ function announceResults(message) {
     }, RESULTS_ANNOUNCE_DELAY_MS);
 }
 
-function renderAuthorButton(author, hoverClass) {
-    return `<button type="button" class="underline cursor-pointer ${hoverClass} transition-colors text-left author-filter-trigger" data-author="${escapeHTML(author)}">${safeValue(author)}</button>`;
+// extraClass: 'inline-block py-0.5' gives stacked names a 24px touch target (WCAG 2.2, 2.5.8)
+function renderAuthorButton(author, hoverClass, extraClass = '') {
+    return `<button type="button" class="underline cursor-pointer ${hoverClass} transition-colors text-left author-filter-trigger ${extraClass}" data-author="${escapeHTML(author)}">${safeValue(author)}</button>`;
 }
 
+// Every cover loads lazily, including the first ones: in Lighthouse tests, loading them eagerly with
+// fetchpriority="high" made the LCP worse, because the image arrived while the cards were still being
+// rendered and then had to wait to be painted.
 function renderBookCard(book) {
     const author = typeof book.author === 'string' ? book.author.trim() : '';
     return `
@@ -642,9 +646,9 @@ function renderActivityAuthors(authorStr) {
     if (!authorStr) return ' -';
     const authors = String(authorStr).split(',').map((a) => a.trim()).filter((a) => a.length > 0);
     if (authors.length === 0) return ' -';
-    if (authors.length === 1) return ` ${renderAuthorButton(authors[0], 'hover:text-teal-400')}`;
+    if (authors.length === 1) return ` ${renderAuthorButton(authors[0], 'hover:text-teal-400', 'inline-block py-0.5')}`;
     return '<br>' + authors.map((author) =>
-        `<span class="block pl-2">${renderAuthorButton(author, 'hover:text-teal-400')}</span>`
+        `<span class="block pl-2">${renderAuthorButton(author, 'hover:text-teal-400', 'inline-block py-0.5')}</span>`
     ).join('');
 }
 
