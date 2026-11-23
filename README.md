@@ -369,14 +369,14 @@ Cloudflare connects to GitHub Pages over HTTPS **and** validates its certificate
 |---|---|
 | Always Use HTTPS | `On` |
 | TLS 1.3 | `On` |
-| HTTP Strict Transport Security (HSTS) | `On` · Max-Age: 6 months (`15552000` s, recommended) · Include subdomains: `On` · Preload: `Off` |
+| HTTP Strict Transport Security (HSTS) | `On` · Max-Age: 12 months (`31536000` s) · Include subdomains: `On` · Preload: `Off` |
 | Automatic HTTPS Rewrites | `On` |
 | Opportunistic Encryption | `On` |
 
 * **Always Use HTTPS:** any `http://` request is redirected to `https://` at the edge, so the page, the data and the Service Worker are always served encrypted. Service Workers only run on HTTPS, so without it a visitor arriving through an `http://` link would get no offline mode.
 * **TLS 1.3:** the latest TLS version. It needs fewer round trips to open a connection than TLS 1.2, which noticeably speeds up the first load on high-latency or saturated networks like the one at the fair, and it only allows modern ciphers. Older clients automatically fall back to TLS 1.2.
 * **HSTS:** once a browser has visited the site over HTTPS, it refuses to use plain HTTP for it for the next 6 months, even if the user types `http://` or follows an old link. This closes the gap that **Always Use HTTPS** leaves open: the very first unencrypted request, which an attacker on the same Wi-Fi could intercept before the redirect.
-  * **Include subdomains** extends the rule to every subdomain. Cloudflare applies HSTS to the whole zone (`genisgrp.xyz`), so **every current and future subdomain of the zone must work over HTTPS**. Otherwise browsers that visited this site will refuse to open them.
+  * **Include subdomains** extends the rule to the subdomains of the host that sends it. Cloudflare sends HSTS from every hostname of the zone (`genisgrp.xyz`), so a browser that visits the root domain applies it to **every subdomain of the zone**: any current or future subdomain must work over HTTPS. A browser that only visits this site applies it to `test-festival42.genisgrp.xyz` and its own subdomains.
   * **Preload** is off, so the domain is not hard-coded in browsers: the very first visit of a new browser still relies on the **Always Use HTTPS** redirect. Being on the preload list is hard to undo (removal takes months), so it is only worth enabling for a long-term domain.
   * To disable HSTS, lower **Max-Age** to `0` and keep it like that until visitors' browsers have seen the new value. Browsers that never come back keep the old rule until it expires.
 * **Automatic HTTPS Rewrites:** Cloudflare rewrites `http://` links and resources in the HTML to `https://` when they are available over HTTPS, preventing "mixed content" errors. This site only loads its own files with relative URLs and its external links already use `https://`, so it acts as a safety net for future content.
@@ -494,7 +494,7 @@ curl -sv -o /dev/null https://$(cat CNAME)/ 2>&1 | grep -i "SSL connection using
 Expected:
 
 * The `http://` request answers with a `301` redirect whose `location` starts with `https://`.
-* `strict-transport-security: max-age=15552000; includeSubDomains` (without `preload`).
+* `strict-transport-security: max-age=31536000; includeSubDomains` (without `preload`).
 * The connection uses `TLSv1.3`.
 
 HTTP methods:
