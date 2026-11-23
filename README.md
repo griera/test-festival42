@@ -114,6 +114,8 @@ python3 -m http.server 8000
 
 3. Open your web browser and go to: `http://localhost:8000`
 
+> 💡 The Service Worker (offline mode) only runs on HTTPS or `localhost`. While developing, enable **DevTools → Application → Service Workers → Update on reload**, so every reload uses your latest `app.js` and `sw.js` instead of the cached ones.
+
 ---
 
 ## 📋 Raw CSV Schema
@@ -166,30 +168,35 @@ python3 scripts/extract_covers.py data/catalog.pdf
 
 *(You can also check available options using `python3 scripts/extract_covers.py --help`)*.
 
-4. Compile your CSS changes if necessary, then commit and push `index.html`, `app.js`, `styles.css`, `src/input.css`, `data.json`, and cover assets (`assets/covers/`) to deploy changes via GitHub Pages.
+> ⚠️ Covers are cached for one year (see [Cloudflare Configuration](#️-cloudflare-configuration)) on the assumption that a cover never changes for the same EAN. If you ever regenerate existing covers (e.g. with better quality), publish them under a new URL (for example a new `assets/covers-v2/` folder), otherwise devices that already have them will keep showing the old images.
+
+4. Compile your CSS changes if necessary (see [Tailwind CSS Local Compilation](#-tailwind-css-local-compilation)).
+5. **Bump the versions** (see [Version Management Workflow](#️-version-management-workflow)): `data` if `data.json` changed, `code` if `app.js` or `styles.css` changed.
+6. Commit and push `index.html`, `app.js`, `sw.js`, `styles.css`, `src/input.css`, `data.json`, and cover assets (`assets/covers/`) to deploy changes via GitHub Pages.
 
 ---
 
 ## 🏷️ Version Management Workflow
 
-To ensure efficient browser caching while keeping your data and code versions fully synchronized, this project uses an automated Python script (`bump_version.py`). It automatically handles timezone-aware timestamps (`CET/CEST` via `Europe/Madrid`) and semantic versioning (`MAJOR.MINOR.PATCH`).
+Versioned URLs (`app.js?v=…`, `styles.css?v=…`, `data.json?v=…`) let browsers and Cloudflare cache files for a year while still picking up every new release. The script `scripts/bump_version.py` keeps those versions in sync in `index.html` and in the Service Worker precache list (`sw.js`), with timezone-aware timestamps (`CET/CEST` via `Europe/Madrid`) and semantic versioning (`MAJOR.MINOR.PATCH`).
 
 ### Business Rules
 
-1. **Data updates (`data.json`)**: Any change in the data implies that `app.js` must be updated (since its internal `TIMESTAMP_VERSION` changes). This **automatically triggers a `patch` version bump** for the code in `index.html`.
-2. **Code updates (`app.js` / `styles.css`)**: You can manually choose whether a code change requires a `patch`, `minor`, or `major` version increment.
+1. **Data updates (`data.json`)**: a new timestamp is written to the `data.json` preload link in `index.html` (`id="dataPreload"`) and to `sw.js`. **`app.js` is not modified**: it reads the data URL and its version from that preload link, so the code version stays the same and devices only download the new data.
+2. **Code updates (`app.js` / `styles.css`)**: you choose whether the change is a `patch`, `minor`, or `major` increment. Both files share the same version.
+3. **Consistency check**: every run verifies that `index.html` and `sw.js` reference the same versions, and exits with code `1` if they do not or if a file or pattern is missing.
+
+> ⚠️ Never change `app.js` or `styles.css` without bumping the code version, and never edit `?v=` values by hand: versioned files are cached for a year, so a changed file under an unchanged URL would keep being served in its old version.
 
 ### Usage Instructions
 
-Run the script from your project's root terminal according to what you have modified:
+Run the script according to what you have modified (it can be launched from any directory):
 
 * **When you update data (`data.json`):**
-This generates a new CET/CEST timestamp, updates the `TIMESTAMP_VERSION` constant in `app.js`, synchronizes the `data.json` preload link in `index.html`, and automatically bumps the `patch` version of `app.js` and `styles.css` in `index.html`.
 ```bash
 python3 scripts/bump_version.py data
 
 ```
-
 
 * **When you make a small code/style fix (bugfix):**
 ```bash
@@ -197,13 +204,11 @@ python3 scripts/bump_version.py code --type patch
 
 ```
 
-
 * **When you add a new feature to the code (minor update):**
 ```bash
 python3 scripts/bump_version.py code --type minor
 
 ```
-
 
 * **When you make a breaking change to the architecture/code (major update):**
 ```bash
@@ -211,7 +216,83 @@ python3 scripts/bump_version.py code --type major
 
 ```
 
+* **To only verify that `index.html` and `sw.js` are aligned (changes nothing), e.g. right before deploying:**
+```bash
+python3 scripts/bump_version.py check
+
+```
+
+If both code and data changed, run `code` first and then `data`.
+
 *(You can also check available options using `python3 scripts/bump_version.py --help`)*.
+
+---
+
+## ☁️ Cloudflare Configuration
+
+The site is served by GitHub Pages behind Cloudflare (custom domain in `CNAME`). GitHub Pages does not allow custom response headers, so security headers and caching are configured in Cloudflare.
+
+### Security Headers
+
+**Rules → Transform Rules → Modify Response Header**, applied to all requests, with **Set static** for each header:
+
+| Header | Value |
+|---|---|
+| `Content-Security-Policy` | `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; object-src 'none'; media-src 'none'; frame-src 'none'; worker-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self';` |
+| `Cross-Origin-Opener-Policy` | `same-origin` |
+| `Cross-Origin-Resource-Policy` | `same-origin` |
+| `Cross-Origin-Embedder-Policy` | `require-corp` |
+
+Notes:
+
+* `worker-src 'self'` is required: with `'none'` the Service Worker cannot be registered and the offline mode never starts.
+* `Cross-Origin-Embedder-Policy: require-corp` and the CSP both block external resources. If you ever add one (fonts, analytics, embedded videos…), allow it in the CSP **and** make sure it sends CORP or CORS headers, or it will fail to load.
+* `Cross-Origin-Resource-Policy: same-origin` prevents other websites from embedding the covers and files of this site. If covers are ever moved to a subdomain or another CDN, those files need `same-site` or `cross-origin` instead.
+
+### Caching
+
+Goal: versioned files and covers are cached for a year, while the app shell (`index.html` and `sw.js`) is always revalidated, so open pages detect a new release within the app update check interval (`UPDATE_CHECK_INTERVAL_MS` in `app.js`, 10 minutes) after GitHub Pages publishes it.
+
+**1. Caching → Configuration → Browser Cache TTL:** `Respect Existing Headers`
+
+By default Cloudflare raises any browser TTL below 4 hours to 4 hours, which could keep an old `index.html` in browsers.
+
+**2. Caching → Cache Rules**, in this order (when several rules match, the last one wins):
+
+| # | Rule | Expression | Settings |
+|---|---|---|---|
+| 1 | Immutable files | `(http.request.uri.query contains "v=" and not http.request.uri.path in {"/sw.js"}) or http.request.uri.path contains "/assets/covers/"` | Eligible for cache · Edge TTL: ignore cache-control header, 1 year · Browser TTL: override origin, 1 year |
+| 2 | Bypass app shell | `http.request.uri.path in {"/" "/index.html" "/sw.js"}` | Bypass cache |
+
+Files without a rule (favicon, error pages) use the 10-minute TTL sent by GitHub Pages.
+
+**3. Rules → Transform Rules → Modify Response Header** (Cache Rules cannot send `no-cache` or `immutable` to browsers):
+
+| Rule | Expression | Header |
+|---|---|---|
+| App shell | `http.request.uri.path in {"/" "/index.html" "/sw.js"}` | `Cache-Control: no-cache, must-revalidate` |
+| Immutable files | Same expression as Cache Rule 1 | `Cache-Control: public, max-age=31536000, immutable` |
+
+**4. Purge:** run **Caching → Configuration → Purge Everything** once after changing these rules. After that, a purge after each deploy is optional: it only acts as a safety net if a file was changed without bumping its version.
+
+### Why this works
+
+* `sw.js` and `index.html` are never cached by Cloudflare, so a new release is visible as soon as GitHub Pages publishes it.
+* `app.js?v=…`, `styles.css?v=…` and `data.json?v=…` get a new URL on every change (see [Version Management Workflow](#️-version-management-workflow)), so they can be cached for a year without serving stale content.
+* Covers never change for the same EAN: new books bring new URLs and removed covers are simply no longer requested.
+
+### Verify the headers
+
+```bash
+curl -sI https://$(cat CNAME)/sw.js | grep -iE "cache-control|cf-cache-status"
+curl -sI "https://$(cat CNAME)/app.js?v=<current version>" | grep -iE "cache-control|cf-cache-status"
+
+```
+
+Expected:
+
+* `sw.js` and `/`: `cache-control: no-cache, must-revalidate` and `cf-cache-status: BYPASS` or `DYNAMIC`.
+* Versioned files and covers: `cache-control: public, max-age=31536000, immutable` and `cf-cache-status: HIT` from the second request on.
 
 ---
 
@@ -224,36 +305,42 @@ This static prototype is audited locally using **OWASP ZAP** via Docker.
 * Docker
 * Local server running (`python3 -m http.server 8000`)
 
+`--network host` with a `localhost` target lets the ZAP browser register the Service Worker (secure context), so the offline mode is also covered by the scan. `-j --client-spider` makes ZAP load the page in a headless browser and scan the requests made by `app.js`.
+
 ### Run local scan (baseline)
 
 ```bash
-docker run --rm --network host -v $(pwd):/zap/wrk/:rw ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:8000 -j --client-spider -m 2 -J zap_report.json -r zap_report.html
+docker run --rm --network host -v $(pwd):/zap/wrk/:rw ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:8000 -j --client-spider -m 2 -J zap_report_local.json -r zap_report_local.html
 
 ```
 
 ### Run local scan (full)
 
 ```bash
-docker run --rm --network host -v $(pwd):/zap/wrk/:rw ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py -t http://localhost:8000 -j --client-spider -m 2 -J zap_report.json -r zap_report.html
+docker run --rm --network host -v $(pwd):/zap/wrk/:rw ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py -t http://localhost:8000 -j --client-spider -m 2 -J zap_report_local_full.json -r zap_report_local_full.html
 
 ```
 
 ### Run production scan (baseline)
 
 ```bash
-docker run --rm -v $(pwd):/zap/wrk/:rw ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t https://$(cat CNAME) -j --client-spider -m 2 -J zap_report.json -r zap_report.html
+docker run --rm -v $(pwd):/zap/wrk/:rw ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t https://$(cat CNAME) -j --client-spider -m 2 -J zap_report_prod.json -r zap_report_prod.html
 
 ```
 
+The production scan checks the real security and cache headers added by Cloudflare. If Cloudflare bot protection answers with challenges or `403` errors, temporarily add a WAF rule that skips protections for your IP during the scan.
+
 ### Run production scan (full)
 
+> ⚠️ The full scan sends active attack payloads. Against production, the Cloudflare WAF will likely block it and may ban your IP, so prefer the local full scan and use only the baseline scan against production.
+
 ```bash
-docker run --rm -v $(pwd):/zap/wrk/:rw ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py -t https://$(cat CNAME) -j --client-spider -m 2 -J zap_report.json -r zap_report.html
+docker run --rm -v $(pwd):/zap/wrk/:rw ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py -t https://$(cat CNAME) -j --client-spider -m 2 -J zap_report_prod_full.json -r zap_report_prod_full.html
 
 ```
 
 ### 🔒 Security & CSP Compliance
-To comply with a strict Content-Security-Policy (CSP) that blocks inline scripts (`unsafe-eval` / inline `<script>` tags), all application logic is completely externalized into `app.js` and loaded securely via the frontend interface.
+To comply with a strict Content-Security-Policy (CSP) that blocks inline scripts (`unsafe-eval` / inline `<script>` tags), all application logic is completely externalized into `app.js` and loaded securely via the frontend interface. The CSP and the other security headers are set in Cloudflare (see [Security Headers](#security-headers)).
 
 ---
 
