@@ -783,15 +783,23 @@ async function registerOfflineServiceWorker() {
         if (await isNewerVersionActive()) showUpdateBanner();
     });
 
+    let registration;
     try {
         const buildVersion = `${getAppVersion()}-${TIMESTAMP_VERSION}`;
-        const registration = await navigator.serviceWorker.register(`sw.js?v=${encodeURIComponent(buildVersion)}`, { scope: './' });
-        schedulePeriodicUpdateChecks(registration);
+        registration = await navigator.serviceWorker.register(`sw.js?v=${encodeURIComponent(buildVersion)}`, { scope: './' });
     } catch (err) {
-        console.warn('Service Worker registration failed:', err);
-        showOfflineUnavailable('No s\'ha pogut activar en aquest navegador.');
-        return;
+        // Typical after an update applied without connection: the sw.js of the new version cannot be
+        // downloaded yet, but the installed worker keeps the offline mode working. The registration is
+        // completed on the next load with connection.
+        registration = navigator.serviceWorker.controller ? await navigator.serviceWorker.getRegistration() : null;
+        if (!registration) {
+            console.warn('Service Worker registration failed:', err);
+            showOfflineUnavailable('No s\'ha pogut activar en aquest navegador.');
+            return;
+        }
+        console.warn('Service Worker registration postponed (offline?):', err);
     }
+    schedulePeriodicUpdateChecks(registration);
 
     initCoverTracking();
 
@@ -1130,11 +1138,27 @@ function waitForController(timeoutMs) {
     });
 }
 
+// Removes stored covers that data.json no longer references: removed books, and previous versions of
+// regenerated covers. A previous version is kept while the current one is not stored yet, since the
+// Service Worker shows it when there is no connection (otherwise the cover would just disappear).
 async function pruneOrphanCovers() {
     if (coverState.wanted.size === 0) return; // never prune against an empty list
     const cache = await caches.open(COVERS_CACHE);
-    const orphans = (await cache.keys()).filter((request) => !coverState.wanted.has(request.url));
+    const requests = await cache.keys();
+    const stored = new Set(requests.map((request) => request.url));
+    const wantedByPath = new Map([...coverState.wanted].map((url) => [coverFilePath(url), url]));
+    const orphans = requests.filter((request) => {
+        if (coverState.wanted.has(request.url)) return false;
+        const current = wantedByPath.get(coverFilePath(request.url));
+        return !current || stored.has(current);
+    });
     await Promise.all(orphans.map((request) => cache.delete(request)));
+}
+
+// Cover URL without its version (?v=), to match the versions of the same cover file
+function coverFilePath(url) {
+    const parsed = new URL(url);
+    return `${parsed.origin}${parsed.pathname}`;
 }
 
 // Download only the missing covers. Downloads go through the Service Worker, which validates and stores them.
@@ -1241,6 +1265,9 @@ async function downloadAllCovers({ resume = false } = {}) {
     } else {
         coverDownload.retryAttempt = 0;
         setCoverDownloadPending(false);
+        // Every current version is stored: remove the previous versions they replace
+        await pruneOrphanCovers().catch(() => {});
+        await refreshCachedCoverSet();
         setCoverPhase('done');
     }
 }

@@ -12,8 +12,8 @@ const SHELL_CACHE = `${CACHE_PREFIX}shell-${BUILD_TAG}`;
 const CORE_ASSETS = [
     './',
     './index.html',
-    './styles.css?v=0.9.44',
-    './app.js?v=0.9.44',
+    './styles.css?v=0.9.48',
+    './app.js?v=0.9.48',
     './data.json?v=20261124111244',
     './assets/icons/f42_32x32.png'
 ];
@@ -158,6 +158,13 @@ async function cacheFirstCover(event, url) {
         }
         return response;
     } catch (_) {
+        // Offline and this version is not stored yet (e.g. covers regenerated with a new fingerprint):
+        // show the previous version of the same cover, which app.js keeps until the new one is stored.
+        // Not for "download all covers" requests: they must fail, so the download retries them afterwards.
+        if (!event.request.headers.has(COVER_REQUEST_HEADER)) {
+            const previous = await cache.match(`${url.origin}${url.pathname}`, { ignoreSearch: true, ignoreVary: true });
+            if (previous) return previous;
+        }
         return new Response('', { status: 504, statusText: 'Offline' });
     }
 }
