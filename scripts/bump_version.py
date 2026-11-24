@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -15,6 +16,13 @@ ROOT = Path(__file__).resolve().parent.parent
 INDEX_FILE = ROOT / "index.html"
 SW_FILE = ROOT / "sw.js"
 DATA_FILE = ROOT / "data.json"
+
+# Fingerprint of the data.json content, stored next to its version in the data preload link of index.html.
+# The ?v= timestamp only changes when 'data' is run: if data.json is regenerated without it, its URL stays the
+# same and every device keeps its cached copy (Service Worker, browsers, Cloudflare). The fingerprint lets
+# every run (and the deployment workflow, through 'check') detect that situation.
+DATA_HASH_ATTRIBUTE = "data-content-hash"
+DATA_PRELOAD_TAG = re.compile(r'<link\b[^>]*\bid="dataPreload"[^>]*>')
 TIMEZONE = "Europe/Madrid"
 
 # Versioned URLs kept in sync between index.html and the Service Worker precache list (sw.js).
@@ -89,10 +97,39 @@ def update_code_version(bump_type):
     return html_matches > 0 and sw_matches > 0
 
 
+def data_fingerprint():
+    """First 8 characters of the SHA-256 of data.json (None if the file is missing)."""
+    if not DATA_FILE.exists():
+        return None
+    return hashlib.sha256(DATA_FILE.read_bytes()).hexdigest()[:8]
+
+
+def set_data_fingerprint(fingerprint):
+    """Writes the data.json fingerprint into the data preload link of index.html. Returns True on success."""
+    if not INDEX_FILE.exists():
+        return False
+    html = INDEX_FILE.read_text(encoding='utf-8')
+    match = DATA_PRELOAD_TAG.search(html)
+    if not match:
+        return False
+    tag = match.group(0)
+    if f'{DATA_HASH_ATTRIBUTE}="' in tag:
+        new_tag = re.sub(rf'{DATA_HASH_ATTRIBUTE}="[^"]*"', f'{DATA_HASH_ATTRIBUTE}="{fingerprint}"', tag)
+    else:
+        new_tag = tag.replace('id="dataPreload"', f'id="dataPreload" {DATA_HASH_ATTRIBUTE}="{fingerprint}"', 1)
+    INDEX_FILE.write_text(html[:match.start()] + new_tag + html[match.end():], encoding='utf-8')
+    return True
+
+
 def update_data_version():
-    """Sets a new data timestamp in index.html (data.json preload link) and sw.js. Returns True on success."""
+    """Sets a new data timestamp in index.html (data.json preload link) and sw.js, and records the data.json
+    fingerprint. Returns True on success."""
     new_timestamp = get_current_timestamp()
     print(f"     ├─ New timestamp (CET/CEST): {new_timestamp}")
+
+    fingerprint = data_fingerprint()
+    recorded = fingerprint is not None and set_data_fingerprint(fingerprint)
+    print(f"     ├─ {'✔' if recorded else '❌'} data.json fingerprint {fingerprint or '(data.json not found)'} recorded in {INDEX_FILE.name}")
 
     html_matches = update_file_content(INDEX_FILE, DATA_VERSION_PATTERN, rf'\g<1>{new_timestamp}')
     print(f"     ├─ {'✔' if html_matches else '❌'} {INDEX_FILE.name} data.json preload link: {html_matches} match(es)")
@@ -100,7 +137,43 @@ def update_data_version():
     sw_matches = update_file_content(SW_FILE, DATA_VERSION_PATTERN, rf'\g<1>{new_timestamp}')
     print(f"     └─ {'✔' if sw_matches else '❌'} {SW_FILE.name} data.json precache entry: {sw_matches} match(es)")
 
-    return html_matches > 0 and sw_matches > 0
+    return recorded and html_matches > 0 and sw_matches > 0
+
+
+def recorded_data_fingerprint():
+    """Fingerprint stored in the data preload link of index.html by the last 'data' run (None if absent)."""
+    if not INDEX_FILE.exists():
+        return None
+    match = DATA_PRELOAD_TAG.search(INDEX_FILE.read_text(encoding='utf-8'))
+    recorded = re.search(rf'{DATA_HASH_ATTRIBUTE}="([^"]*)"', match.group(0)) if match else None
+    return recorded.group(1) if recorded else None
+
+
+def data_versions_aligned():
+    """True if index.html and sw.js reference the same single data.json version."""
+    if not INDEX_FILE.exists() or not SW_FILE.exists():
+        return False
+    versions = [set(re.findall(r'data\.json\?v=(\d+)', path.read_text(encoding='utf-8'))) for path in (INDEX_FILE, SW_FILE)]
+    return len(versions[0]) == 1 and versions[0] == versions[1]
+
+
+def check_data_fingerprint():
+    """Verifies that data.json has not changed since its version was last bumped."""
+    print("  └─ Checking that data.json matches its version...")
+    fingerprint = data_fingerprint()
+    if fingerprint is None:
+        print(f"     └─ ❌ File {DATA_FILE.name} not found.")
+        return False
+    recorded = recorded_data_fingerprint()
+    if not recorded:
+        print(f"     └─ ❌ No data.json fingerprint in {INDEX_FILE.name}: run 'bump_version.py data' once to record it.")
+        return False
+    if recorded != fingerprint:
+        print(f"     ├─ ❌ data.json changed since its last version bump (recorded {recorded}, current {fingerprint}).")
+        print("     └─ ❌ Run 'bump_version.py data', otherwise devices would keep their cached copy.")
+        return False
+    print(f"     └─ ✔ data.json matches its version (fingerprint {fingerprint})")
+    return True
 
 
 def check_consistency():
@@ -171,10 +244,16 @@ def main():
     parser.add_argument(
         "action",
         choices=["data", "code", "check"],
-        help="'data': new data timestamp (app.js is not touched); "
+        help="'data': new data timestamp when data.json has changed (app.js is not touched); "
              "'code': bump the app.js/styles.css version; "
-             "'check': only verify that index.html and sw.js are aligned and that the cover URLs "
-             "in data.json match the cover files."
+             "'check': only verify that index.html and sw.js are aligned, that the cover URLs in "
+             "data.json match the cover files, and that data.json has not changed since its last 'data' run."
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Only with 'data': create a new data version even if data.json has not changed "
+             "(by default 'data' does nothing in that case, so devices do not download the same data again)",
     )
     parser.add_argument(
         "--type",
@@ -188,14 +267,23 @@ def main():
     ok = True
 
     if args.action == "data":
-        print("  └─ Data change. Updating the data.json version in index.html and sw.js...")
-        ok = update_data_version()
+        fingerprint = data_fingerprint()
+        unchanged = fingerprint is not None and fingerprint == recorded_data_fingerprint() and data_versions_aligned()
+        if unchanged and not args.force:
+            # A new timestamp would show a false "last data update" date and make every device download the
+            # same data again, so nothing is bumped
+            print(f"  └─ data.json has not changed since its last version (fingerprint {fingerprint}): nothing to bump.")
+            print("     └─ ℹ️ Use --force to create a new data version anyway.")
+        else:
+            print("  └─ Data change. Updating the data.json version in index.html and sw.js...")
+            ok = update_data_version()
     elif args.action == "code":
         print(f"  └─ Code change. Bumping version ({args.type})...")
         ok = update_code_version(args.type)
 
     ok = check_consistency() and ok
     ok = check_cover_versions() and ok
+    ok = check_data_fingerprint() and ok
 
     if ok:
         print("✨ Versioning process completed successfully!")

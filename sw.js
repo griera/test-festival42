@@ -10,7 +10,7 @@ const CORE_ASSETS = [
     './index.html',
     './styles.css?v=0.9.49',
     './app.js?v=0.9.49',
-    './data.json?v=20261124111244',
+    './data.json?v=20261124203019',
     './assets/icons/f42_32x32.png'
 ];
 

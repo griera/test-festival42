@@ -335,6 +335,7 @@ Examples:
 
     format_status = "minified (optimized)" if args.minify else "formatted (readable)"
     print(f"[SUCCESS]: Process completed! Successfully converted {len(records)} total records to {args.output_file} [{format_status}]")
+    print("[NEXT]: Run 'python3 scripts/bump_version.py data' so devices download the new data.")
 
 
 if __name__ == "__main__":

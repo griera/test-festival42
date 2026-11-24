@@ -51,7 +51,7 @@ test-festival42/
 │   ├── generate_catalog.py  # Script for massive synthetic load testing data
 │   ├── process_catalog.py   # Script to process raw catalog CSV and convert it into a JSON payload
 │   ├── cover_version.py     # Content fingerprint of a cover, used in its URL (?v=); shared by process_catalog and bump_version
-│   ├── bump_version.py      # Script for versioning (semver for app & styles, timestamp for data; syncs index.html and sw.js; checks cover versions)
+│   ├── bump_version.py      # Script for versioning (semver for app & styles, timestamp for data; syncs index.html and sw.js; checks cover and data versions)
 │   └── extract_covers.py    # Script to extract book covers from distributor's PDF catalogs
 ├── requirements.txt         # Python package dependencies
 ├── .venv/                   # Python virtual environment (ignored by Git)
@@ -212,10 +212,11 @@ Versioned URLs (`app.js?v=…`, `styles.css?v=…`, `data.json?v=…`) let brows
 
 ### Business Rules
 
-1. **Data updates (`data.json`)**: a new timestamp is written to the `data.json` preload link in `index.html` (`id="dataPreload"`) and to `sw.js`. **`app.js` is not modified**: it reads the data URL and its version from that preload link, so the code version stays the same and devices only download the new data.
+1. **Data updates (`data.json`)**: a new timestamp is written to the `data.json` preload link in `index.html` (`id="dataPreload"`) and to `sw.js`. **`app.js` is not modified**: it reads the data URL and its version from that preload link, so the code version stays the same and devices only download the new data. If `data.json` has not changed since its last version (same fingerprint, see rule 5), `data` does nothing: the "last data update" date shown on the page stays truthful, and devices do not download the same data again. Use `--force` to create a new data version anyway.
 2. **Code updates (`app.js` / `styles.css`)**: you choose whether the change is a `patch`, `minor`, or `major` increment. Both files share the same version.
 3. **Consistency check**: every run verifies that `index.html` and `sw.js` reference the same versions, and exits with code `1` if they do not or if a file or pattern is missing.
 4. **Cover check**: every run also verifies that each cover URL in `data.json` carries the fingerprint of the current cover file (see the covers note in [How to Update the Catalog](#-how-to-update-the-catalog--test-performance)). Outdated or missing covers make it exit with code `1`, which also stops the deployment workflow.
+5. **Data check**: `data` also records a fingerprint of `data.json` in its preload link in `index.html` (`data-content-hash`), and every run verifies that `data.json` still matches it. If `data.json` is regenerated (e.g. with new stock) without running `data`, its `?v=` URL would not change and every device would keep its cached copy, so the check fails and the deployment workflow stops. When adopting this check, run `data` once to record the first fingerprint.
 
 > ⚠️ Never change `app.js` or `styles.css` without bumping the code version, and never edit `?v=` values by hand: versioned files are cached for a week, so a changed file under an unchanged URL would keep being served in its old version.
 
