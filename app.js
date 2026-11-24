@@ -118,6 +118,7 @@ const coverDownload = {
     running: false,
     controller: null,
     pausedByOffline: false,
+    stoppedByUser: false,
     retryTimer: null,
     retryAttempt: 0
 };
@@ -231,6 +232,9 @@ function bindGlobalEvents() {
                 break;
             case 'prefetch-covers':
                 downloadAllCovers();
+                break;
+            case 'stop-covers':
+                stopCoverDownload();
                 break;
             case 'reload-app':
                 reloadApp(actionEl);
@@ -873,7 +877,8 @@ const countFormatter = new Intl.NumberFormat('ca-ES');
 const percentFormatter = new Intl.NumberFormat('ca-ES', { style: 'percent', maximumFractionDigits: 0 });
 
 // view: { tone: 'neutral' | 'progress' | 'success' | 'warning' | 'error' | 'off',
-//         label, detail, progress: { cached, total } | null, action: button text | null }
+//         label, detail, progress: { cached, total } | null, action: button text | null,
+//         actionName: data-action of the button (default 'prefetch-covers') }
 function setOfflinePanel(view) {
     const panel = document.getElementById('offlinePanel');
     if (!panel) return;
@@ -900,6 +905,7 @@ function setOfflinePanel(view) {
     button.classList.toggle('hidden', !view.action);
     button.classList.toggle('inline-flex', Boolean(view.action));
     if (view.action) panel.querySelector('[data-role="action-label"]').textContent = view.action;
+    button.dataset.action = view.actionName || 'prefetch-covers';
 }
 
 // Unique absolute same-origin cover URLs, resolved exactly like the <img> elements resolve them
@@ -1022,10 +1028,21 @@ function getOfflinePanelView() {
                 label: 'Descarregant cobertes…',
                 detail: `${countFormatter.format(cached)} de ${countFormatter.format(total)} · ${percentFormatter.format(cached / total)}`,
                 progress,
-                action: null
+                action: 'Aturar la descàrrega',
+                actionName: 'stop-covers'
             };
+        case 'stopping':
+            // No button while the downloads in flight are cancelled: "download" would have no effect yet
+            return { tone: 'progress', label: 'Aturant la descàrrega…', detail: `${counts}.`, progress, action: null };
         case 'paused-offline':
-            return { tone: 'warning', label: 'En pausa: sense connexió', detail: `${counts}. Es reprendrà automàticament.`, progress, action: null };
+            return {
+                tone: 'warning',
+                label: 'En pausa: sense connexió',
+                detail: `${counts}. Es reprendrà automàticament.`,
+                progress,
+                action: 'Aturar la descàrrega',
+                actionName: 'stop-covers'
+            };
         case 'paused-network':
             return { tone: 'warning', label: 'Problemes de xarxa', detail: `${counts}. Es tornarà a provar automàticament.`, progress, action: 'Reintentar ara' };
         case 'quota':
@@ -1121,6 +1138,25 @@ async function pruneOrphanCovers() {
 }
 
 // Download only the missing covers. Downloads go through the Service Worker, which validates and stores them.
+// "Aturar la descàrrega": cancels the run and forgets that it is pending, so it does not resume by itself
+// on the next visit or when the connection returns (e.g. pressed by mistake on mobile data).
+// Downloaded covers are kept: pressing "download all covers" again only fetches the missing ones.
+function stopCoverDownload() {
+    clearTimeout(coverDownload.retryTimer);
+    coverDownload.retryAttempt = 0;
+    setCoverDownloadPending(false);
+    if (coverDownload.running && coverDownload.controller) {
+        // downloadAllCovers finishes the downloads in flight and then shows the normal state
+        coverDownload.stoppedByUser = true;
+        coverDownload.controller.abort();
+        setCoverPhase('stopping');
+    } else {
+        setCoverPhase('idle');
+    }
+    // Immediate feedback for the click (state changes are otherwise rendered in batches every 200 ms)
+    renderCoverStatus();
+}
+
 async function downloadAllCovers({ resume = false } = {}) {
     if (coverDownload.running || !canUseServiceWorker()) return;
     if (coverState.wanted.size === 0) {
@@ -1142,6 +1178,7 @@ async function downloadAllCovers({ resume = false } = {}) {
 
     coverDownload.running = true;
     coverDownload.pausedByOffline = false;
+    coverDownload.stoppedByUser = false;
     coverState.notOnServer = new Set();
     const controller = new AbortController();
     coverDownload.controller = controller;
@@ -1189,7 +1226,11 @@ async function downloadAllCovers({ resume = false } = {}) {
     const stillMissing = [...coverState.wanted]
         .filter((url) => !coverState.cachedUrls.has(url) && !coverState.notOnServer.has(url)).length;
 
-    if (quotaExceeded) {
+    if (coverDownload.stoppedByUser) {
+        // Stopped with "Aturar": not pending any more (stopCoverDownload already cleared it)
+        coverDownload.stoppedByUser = false;
+        setCoverPhase('idle');
+    } else if (quotaExceeded) {
         setCoverDownloadPending(false);
         setCoverPhase('quota');
     } else if (coverDownload.pausedByOffline || !navigator.onLine) {
