@@ -34,6 +34,11 @@ const COVER_DOWNLOAD_PENDING_KEY = 'fair_catalog_cover_download_pending';
 // The page may stay open all day: how often to look for new data / app versions
 const UPDATE_CHECK_INTERVAL_MS = 10 * 60 * 1000;
 
+// While the server is unreachable, check every minute to notice soon when the connection returns
+const UNREACHABLE_CHECK_INTERVAL_MS = 60 * 1000;
+// First connection/update check after page load
+const FIRST_CHECK_DELAY_MS = 3000;
+
 // After "Més tard", the new-version notice comes back after this delay
 const UPDATE_REMINDER_MS = 5 * 60 * 1000;
 
@@ -131,6 +136,7 @@ async function init() {
     initFooter();
     initScrollToTop();
     bindGlobalEvents();
+    initConnectionStatus();
 
     try {
         await loadData();
@@ -812,16 +818,66 @@ async function registerOfflineServiceWorker() {
 }
 
 // Look for new data/app versions periodically while the page is visible and online
+// Look for new versions periodically while the page is visible. Each check also tells whether the server is
+// reachable: on a Wi-Fi without internet access navigator.onLine stays true, but the check fails.
 function schedulePeriodicUpdateChecks(registration) {
-    let lastCheck = Date.now();
-    const check = () => {
-        if (!navigator.onLine || document.visibilityState !== 'visible') return;
-        if (Date.now() - lastCheck < 60 * 1000) return;
+    let lastCheck = 0;
+    const check = (force = false) => {
+        if (document.visibilityState !== 'visible') return;
+        if (!navigator.onLine) {
+            setServerReachable(false);
+            return;
+        }
+        // Every 10 minutes normally; every minute while unreachable, to notice soon when the connection returns
+        const interval = serverReachable ? UPDATE_CHECK_INTERVAL_MS : UNREACHABLE_CHECK_INTERVAL_MS;
+        if (!force && Date.now() - lastCheck < interval) return;
         lastCheck = Date.now();
-        registration.update().catch(() => {});
+        registration.update().then(() => setServerReachable(true), () => setServerReachable(false));
     };
-    setInterval(check, UPDATE_CHECK_INTERVAL_MS);
-    document.addEventListener('visibilitychange', check);
+    setInterval(check, UNREACHABLE_CHECK_INTERVAL_MS);
+    document.addEventListener('visibilitychange', () => check());
+    window.addEventListener('online', () => check(true));
+    // First check shortly after loading, once the page and its data have had the network for themselves
+    setTimeout(() => check(true), FIRST_CHECK_DELAY_MS);
+}
+
+// ------------------------------------------
+// Connection notice ("Sense connexió · dades del …")
+// ------------------------------------------
+
+let serverReachable = true;
+
+function initConnectionStatus() {
+    window.addEventListener('offline', () => setServerReachable(false));
+    // Without a Service Worker there are no periodic checks: trust the browser when it comes back online
+    if (!('serviceWorker' in navigator)) window.addEventListener('online', () => setServerReachable(true));
+    if (!navigator.onLine) setServerReachable(false);
+}
+
+function setServerReachable(reachable) {
+    if (reachable === serverReachable) return;
+    serverReachable = reachable;
+    const status = document.getElementById('connectionStatus');
+    if (!status) return;
+    const chip = status.querySelector('[data-role="chip"]');
+    const text = status.querySelector('[data-role="text"]');
+    if (reachable) {
+        chip.classList.add('hidden');
+        chip.classList.remove('flex');
+        text.textContent = '';
+        return;
+    }
+    // The date of the data shown, so staff know how old the stock may be
+    const date = formatDataDate(TIMESTAMP_VERSION);
+    text.textContent = date ? `Sense connexió · dades del ${date}` : 'Sense connexió';
+    chip.classList.remove('hidden');
+    chip.classList.add('flex');
+}
+
+// 'YYYYMMDDHHMMSS' -> 'DD/MM, HH:MM'
+function formatDataDate(ts) {
+    if (!ts || ts.length !== 14) return '';
+    return `${ts.slice(6, 8)}/${ts.slice(4, 6)}, ${ts.slice(8, 10)}:${ts.slice(10, 12)}`;
 }
 
 // Ask the controlling worker which app/data versions it serves and compare them with this page
