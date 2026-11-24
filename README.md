@@ -37,6 +37,7 @@ test-festival42/
 ├── node_modules/            # Node.js local dependencies (ignored by Git)
 ├── data/                    # Dataset files
 │   ├── catalog.csv          # Bookstore catalog (CSV dataset)
+│   ├── replacements.json    # Recurring text fixes applied to the raw CSV (process_catalog.py --replacements)
 │   ├── extra_data.json      # Special activities and extra events (JSON dataset)
 │   └── catalog.pdf          # PDF catalog with book covers (ignored by Git)
 ├── assets/                  # Public static assets
@@ -49,7 +50,8 @@ test-festival42/
 ├── scripts/                 # Python development and automation tools
 │   ├── generate_catalog.py  # Script for massive synthetic load testing data
 │   ├── process_catalog.py   # Script to process raw catalog CSV and convert it into a JSON payload
-│   ├── bump_version.py      # Script for versioning (semver for app & styles, timestamp for data; syncs index.html and sw.js)
+│   ├── cover_version.py     # Content fingerprint of a cover, used in its URL (?v=); shared by process_catalog and bump_version
+│   ├── bump_version.py      # Script for versioning (semver for app & styles, timestamp for data; syncs index.html and sw.js; checks cover versions)
 │   └── extract_covers.py    # Script to extract book covers from distributor's PDF catalogs
 ├── requirements.txt         # Python package dependencies
 ├── .venv/                   # Python virtual environment (ignored by Git)
@@ -141,28 +143,7 @@ EAN;LLIBRE;AUTORI;EDITORIAL;DISTRIBUÏDOR;TIPUS;PVP;TEMA;HORARIS
 ## 🔄 How to Update the Catalog & Test Performance
 
 1. Place your raw semicolon-delimited CSV source file (exported from booksellers, typically in legacy `cp1252` encoding) inside your workspace.
-2. **Process and convert the catalog:** Clean text, fix encoding, normalize Unicode, map headers, set missing quantities to `No Disponible` and missing prices to 0, link each book to its local cover file through a versioned URL (see the covers note below), and generate the public `data.json` payload:
-
-```bash
-python3 scripts/process_catalog.py data/catalog_raw.csv data.json --encoding cp1252
-
-```
-
-*(Optional: You can pass `--replacements replacements.json` to handle specific recurring source typos, or `--no-minify` for an indented readable JSON).*
-
-*(You can also check available options using `python3 scripts/process_catalog.py --help`)*.
-
-*(Alternatively, to generate massive synthetic datasets for performance and scalability testing instead of real data, run:)*
-
-```bash
-python3 scripts/generate_catalog.py --books 500 --activities 50 -o data/massive_catalog.csv
-python3 scripts/process_catalog.py data/massive_catalog.csv data.json
-
-```
-
-*(You can also check available options using `python3 scripts/generate_catalog.py --help`)*.
-
-3. **Extract and optimize book cover images from the official PDF catalog:** Ensure your virtual environment is active, then run the extractor script to automatically crop, extract EANs, and convert covers to high-performance WebP format (PDF files are ignored by Git):
+2. **Extract and optimize book cover images from the official PDF catalog:** Ensure your virtual environment is active, then run the extractor script to automatically crop, extract EANs, and convert covers to high-performance WebP format (PDF files are ignored by Git):
 
 ```bash
 source .venv/bin/activate
@@ -179,7 +160,45 @@ python3 scripts/extract_covers.py data/catalog.pdf --quality 65 --output /tmp/co
 
 *(You can also check available options using `python3 scripts/extract_covers.py --help`)*.
 
-> ⚠️ **Covers version.** Covers are cached for one week by Cloudflare and browsers, and kept by the Service Worker for offline use (see [Cloudflare Configuration](#️-cloudflare-configuration)), so a changed image under the same URL would not reach devices that already have it. Cover URLs therefore carry a version, `assets/covers/<EAN>.webp?v=<version>`, set by `COVERS_VERSION` in `scripts/process_catalog.py`. If you ever **regenerate existing covers with a different content** (another quality, a new catalog edition…), increase `COVERS_VERSION`, run `process_catalog.py` and then `bump_version.py data`: every device downloads the new images and deletes the old ones on its next visit. New or removed covers do not need a new version.
+> ℹ️ **Cover URLs and caching.** Covers are cached for one week by Cloudflare and browsers, and kept by the Service Worker for offline use (see [Cloudflare Configuration](#️-cloudflare-configuration)), so a changed image under the same URL would not reach devices that already have it. That is why each cover URL carries a **fingerprint of its content**, `assets/covers/<EAN>.webp?v=<fingerprint>` (first 8 characters of its SHA-256, computed by `scripts/cover_version.py`). `process_catalog.py` writes it, so there is nothing to remember: an unchanged cover keeps its URL and is never downloaded again, while a regenerated cover with a different content (another quality, a new catalog edition…) gets a new URL that every device downloads, and devices delete the old one on their next visit. The only rule is the order: **extract the covers first, then run `process_catalog.py`**. If you forget, `bump_version.py check` reports the outdated covers and the deployment workflow stops before publishing.
+
+3. **Process and convert the catalog** (always after extracting the covers, so `data.json` points to the current cover files)**:** Clean text, fix encoding, normalize Unicode, map headers, set missing quantities to `No Disponible` and missing prices to 0, link each book to its local cover file through a fingerprinted URL (see the covers note above), and generate the public `data.json` payload:
+
+```bash
+python3 scripts/process_catalog.py data/catalog_raw.csv data.json --encoding cp1252
+
+```
+
+*(Optional: `--no-minify` writes an indented, readable JSON).*
+
+**Recurring source typos** are fixed with `--replacements data/replacements.json`, a JSON object that maps each wrong text to its correction:
+
+```json
+{
+  "Ciencia-ficcio": "Ciència-ficció",
+  "Editorial Exemple ": "Editorial Exemple"
+}
+
+```
+
+```bash
+python3 scripts/process_catalog.py data/catalog_raw.csv data.json --encoding cp1252 --replacements data/replacements.json
+
+```
+
+Replacements are plain, case-sensitive text substitutions applied in file order to **every** CSV field (including EAN, price and schedule), after Unicode normalization. Keep each key specific enough to match only the intended text: a short key such as `"0"` would also change EANs and prices. The file is kept in the repository for reproducible runs, but it is not published on the website (see [What Gets Published](#what-gets-published)).
+
+*(You can also check available options using `python3 scripts/process_catalog.py --help`)*.
+
+*(Alternatively, to generate massive synthetic datasets for performance and scalability testing instead of real data, run:)*
+
+```bash
+python3 scripts/generate_catalog.py --books 500 --activities 50 -o data/massive_catalog.csv
+python3 scripts/process_catalog.py data/massive_catalog.csv data.json
+
+```
+
+*(You can also check available options using `python3 scripts/generate_catalog.py --help`)*.
 
 4. Compile your CSS changes if necessary (see [Tailwind CSS Local Compilation](#-tailwind-css-local-compilation)).
 5. **Bump the versions** (see [Version Management Workflow](#️-version-management-workflow)): `data` if `data.json` changed, `code` if `app.js` or `styles.css` changed.
@@ -196,6 +215,7 @@ Versioned URLs (`app.js?v=…`, `styles.css?v=…`, `data.json?v=…`) let brows
 1. **Data updates (`data.json`)**: a new timestamp is written to the `data.json` preload link in `index.html` (`id="dataPreload"`) and to `sw.js`. **`app.js` is not modified**: it reads the data URL and its version from that preload link, so the code version stays the same and devices only download the new data.
 2. **Code updates (`app.js` / `styles.css`)**: you choose whether the change is a `patch`, `minor`, or `major` increment. Both files share the same version.
 3. **Consistency check**: every run verifies that `index.html` and `sw.js` reference the same versions, and exits with code `1` if they do not or if a file or pattern is missing.
+4. **Cover check**: every run also verifies that each cover URL in `data.json` carries the fingerprint of the current cover file (see the covers note in [How to Update the Catalog](#-how-to-update-the-catalog--test-performance)). Outdated or missing covers make it exit with code `1`, which also stops the deployment workflow.
 
 > ⚠️ Never change `app.js` or `styles.css` without bumping the code version, and never edit `?v=` values by hand: versioned files are cached for a week, so a changed file under an unchanged URL would keep being served in its old version.
 
@@ -485,7 +505,7 @@ Browsers follow this `Cache-Control` header, not the Browser TTL of the Cache Ru
 
 * `sw.js` and `index.html` are never cached by Cloudflare, so a new release is visible as soon as GitHub Pages publishes it.
 * `app.js?v=…`, `styles.css?v=…` and `data.json?v=…` get a new URL on every change (see [Version Management Workflow](#️-version-management-workflow)), so they can be cached for a week without serving stale content.
-* Cover URLs carry a version (`?v=`, from `COVERS_VERSION` in `scripts/process_catalog.py`): new books bring new URLs, removed covers are no longer requested (devices delete them on their next visit), and regenerated covers get a new version.
+* Cover URLs carry a fingerprint of their content (`?v=`, written by `scripts/process_catalog.py`): new books bring new URLs, removed covers are no longer requested (devices delete them on their next visit), and only the covers whose content changes get a new URL.
 
 ### Verify the configuration
 

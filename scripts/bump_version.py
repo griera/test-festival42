@@ -1,15 +1,20 @@
 import argparse
+import json
 import re
 import sys
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import parse_qs
 from zoneinfo import ZoneInfo
+
+from cover_version import cover_version
 
 # Paths resolved against the repository root (this script lives in scripts/),
 # so it works no matter which directory it is launched from
 ROOT = Path(__file__).resolve().parent.parent
 INDEX_FILE = ROOT / "index.html"
 SW_FILE = ROOT / "sw.js"
+DATA_FILE = ROOT / "data.json"
 TIMEZONE = "Europe/Madrid"
 
 # Versioned URLs kept in sync between index.html and the Service Worker precache list (sw.js).
@@ -120,6 +125,47 @@ def check_consistency():
     return aligned
 
 
+def check_cover_versions():
+    """Verifies that every cover URL in data.json carries the fingerprint of the current cover file.
+
+    A mismatch means the covers were regenerated without running process_catalog.py afterwards: the new
+    images would be published under their old URLs, and devices that cached them would keep the old ones.
+    """
+    print("  └─ Checking that the cover URLs in data.json match the cover files...")
+    if not DATA_FILE.exists():
+        print(f"     └─ ❌ File {DATA_FILE.name} not found.")
+        return False
+    try:
+        records = json.loads(DATA_FILE.read_text(encoding='utf-8'))
+    except json.JSONDecodeError as error:
+        print(f"     └─ ❌ {DATA_FILE.name} is not valid JSON: {error}")
+        return False
+
+    checked, outdated, missing = 0, set(), set()
+    for record in records:
+        cover = record.get("cover") if isinstance(record, dict) else None
+        if not cover:
+            continue
+        path, _, query = cover.partition("?")
+        cover_file = ROOT / path
+        if not cover_file.exists():
+            missing.add(path)
+            continue
+        checked += 1
+        if parse_qs(query).get("v", [""])[0] != cover_version(cover_file):
+            outdated.add(path)
+
+    for label, paths in (("missing cover file(s)", missing), ("outdated cover version(s)", outdated)):
+        if paths:
+            sample = ", ".join(sorted(paths)[:5]) + (" …" if len(paths) > 5 else "")
+            print(f"     ├─ ❌ {len(paths)} {label}: {sample}")
+    if missing or outdated:
+        print("     └─ ❌ Run process_catalog.py after extract_covers.py, then 'bump_version.py data'.")
+        return False
+    print(f"     └─ ✔ {checked} cover URL(s) up to date")
+    return True
+
+
 def main():
     parser = argparse.ArgumentParser(description="Automates versioning and timestamps for the fair web app.")
     parser.add_argument(
@@ -127,7 +173,8 @@ def main():
         choices=["data", "code", "check"],
         help="'data': new data timestamp (app.js is not touched); "
              "'code': bump the app.js/styles.css version; "
-             "'check': only verify that index.html and sw.js are aligned."
+             "'check': only verify that index.html and sw.js are aligned and that the cover URLs "
+             "in data.json match the cover files."
     )
     parser.add_argument(
         "--type",
@@ -148,6 +195,7 @@ def main():
         ok = update_code_version(args.type)
 
     ok = check_consistency() and ok
+    ok = check_cover_versions() and ok
 
     if ok:
         print("✨ Versioning process completed successfully!")

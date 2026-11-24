@@ -7,6 +7,8 @@ import re
 import unicodedata
 from datetime import datetime, date
 
+from cover_version import cover_version
+
 # Defined expected headers
 HEADER_9_COL = [
     "EAN", "LLIBRE", "AUTORI", "EDITORIAL", "DISTRIBUÏDOR", "TIPUS", "PVP", "TEMA", "HORARIS"
@@ -21,13 +23,6 @@ OUTPUT_HEADER = [
     "type", "ean", "title", "author", "publisher", "distributor", "category",
     "price", "theme", "schedule", "quantity", "location", "datetime",
 ]
-
-# Version of the cover images, appended to their URLs (assets/covers/<EAN>.webp?v=<version>).
-# Covers are cached for a long time by Cloudflare, browsers and the Service Worker, and only a new URL
-# makes them download a new image. Increase it whenever existing covers are regenerated with a different
-# content (e.g. another WebP quality in extract_covers.py); new or removed covers do not need it.
-# Version 2: covers re-encoded at WebP quality 75, method 6 (about half the size of version 1).
-COVERS_VERSION = "2"
 
 # Fair date boundaries for disambiguating mixed date formats (dd/mm vs mm/dd)
 FAIR_START = date(2026, 11, 4)
@@ -121,7 +116,7 @@ def main():
 Examples:
   python3 process_catalog.py data/data.csv data.json
   python3 process_catalog.py data/data.csv data.json --encoding cp1252
-  python3 process_catalog.py data/data.csv data.json --replacements replacements.json --no-minify
+  python3 process_catalog.py data/data.csv data.json --replacements data/replacements.json --no-minify
   python3 process_catalog.py data/data.csv data.json --extra-data data/extra_data.json
   python3 process_catalog.py --help
 """,
@@ -135,7 +130,7 @@ Examples:
     )
     parser.add_argument(
         "--replacements",
-        help="JSON file containing text replacements, e.g. replacements.json",
+        help="JSON object of text replacements applied to every CSV field, e.g. data/replacements.json",
     )
     parser.add_argument(
         "--extra-data",
@@ -161,8 +156,22 @@ Examples:
 
     replacements = {}
     if args.replacements:
-        with open(args.replacements, encoding="utf-8") as replacements_file:
-            replacements = json.load(replacements_file)
+        try:
+            with open(args.replacements, encoding="utf-8") as replacements_file:
+                replacements = json.load(replacements_file)
+        except FileNotFoundError:
+            raise SystemExit(f"[ERROR]: Replacements file '{args.replacements}' not found.")
+        except json.JSONDecodeError as e:
+            raise SystemExit(f"[ERROR]: Failed to parse JSON from replacements file '{args.replacements}': {e}")
+        # Expected format: {"text to find": "replacement", ...}, applied in file order
+        if not isinstance(replacements, dict) or not all(
+            isinstance(k, str) and isinstance(v, str) for k, v in replacements.items()
+        ):
+            raise SystemExit(
+                f"[ERROR]: Replacements file '{args.replacements}' must be a JSON object of text pairs, "
+                'e.g. {"Ciencia-ficcio": "Ciència-ficció"}.'
+            )
+        print(f"[INFO]: Loaded {len(replacements)} text replacement(s) from '{args.replacements}'.")
 
     records = []
 
@@ -264,10 +273,12 @@ Examples:
                 "datetime": datetime_val,
             }
 
-            # Add the versioned URL of the local cover image, based on the EAN field
+            # Add the URL of the local cover image, based on the EAN field. Its ?v= is a fingerprint of the
+            # file content (see cover_version.py): regenerated covers get a new URL automatically.
+            # Run this script after extract_covers.py, so data.json points to the current cover files.
             cover_path = f"assets/covers/{ean}.webp"
             if ean and os.path.exists(cover_path):
-                item["cover"] = f"{cover_path}?v={COVERS_VERSION}" if COVERS_VERSION else cover_path
+                item["cover"] = f"{cover_path}?v={cover_version(cover_path)}"
             else:
                 item["cover"] = ""
 
