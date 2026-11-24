@@ -14,10 +14,17 @@ HEADER_9_COL = [
     "EAN", "LLIBRE", "AUTORI", "EDITORIAL", "DISTRIBUÏDOR", "TIPUS", "PVP", "TEMA", "HORARIS"
 ]
 
+# Extended format: 'type' as the first column, columns read by name (any order). These are required;
+# 'quantity' (stock) is optional, so CSV files without it keep working.
 HEADER_12_COL = [
     "type", "ean", "title", "author", "publisher", "distributor",
     "category", "price", "theme", "schedule", "location", "datetime"
 ]
+QUANTITY_COLUMN = "quantity"
+
+# Value written when the stock is unknown (no column, empty or invalid): the web app shows no stock badge,
+# or "Estoc desconegut" when other books have real figures. It is never written as 0, which means sold out.
+UNKNOWN_QUANTITY = "No Disponible"
 
 OUTPUT_HEADER = [
     "type", "ean", "title", "author", "publisher", "distributor", "category",
@@ -52,14 +59,15 @@ def parse_float(val):
     except ValueError:
         return 0.0
 
-def parse_int(val):
-    """Safely convert strings to integers."""
+def parse_quantity(val):
+    """Stock quantity: returns (quantity, is_invalid). quantity is a non-negative integer, or None when the
+    value is empty or invalid (e.g. '2,5', '-1', '5 u.'). Invalid values are never turned into 0 (sold out)."""
+    val = (val or "").strip()
     if not val:
-        return 0
-    try:
-        return int(val)
-    except ValueError:
-        return 0
+        return None, False
+    if re.fullmatch(r"\d+", val):
+        return int(val), False
+    return None, True
 
 def format_schedule_dates(schedule_str):
     """
@@ -174,6 +182,7 @@ Examples:
         print(f"[INFO]: Loaded {len(replacements)} text replacement(s) from '{args.replacements}'.")
 
     records = []
+    invalid_quantities = []
 
     # Read the source CSV using its configured encoding (e.g. cp1252 / utf-8-sig).
     with open(
@@ -191,10 +200,17 @@ Examples:
 
         # Detect format based on header structure
         has_type_column = False
+        normalized_header = [name.strip().lower() for name in header]
 
-        if header == HEADER_12_COL or (len(header) > 0 and header[0].strip().lower() == "type"):
+        if normalized_header[:1] == ["type"]:
+            missing_columns = [name for name in HEADER_12_COL if name not in normalized_header]
+            if missing_columns:
+                raise SystemExit(f"[ERROR]: Missing column(s) in the header: {missing_columns}\nReceived: {header}")
             has_type_column = True
-            expected_length = len(HEADER_12_COL)
+            column_index = {name: index for index, name in enumerate(normalized_header)}
+            expected_length = len(header)
+            stock_source = "the 'quantity' column" if QUANTITY_COLUMN in column_index else "no 'quantity' column"
+            print(f"[INFO]: Extended format with {stock_source}.")
         elif header == HEADER_9_COL:
             has_type_column = False
             expected_length = len(HEADER_9_COL)
@@ -223,20 +239,24 @@ Examples:
             row = [clean_text(value, replacements) for value in row]
 
             if has_type_column:
-                # 12-column format (with 'type' already as 1st column)
-                item_type = row[0].strip().lower() if row[0].strip() else "book"
-                ean = row[1]
-                title = row[2]
-                author = row[3]
-                publisher = row[4]
-                distributor = row[5]
-                category = row[6]
-                raw_price = row[7].strip()
+                # Extended format (with 'type' as 1st column), read by column name
+                def column(name):
+                    return row[column_index[name]] if name in column_index else ""
+
+                item_type = column("type").strip().lower() or "book"
+                ean = column("ean")
+                title = column("title")
+                author = column("author")
+                publisher = column("publisher")
+                distributor = column("distributor")
+                category = column("category")
+                raw_price = column("price").strip()
                 price = parse_float(raw_price) if raw_price else 0.0
-                theme = row[8]
-                schedule = format_schedule_dates(row[9])
-                location = row[10]
-                datetime_val = row[11]
+                theme = column("theme")
+                schedule = format_schedule_dates(column("schedule"))
+                raw_quantity = column(QUANTITY_COLUMN)
+                location = column("location")
+                datetime_val = column("datetime")
             else:
                 # 9-column format (raw bookseller format, defaulting type to 'book')
                 item_type = "book"
@@ -250,11 +270,16 @@ Examples:
                 price = parse_float(raw_price) if raw_price else 0.0
                 theme = row[7]
                 schedule = format_schedule_dates(row[8])
+                raw_quantity = ""  # The raw bookseller format has no stock column
                 location = ""
                 datetime_val = ""
 
-            # Default quantity to "No Disponible" since it is absent in raw source
-            quantity = "No Disponible"
+            # Stock quantity: an integer >= 0, or UNKNOWN_QUANTITY when missing or invalid
+            quantity, invalid_quantity = parse_quantity(raw_quantity)
+            if invalid_quantity:
+                invalid_quantities.append(f"line {line_number}: {raw_quantity!r}")
+            if quantity is None:
+                quantity = UNKNOWN_QUANTITY
 
             # Construct the ordered item dictionary matching the final payload
             item = {
@@ -308,6 +333,16 @@ Examples:
             raise SystemExit(f"[ERROR]: Extra data file '{args.extra_data}' not found.")
         except json.JSONDecodeError as e:
             raise SystemExit(f"[ERROR]: Failed to parse JSON from extra data file '{args.extra_data}': {e}")
+
+    # Stock summary, so a wrong or missing quantity column is noticed before publishing
+    books = [item for item in records if item.get("type") == "book"]
+    known = [item["quantity"] for item in books if isinstance(item.get("quantity"), int)]
+    print(f"[INFO]: Stock: {len(known)} of {len(books)} book(s) with a quantity "
+          f"({sum(1 for q in known if q == 0)} sold out), {len(books) - len(known)} unknown.")
+    if invalid_quantities:
+        sample = ", ".join(invalid_quantities[:5]) + (" …" if len(invalid_quantities) > 5 else "")
+        print(f"[WARNING]: {len(invalid_quantities)} invalid quantity value(s) treated as unknown ({sample}). "
+              "Use whole numbers >= 0, or leave the field empty.")
 
     # Determine indentation and separators for strict minification or readability
     if args.minify:

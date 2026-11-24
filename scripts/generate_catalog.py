@@ -20,20 +20,36 @@ def generate_random_schedule(days, hours):
     else:
         num_dates = 3
 
-    # Select unique day/hour combinations
-    selected_schedules = set()
+    # Select unique day/hour combinations. A list (not a set) keeps the order stable, so --seed always
+    # produces exactly the same file (the iteration order of a set of strings changes between runs)
+    selected_schedules = []
     while len(selected_schedules) < num_dates:
         dt = f"{random.choice(days)} {random.choice(hours)}"
-        selected_schedules.add(dt)
+        if dt not in selected_schedules:
+            selected_schedules.append(dt)
 
     return ", ".join(selected_schedules)
+
+def generate_random_quantity():
+    """
+    Generates a stock quantity covering every state shown by the web app:
+    10% unknown (empty), 15% sold out (0), 20% few units (1-2), 55% in stock (3-30).
+    """
+    rand_val = random.random()
+    if rand_val < 0.10:
+        return ""
+    if rand_val < 0.25:
+        return "0"
+    if rand_val < 0.45:
+        return str(random.randint(1, 2))
+    return str(random.randint(3, 30))
 
 def generate_large_csv(output_filename, num_books, num_activities):
     """
     Generates a synthetic raw festival catalog CSV file containing books and
-    activities with 'type' as the first column and 'location' & 'datetime' at the end.
+    activities with 'type' as the first column, a 'quantity' (stock) column, and 'location' & 'datetime' at the end.
     """
-    header = "type;ean;title;author;publisher;distributor;category;price;theme;schedule;location;datetime\n"
+    header = "type;ean;title;author;publisher;distributor;category;price;theme;schedule;quantity;location;datetime\n"
 
     # Vocabulary pools for synthetic generation
     adjectives = [
@@ -98,10 +114,11 @@ def generate_large_csv(output_filename, num_books, num_activities):
 
         theme = random.choice(themes)
         schedule = generate_random_schedule(days, hours)
+        quantity = generate_random_quantity()
         location = ""
         datetime_val = ""
 
-        row = f"book;{ean};{title};{author};{publisher};{distributor};{category};{price_str};{theme};{schedule};{location};{datetime_val}"
+        row = f"book;{ean};{title};{author};{publisher};{distributor};{category};{price_str};{theme};{schedule};{quantity};{location};{datetime_val}"
         generated_rows.append(row)
 
     # Generate activities
@@ -115,10 +132,11 @@ def generate_large_csv(output_filename, num_books, num_activities):
         price_str = "0"
         theme = ""
         schedule = ""
+        quantity = ""
         location = random.choice(locations_activities)
         datetime_val = f"{random.choice(days)} {random.choice(hours)}"
 
-        row = f"activity;{ean};{title};{author};{publisher};{distributor};{category};{price_str};{theme};{schedule};{location};{datetime_val}"
+        row = f"activity;{ean};{title};{author};{publisher};{distributor};{category};{price_str};{theme};{schedule};{quantity};{location};{datetime_val}"
         generated_rows.append(row)
 
     with open(output_filename, "w", encoding="utf-8") as f:
@@ -137,6 +155,9 @@ if __name__ == "__main__":
     parser.add_argument("-b", "--books", type=int, default=500, help="Number of books (default: 500)")
     parser.add_argument("-a", "--activities", type=int, default=50, help="Number of activities (default: 50)")
     parser.add_argument("-o", "--output", type=str, default="data/catalog_raw.csv", help="Output CSV path (default: data/catalog_raw.csv)")
+    parser.add_argument("-s", "--seed", type=int, help="Random seed, to generate exactly the same catalog again (e.g. for tests)")
 
     args = parser.parse_args()
+    if args.seed is not None:
+        random.seed(args.seed)
     generate_large_csv(args.output, args.books, args.activities)

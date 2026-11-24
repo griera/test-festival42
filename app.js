@@ -13,6 +13,9 @@ const TIMESTAMP_VERSION = new URL(DATA_URL, document.baseURI).searchParams.get('
 // Number of items shown per section and added by each "load more" click
 const PAGE_SIZE = 30;
 
+// Stock badge: up to this quantity a book is shown as "few units left" (amber)
+const LOW_STOCK_MAX = 2;
+
 // Delay before running a search while typing (prevents main thread blocking)
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -96,6 +99,7 @@ const SECTION_META = {
 
 const state = {
     data: [],                                   // all records, each with a precomputed _search string
+    hasStockData: false,                        // true when at least one book has a numeric quantity
     typeFilter: 'all',
     dayFilter: 'all',
     results: { book: [], activity: [] },        // latest filtered results, split by type
@@ -281,6 +285,7 @@ async function loadData() {
     const json = await response.json();
     if (!Array.isArray(json)) throw new Error('data.json must contain an array');
     state.data = json.filter((item) => item && typeof item === 'object').map(prepareItem);
+    state.hasStockData = state.data.some((item) => item.type === 'book' && parseStock(item.quantity) !== null);
 }
 
 const SEARCHABLE_FIELDS = ['title', 'author', 'publisher', 'distributor', 'ean', 'location', 'datetime', 'schedule'];
@@ -597,13 +602,15 @@ function renderBookCard(book) {
             ` : ''}
             <div class="flex flex-col justify-between flex-grow">
                 <div>
-                    <div class="flex justify-between items-start gap-2">
-                        <h3 class="font-bold text-lg text-white">${safeValue(book.title)}</h3>
-                        <span class="bg-indigo-950 text-indigo-300 text-xs font-semibold px-2 py-1 rounded border border-indigo-900 whitespace-nowrap flex-shrink-0">${formatPrice(book.price)}</span>
-                    </div>
+                    <!-- The title uses the full width; price and stock share a row below the author -->
+                    <h3 class="font-bold text-lg text-white">${safeValue(book.title)}</h3>
                     <p class="text-slate-300 font-medium mt-1">
                         Autor/a: ${author ? renderAuthorButton(author, 'hover:text-indigo-400') : '-'}
                     </p>
+                    <div class="mt-2 flex flex-wrap items-center gap-1.5">
+                        <span class="bg-indigo-950 text-indigo-300 text-xs font-semibold px-2 py-1 rounded border border-indigo-900 whitespace-nowrap">${formatPrice(book.price)}</span>
+                        ${renderStockBadge(book.quantity)}
+                    </div>
 
                     <div class="mt-3 text-sm text-slate-400 space-y-1 border-t border-slate-700/60 pt-2">
                         ${book.publisher ? `<p><strong>Editorial:</strong> ${safeValue(book.publisher)}</p>` : ''}
@@ -615,8 +622,7 @@ function renderBookCard(book) {
                 </div>
 
                 <div class="mt-4 pt-3 border-t border-slate-700/60 flex justify-between items-center text-xs text-slate-400">
-                    <span>EAN: ${safeValue(book.ean)}</span>
-                    <span class="bg-slate-900 px-2 py-1 rounded text-slate-300">Stock: <strong>${safeValue(book.quantity)}</strong></span>
+                    <span>EAN: <span class="font-mono">${safeValue(book.ean)}</span></span>
                 </div>
             </div>
         </div>
@@ -625,6 +631,37 @@ function renderBookCard(book) {
 
 // Vertical card so it fits half a row; grid items stretch to the row height and mt-auto keeps
 // the location/time badge at the bottom right, aligned across cards of the same row
+// Stock status of a book: the label states it in words, the color only reinforces it
+const STOCK_BADGE_CLASSES = {
+    out: 'bg-rose-950 text-rose-300 border-rose-800',
+    low: 'bg-amber-950 text-amber-300 border-amber-800',
+    ok: 'bg-emerald-950 text-emerald-300 border-emerald-800',
+    unknown: 'bg-slate-900 text-slate-400 border-slate-700'
+};
+
+// Numeric quantity of a book, or null when unknown (e.g. "No Disponible", empty, negative)
+function parseStock(quantity) {
+    if (typeof quantity === 'number') return Number.isInteger(quantity) && quantity >= 0 ? quantity : null;
+    if (typeof quantity === 'string' && /^\s*\d+\s*$/.test(quantity)) return Number(quantity);
+    return null;
+}
+
+function getStockStatus(quantity) {
+    const units = parseStock(quantity);
+    if (units === null) return { tone: 'unknown', label: 'Estoc desconegut' };
+    if (units === 0) return { tone: 'out', label: 'Esgotat' };
+    if (units <= LOW_STOCK_MAX) return { tone: 'low', label: units === 1 ? 'Queda 1' : `Queden ${units}` };
+    return { tone: 'ok', label: `${units} en estoc` };
+}
+
+// An unknown stock is only shown when the catalog has real figures for some books:
+// if no book has stock data, the same "unknown" badge on every card would be noise
+function renderStockBadge(quantity) {
+    const status = getStockStatus(quantity);
+    if (status.tone === 'unknown' && !state.hasStockData) return '';
+    return `<span class="${STOCK_BADGE_CLASSES[status.tone]} text-xs font-semibold px-2 py-1 rounded border whitespace-nowrap">${escapeHTML(status.label)}</span>`;
+}
+
 function renderActivityCard(activity) {
     return `
         <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 hover:border-teal-500 transition-colors flex flex-col gap-3">

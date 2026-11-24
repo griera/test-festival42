@@ -126,15 +126,24 @@ python3 -m http.server 8000
 
 ## 📋 Raw CSV Schema
 
-The source CSV must follow the updated semicolon-delimited structure:
+The source CSV is semicolon-delimited and can use one of two formats:
+
+1. **Bookseller format** (raw export, books only, no stock):
 
 ```text
 EAN;LLIBRE;AUTORI;EDITORIAL;DISTRIBUÏDOR;TIPUS;PVP;TEMA;HORARIS
 
 ```
 
-* **Price (`PVP`)**: Automatically defaults to `0.0` if empty or blank.
-* **Quantity**: Set to `No Disponible` since it is absent in the raw source.
+2. **Extended format** (books and activities): `type` must be the first column, the other columns are read by name (in any order), and `quantity` is optional:
+
+```text
+type;ean;title;author;publisher;distributor;category;price;theme;schedule;quantity;location;datetime
+
+```
+
+* **Price (`PVP` / `price`)**: Automatically defaults to `0.0` if empty or blank.
+* **Quantity (`quantity`)**: Stock as a whole number `>= 0` (`0` means sold out). When the column is missing, the field is empty, or the value is invalid (e.g. `2,5`, `-1`, `5 u.`), it is set to `No Disponible` (unknown stock), never to `0`; invalid values are reported with their line number. The script prints a stock summary at the end. In the web app, books show a stock badge ("Esgotat", "Queden N", "N en estoc"), and "Estoc desconegut" only when some books have real figures.
 * **Schedule (`HORARIS`) / Datetime:** Automatically normalized to strict `dd/mm/yyyy` format, handling mixed format ambiguities (`dd/mm` vs `mm/dd`) using the fair date bounds (04/11/2026 - 08/11/2026). Also, automatically formatted to strict `HH:MM` by dropping trailing seconds.
 * **Text Values**: Cleaned, Unicode-normalized, and stripped of trailing whitespace while preserving original raw text.
 
@@ -193,10 +202,12 @@ Replacements are plain, case-sensitive text substitutions applied in file order 
 *(Alternatively, to generate massive synthetic datasets for performance and scalability testing instead of real data, run:)*
 
 ```bash
-python3 scripts/generate_catalog.py --books 500 --activities 50 -o data/massive_catalog.csv
+python3 scripts/generate_catalog.py --books 500 --activities 50 -o data/massive_catalog.csv --seed 42
 python3 scripts/process_catalog.py data/massive_catalog.csv data.json
 
 ```
+
+The synthetic catalog uses the extended format and includes stock quantities covering every state shown by the web app (about 10% unknown, 15% sold out, 20% with 1–2 units, 55% in stock). `--seed` generates exactly the same catalog again, which is useful to compare test runs.
 
 *(You can also check available options using `python3 scripts/generate_catalog.py --help`)*.
 
