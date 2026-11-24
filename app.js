@@ -785,12 +785,14 @@ async function registerOfflineServiceWorker() {
 
     let registration;
     try {
-        const buildVersion = `${getAppVersion()}-${TIMESTAMP_VERSION}`;
-        registration = await navigator.serviceWorker.register(`sw.js?v=${encodeURIComponent(buildVersion)}`, { scope: './' });
+        // Always the same URL: the browser detects new releases by comparing the content of sw.js, which
+        // changes with every version. A versioned URL made every release install twice (once by the update
+        // check with the previous URL, again by the page with the new one), downloading every file twice.
+        registration = await navigator.serviceWorker.register('sw.js', { scope: './' });
     } catch (err) {
-        // Typical after an update applied without connection: the sw.js of the new version cannot be
-        // downloaded yet, but the installed worker keeps the offline mode working. The registration is
-        // completed on the next load with connection.
+        // Happens without connection when the registered script URL differs (devices still registered by a
+        // release that used versioned sw.js URLs): it cannot be downloaded yet, but the installed worker keeps
+        // the offline mode working. The registration is completed on the next load with connection.
         registration = navigator.serviceWorker.controller ? await navigator.serviceWorker.getRegistration() : null;
         if (!registration) {
             console.warn('Service Worker registration failed:', err);

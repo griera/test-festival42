@@ -4,16 +4,12 @@
 const CACHE_PREFIX = 'fair-catalog-';
 const COVERS_CACHE = `${CACHE_PREFIX}covers-v1`; // also read and pruned by app.js
 
-// Build/version tag (?v= in the registration URL), used to rotate shell caches on each release
-const BUILD_TAG = new URL(self.location.href).searchParams.get('v') || 'default';
-const SHELL_CACHE = `${CACHE_PREFIX}shell-${BUILD_TAG}`;
-
 // Keep these ?v= versions in sync with scripts/bump_version.py and index.html
 const CORE_ASSETS = [
     './',
     './index.html',
-    './styles.css?v=0.9.48',
-    './app.js?v=0.9.48',
+    './styles.css?v=0.9.49',
+    './app.js?v=0.9.49',
     './data.json?v=20261124111244',
     './assets/icons/f42_32x32.png'
 ];
@@ -28,6 +24,11 @@ function precachedVersion(path) {
     const entry = CORE_ASSETS.find((asset) => asset.startsWith(`${path}?v=`));
     return entry ? new URL(entry, self.location.href).searchParams.get('v') : null;
 }
+
+// Shell cache of this release, named after the versions it serves: each release gets its own cache, and the
+// previous one is deleted on activation. sw.js is always registered with the same URL (without ?v=), so the
+// periodic update check and the page register the same script and each release is installed only once.
+const SHELL_CACHE = `${CACHE_PREFIX}shell-${SERVED_VERSIONS.app}-${SERVED_VERSIONS.data}`;
 
 // After this, the cached page is served and the network copy keeps updating the cache in the background
 const NAVIGATION_TIMEOUT_MS = 4000;
