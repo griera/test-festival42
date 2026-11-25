@@ -1124,10 +1124,17 @@ function showUpdateBanner() {
     if (!banner) return;
     clearTimeout(updateReminderTimer);
     swapClasses(banner, UPDATE_BANNER_SHOWN, UPDATE_BANNER_HIDDEN);
+    // Room for the notice at the bottom: the scroll-to-top button moves up by its height plus a gap (mobile only,
+    // see index.html). The notice keeps its layout while hidden, so its height is already known here
+    document.documentElement.style.setProperty('--update-banner-h', `${banner.offsetHeight + 8}px`);
 
-    // Filling the live region makes screen readers announce the notice without stealing focus
+    // Filling the live region makes screen readers announce the notice without stealing focus. The text is read
+    // off the visible notice (index.html), so it is written in one place only: "<title>. <text>"
     const announcer = banner.querySelector('[data-role="update-announcer"]');
-    if (announcer) announcer.textContent = 'Nova versió disponible. Actualitza per veure l\'estoc més recent.';
+    const message = banner.querySelector('[data-role="update-message"]');
+    if (announcer && message) {
+        announcer.textContent = [...message.children].map((line) => line.textContent.trim()).join('. ');
+    }
 }
 
 // "Més tard" hides the notice for a while; it comes back so nobody works with stale stock all day
@@ -1135,6 +1142,7 @@ function postponeUpdateBanner() {
     const banner = document.getElementById('updateBanner');
     if (!banner) return;
     swapClasses(banner, UPDATE_BANNER_HIDDEN, UPDATE_BANNER_SHOWN);
+    document.documentElement.style.removeProperty('--update-banner-h');
     const announcer = banner.querySelector('[data-role="update-announcer"]');
     if (announcer) announcer.textContent = '';
     clearTimeout(updateReminderTimer);

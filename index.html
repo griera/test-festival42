@@ -24,11 +24,11 @@
          a speed optimization. It also starts the download early, in parallel with app.js. -->
     <link id="dataPreload" data-content-hash="9220274e" rel="preload" href="data.json?v=20261124203019" as="fetch" crossorigin>
     <!-- Tailwind CSS -->
-    <link rel="stylesheet" href="styles.css?v=0.9.62">
+    <link rel="stylesheet" href="styles.css?v=0.9.63">
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="assets/icons/f42_32x32.png">
     <!-- Application logic: in <head> with defer it downloads in parallel with the HTML and still runs after parsing -->
-    <script src="app.js?v=0.9.62" defer></script>
+    <script src="app.js?v=0.9.63" defer></script>
 </head>
 <body class="bg-page text-fg min-h-screen flex flex-col">
 
@@ -71,7 +71,7 @@
 
     <!-- Main Search & Content Section -->
     <!-- Up to 1152px wide (max-w-6xl), and 1280px at 1280px and wider (xl:max-w-7xl), so large screens show
-         three result columns (see app.js, SECTION_META).
+         three result columns with cards about 405px wide (see app.js, SECTION_META).
          The search box and the offline panel keep their previous 864px width (max-w-216): wider they would only be
          harder to read. Each one is limited by itself, not wrapped in a common container, because the sticky search bar
          only stays stuck within its parent: a container ending before the results would let it scroll away. -->
@@ -277,8 +277,10 @@
     <!-- Scroll to Top Floating Button.
          Zero-height sticky anchor: it sticks 1.5rem above the bottom of the viewport and, at the end of
          the wrapper, stops 1.5rem above the footer and scrolls with the page. Pure CSS, no listeners.
-         items-end aligns the button's bottom edge with the anchor, so it extends upwards. -->
-    <div class="sticky bottom-6 z-50 h-0 mb-6 flex justify-end items-end px-6 pointer-events-none">
+         items-end aligns the button's bottom edge with the anchor, so it extends upwards. On mobile it moves up by
+         the height of the new version notice while that one is shown (--update-banner-h, set by app.js). -->
+    <div class="sticky bottom-6 max-sm:bottom-[calc(var(--update-banner-h,0px)+1.5rem)] z-50 h-0 mb-6 flex justify-end items-end px-6 pointer-events-none
+                transition-[bottom] duration-300 ease-out motion-reduce:transition-none">
         <!-- "invisible" while hidden: opacity-0 alone keeps it reachable with the Tab key -->
         <button
             type="button"
@@ -309,10 +311,12 @@
     </div>
 
     <!-- New version notice (shown by app.js when a newer Service Worker takes control) -->
-    <!-- Mobile: top of the screen (below the connection bar), clear of the scroll-to-top button. Desktop: centered at the bottom. -->
+    <!-- At the bottom of the screen at every width (mobile: full width; 640px and wider: centered), so it never
+         covers the sticky search bar at the top. On mobile the scroll-to-top button moves up above it while it is
+         shown (--update-banner-h, set by app.js). -->
     <div
         id="updateBanner"
-        class="fixed inset-x-4 top-10 z-50 sm:inset-x-auto sm:top-auto sm:bottom-6 sm:left-1/2 sm:-translate-x-1/2 sm:w-max sm:max-w-md
+        class="fixed inset-x-4 bottom-4 z-50 sm:inset-x-auto sm:bottom-6 sm:left-1/2 sm:-translate-x-1/2 sm:w-max sm:max-w-md
                flex items-center gap-3 p-3 pr-2 rounded-2xl border border-brand-500/60 bg-surface/95 backdrop-blur shadow-2xl shadow-black/40
                transition-all duration-300 ease-out motion-reduce:transition-none
                invisible opacity-0 scale-95 pointer-events-none"
@@ -323,9 +327,10 @@
             </svg>
         </span>
 
-        <div class="min-w-0 flex-grow">
+        <!-- The only copy of the notice text: app.js also reads it for the screen reader announcement -->
+        <div class="min-w-0 flex-grow" data-role="update-message">
             <p class="text-sm font-semibold text-fg-strong">Nova versió disponible</p>
-            <p class="text-xs text-fg-muted">Actualitza per veure l'estoc més recent.</p>
+            <p class="text-xs text-fg-muted">Actualitza per veure la més recent.</p>
         </div>
 
         <button
