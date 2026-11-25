@@ -612,17 +612,22 @@ function renderAuthorButton(author, hoverClass, extraClass = '') {
 function renderBookCard(book) {
     return `
         <div class="bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-700 hover:border-indigo-500 transition-colors flex gap-4">
-            ${book.cover ? `
-                <img
-                    src="${safeValue(book.cover)}"
-                    alt="Coberta de ${safeValue(book.title)}"
-                    class="w-24 h-36 object-cover rounded-lg shadow bg-slate-900 flex-shrink-0"
-                    width="96"
-                    height="144"
-                    loading="lazy"
-                    decoding="async"
-                >
-            ` : ''}
+            <!-- Cover slot: always present, so every card keeps the same layout. The book icon is visible when there is
+                 no cover, while it loads, and when it cannot be loaded (the error handler hides the image). -->
+            <div class="relative w-24 h-36 flex-shrink-0 rounded-lg overflow-hidden shadow bg-slate-900 border border-slate-700/60">
+                <div class="absolute inset-0 flex items-center justify-center text-slate-600" aria-hidden="true">${BOOK_ICON_SVG}</div>
+                ${book.cover ? `
+                    <img
+                        src="${safeValue(book.cover)}"
+                        alt="Coberta de ${safeValue(book.title)}"
+                        class="relative w-full h-full object-cover"
+                        width="96"
+                        height="144"
+                        loading="lazy"
+                        decoding="async"
+                    >
+                ` : ''}
+            </div>
             <div class="flex flex-col justify-between flex-grow">
                 <div>
                     <!-- The title uses the full width; price and stock share a row below the author -->
@@ -654,6 +659,9 @@ function renderBookCard(book) {
 
 // Vertical card so it fits half a row; grid items stretch to the row height and mt-auto keeps
 // the location/time badge at the bottom right, aligned across cards of the same row
+// Neutral book icon for the cover slot (inline SVG: no extra request, colored with currentColor)
+const BOOK_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" class="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>';
+
 // Stock status of a book: the label states it in words, the color only reinforces it
 const STOCK_BADGE_CLASSES = {
     out: 'bg-rose-950 text-rose-300 border-rose-800',
