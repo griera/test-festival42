@@ -48,7 +48,7 @@ const UPDATE_REMINDER_MS = 5 * 60 * 1000;
 // Captured while the script is executing (document.currentScript is null afterwards)
 const APP_SCRIPT_SRC = document.currentScript ? document.currentScript.src : '';
 
-const FILTER_BTN_BASE = 'inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer';
+const FILTER_BTN_BASE = 'inline-flex flex-none items-center gap-1.5 whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer';
 const FILTER_BTN_IDLE = 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
 
 // Content type configuration mapping
@@ -144,6 +144,7 @@ async function init() {
     initScrollToTop();
     bindGlobalEvents();
     initConnectionStatus();
+    initStickySearch();
 
     try {
         await loadData();
@@ -385,7 +386,19 @@ function highlightFilterButtons(config, idPrefix, groupClass, activeId) {
             ? `${groupClass} active-filter ${FILTER_BTN_BASE} ${obj.activeClass}`
             : `${groupClass} ${FILTER_BTN_BASE} ${FILTER_BTN_IDLE}`;
         btn.setAttribute('aria-pressed', String(isActive));
+        // Only a specific filter (not the default 'all'): at startup the row must begin at its left edge
+        if (isActive && obj.id !== 'all') revealChip(btn);
     });
+}
+
+// In the one-row filter bar of narrow screens, scroll it sideways so the active chip is fully visible
+// (e.g. a link opened with ?day=08112026, whose chip would start out of view)
+function revealChip(btn) {
+    const row = btn.closest('[data-role="filter-row"]');
+    if (!row || row.scrollWidth <= row.clientWidth) return;
+    const rowBox = row.getBoundingClientRect();
+    const box = btn.getBoundingClientRect();
+    if (box.left < rowBox.left || box.right > rowBox.right) row.scrollLeft += box.left - rowBox.left - 16;
 }
 
 // Updates active type filter and re-runs the search filtering (by default)
@@ -963,6 +976,15 @@ function schedulePeriodicUpdateChecks(registration) {
     setTimeout(() => check(true), FIRST_CHECK_DELAY_MS);
 }
 
+// Shadow under the sticky search bar (narrow screens) only while it is stuck: the sentinel right above it
+// has scrolled out of view
+function initStickySearch() {
+    const bar = document.getElementById('searchBar');
+    const sentinel = document.querySelector('[data-role="search-sentinel"]');
+    if (!bar || !sentinel || !('IntersectionObserver' in window)) return;
+    new IntersectionObserver(([entry]) => bar.toggleAttribute('data-stuck', !entry.isIntersecting)).observe(sentinel);
+}
+
 // ------------------------------------------
 // Connection notice ("Sense connexió · dades del …")
 // ------------------------------------------
@@ -987,6 +1009,7 @@ function setServerReachable(reachable) {
         chip.classList.add('hidden');
         chip.classList.remove('flex');
         text.textContent = '';
+        document.documentElement.style.removeProperty('--offline-bar-h');
         return;
     }
     // The date of the data shown, so staff know how old the stock may be
@@ -994,6 +1017,8 @@ function setServerReachable(reachable) {
     text.textContent = date ? `Sense connexió · dades del ${date}` : 'Sense connexió';
     chip.classList.remove('hidden');
     chip.classList.add('flex');
+    // The sticky search bar goes right below the connection bar: its real height, which depends on the font size
+    document.documentElement.style.setProperty('--offline-bar-h', `${chip.offsetHeight}px`);
 }
 
 // 'YYYYMMDDHHMMSS' -> 'DD/MM, HH:MM'
@@ -1092,9 +1117,21 @@ function setOfflinePanel(view) {
     const button = panel.querySelector('[data-role="action"]');
     button.classList.toggle('hidden', !view.action);
     button.classList.toggle('inline-flex', Boolean(view.action));
-    if (view.action) panel.querySelector('[data-role="action-label"]').textContent = view.action;
+    if (view.action) {
+        panel.querySelector('[data-role="action-label"]').textContent = view.action;
+        panel.querySelector('[data-role="action-label-short"]').textContent = SHORT_ACTION_LABELS[view.action] || view.action;
+        // Full text as accessible name; the short visible text is its beginning (WCAG 2.5.3, label in name)
+        button.setAttribute('aria-label', view.action);
+    }
     button.dataset.action = view.actionName || 'prefetch-covers';
 }
+
+// Short texts of the offline panel button for narrow screens (it shares the row with the label there)
+const SHORT_ACTION_LABELS = {
+    'Descarregar totes les cobertes': 'Descarregar',
+    'Aturar la descàrrega': 'Aturar',
+    'Reintentar ara': 'Reintentar'
+};
 
 // Unique absolute same-origin cover URLs, resolved exactly like the <img> elements resolve them
 function getUniqueCoverUrls() {

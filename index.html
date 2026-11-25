@@ -14,11 +14,11 @@
          a speed optimization. It also starts the download early, in parallel with app.js. -->
     <link id="dataPreload" data-content-hash="9220274e" rel="preload" href="data.json?v=20261124203019" as="fetch" crossorigin>
     <!-- Tailwind CSS -->
-    <link rel="stylesheet" href="styles.css?v=0.9.57">
+    <link rel="stylesheet" href="styles.css?v=0.9.58">
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="assets/icons/f42_32x32.png">
     <!-- Application logic: in <head> with defer it downloads in parallel with the HTML and still runs after parsing -->
-    <script src="app.js?v=0.9.57" defer></script>
+    <script src="app.js?v=0.9.58" defer></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
 
@@ -28,7 +28,8 @@
     <div class="flex-grow flex flex-col">
 
     <!-- Header Section -->
-    <!-- Compact on mobile (less padding, smaller title, labels only for screen readers) so the results start higher -->
+    <!-- Compact on mobile (less padding, smaller title) so the results start higher. The "Dates:", "Lloc:" and
+         "Web oficial:" labels are only for screen readers: the icons identify each item visually. -->
     <header class="bg-indigo-950 border-b border-indigo-900 text-white shadow-lg py-4 sm:py-8 px-4">
         <div class="max-w-4xl mx-auto text-center">
             <span class="bg-indigo-600 text-indigo-100 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Edició 2026</span>
@@ -37,9 +38,9 @@
 
             <div class="mt-3 sm:mt-4 flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm text-slate-300">
                 <!-- Decorative icons: aria-hidden stops screen readers announcing them -->
-                <p class="inline-flex items-center gap-1.5"><span class="icon icon-calendar h-4 w-4 text-indigo-300" aria-hidden="true"></span> <strong class="sr-only sm:not-sr-only">Dates:</strong> 4–8 de novembre de 2026</p>
-                <p class="inline-flex items-center gap-1.5"><span class="icon icon-location h-4 w-4 text-indigo-300" aria-hidden="true"></span> <strong class="sr-only sm:not-sr-only">Lloc:</strong> <a href="https://www.barcelona.cat/fabraicoats/ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Fabra i Coats</a></p>
-                <p class="inline-flex items-center gap-1.5"><span class="icon icon-globe h-4 w-4 text-indigo-300" aria-hidden="true"></span> <strong class="sr-only sm:not-sr-only">Web oficial:</strong> <a href="https://www.barcelona.cat/festival42/ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Festival 42</a></p>
+                <p class="inline-flex items-center gap-1.5"><span class="icon icon-calendar h-4 w-4 text-indigo-300" aria-hidden="true"></span> <strong class="sr-only">Dates:</strong> 4–8 de novembre de 2026</p>
+                <p class="inline-flex items-center gap-1.5"><span class="icon icon-location h-4 w-4 text-indigo-300" aria-hidden="true"></span> <strong class="sr-only">Lloc:</strong> <a href="https://www.barcelona.cat/fabraicoats/ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Fabra i Coats</a></p>
+                <p class="inline-flex items-center gap-1.5"><span class="icon icon-globe h-4 w-4 text-indigo-300" aria-hidden="true"></span> <strong class="sr-only">Web oficial:</strong> <a href="https://www.barcelona.cat/festival42/ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Festival 42</a></p>
             </div>
         </div>
     </header>
@@ -98,7 +99,7 @@
             id="offlinePanel"
             data-tone="neutral"
             aria-labelledby="offlinePanelLabel"
-            class="group relative overflow-hidden mt-4 sm:mt-6 rounded-xl border p-3 sm:p-4 transition-colors duration-300 motion-reduce:transition-none
+            class="group relative overflow-hidden mt-4 sm:mt-6 rounded-xl border px-3 pt-3 pb-4 sm:p-4 transition-colors duration-300 motion-reduce:transition-none
                    bg-slate-800/60 border-slate-700
                    data-[tone=progress]:border-indigo-500/50 data-[tone=progress]:bg-indigo-950/40
                    data-[tone=success]:border-emerald-500/40 data-[tone=success]:bg-emerald-950/30
@@ -109,7 +110,7 @@
             <!-- Grid with a fixed height in every state, so the panel never moves the results (layout shift).
                  Mobile: label and button on the first row (button height reserved), detail below (two lines reserved), no icon.
                  At 640px and wider: icon | label and detail | button. -->
-            <div class="grid grid-cols-[1fr_auto] items-center gap-x-3 sm:grid-cols-[auto_1fr_auto]">
+            <div class="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-2 sm:gap-y-0 sm:grid-cols-[auto_1fr_auto]">
                 <!-- State icon: only the one matching the current tone is displayed -->
                 <span
                     class="hidden sm:flex sm:row-[1/span_2] flex-shrink-0 h-9 w-9 rounded-full items-center justify-center
@@ -162,7 +163,7 @@
                                group-data-[tone=error]:text-rose-300
                                group-data-[tone=off]:text-slate-300"
                     >Comprovant les cobertes desades…</p>
-                    <p data-role="detail" class="row-start-2 col-span-2 sm:col-span-1 sm:col-start-2 text-xs text-slate-400 tabular-nums mt-0.5 min-h-8 sm:min-h-4"></p>
+                    <p data-role="detail" class="row-start-2 col-span-2 sm:col-span-1 sm:col-start-2 text-xs text-slate-400 tabular-nums sm:mt-0.5 min-h-8 sm:min-h-4"></p>
 
                 <!-- Shown only when there is something useful to do (download, retry now, try again) -->
                 <button
