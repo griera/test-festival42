@@ -127,9 +127,9 @@ const eventDaysConfig = [
 ];
 
 // Per-section rendering settings (class names are written in full so Tailwind can detect them)
-// Result grids: one column on mobile, two at 640px and wider, three at 1280px and wider (about 363px per card
-// in the 1152px main area, the width the compact card already has on a phone). PAGE_SIZE (30) and every
-// "load more" fill complete rows with two or three columns.
+// Result grids: one column on mobile, two at 640px and wider, three at 1280px and wider (cards about 405px
+// wide in the 1280px main area: the compact card of a phone, with a wider text column). PAGE_SIZE (30) and
+// every "load more" fill complete rows with two or three columns.
 const SECTION_META = {
     book: {
         title: 'Llibres',

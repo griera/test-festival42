@@ -24,11 +24,11 @@
          a speed optimization. It also starts the download early, in parallel with app.js. -->
     <link id="dataPreload" data-content-hash="9220274e" rel="preload" href="data.json?v=20261124203019" as="fetch" crossorigin>
     <!-- Tailwind CSS -->
-    <link rel="stylesheet" href="styles.css?v=0.9.61">
+    <link rel="stylesheet" href="styles.css?v=0.9.62">
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="assets/icons/f42_32x32.png">
     <!-- Application logic: in <head> with defer it downloads in parallel with the HTML and still runs after parsing -->
-    <script src="app.js?v=0.9.61" defer></script>
+    <script src="app.js?v=0.9.62" defer></script>
 </head>
 <body class="bg-page text-fg min-h-screen flex flex-col">
 
@@ -70,11 +70,12 @@
     </header>
 
     <!-- Main Search & Content Section -->
-    <!-- Up to 1152px wide (max-w-6xl), so large screens show three result columns (see app.js, SECTION_META).
+    <!-- Up to 1152px wide (max-w-6xl), and 1280px at 1280px and wider (xl:max-w-7xl), so large screens show
+         three result columns (see app.js, SECTION_META).
          The search box and the offline panel keep their previous 864px width (max-w-216): wider they would only be
          harder to read. Each one is limited by itself, not wrapped in a common container, because the sticky search bar
          only stays stuck within its parent: a container ending before the results would let it scroll away. -->
-    <main class="max-w-6xl w-full mx-auto p-4 flex-grow my-2 sm:my-6">
+    <main class="max-w-6xl xl:max-w-7xl w-full mx-auto p-4 flex-grow my-2 sm:my-6">
 
         <!-- Search Bar. Below 700px it stays at the top while scrolling the results (sticky, opaque background:
              a backdrop blur would be costly to repaint on every scroll frame of a modest phone), just below the
