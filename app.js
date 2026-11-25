@@ -48,14 +48,14 @@ const UPDATE_REMINDER_MS = 5 * 60 * 1000;
 // Captured while the script is executing (document.currentScript is null afterwards)
 const APP_SCRIPT_SRC = document.currentScript ? document.currentScript.src : '';
 
-const FILTER_BTN_BASE = 'px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer';
+const FILTER_BTN_BASE = 'inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer';
 const FILTER_BTN_IDLE = 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
 
 // Content type configuration mapping
 const eventTypesConfig = [
     { id: 'all', label: 'Tots', activeClass: 'bg-slate-100 text-slate-900 border-white shadow-sm' },
-    { id: 'book', label: '📚 Llibres', activeClass: 'bg-indigo-600 text-white border-indigo-500' },
-    { id: 'activity', label: '🎤 Activitats', activeClass: 'bg-teal-700 text-white border-teal-600' }
+    { id: 'book', label: 'Llibres', icon: 'book', activeClass: 'bg-indigo-600 text-white border-indigo-500' },
+    { id: 'activity', label: 'Activitats', icon: 'microphone', activeClass: 'bg-teal-700 text-white border-teal-600' }
 ];
 
 // Configured event dates array for dynamic selector rendering
@@ -74,7 +74,8 @@ const eventDaysConfig = [
 // Per-section rendering settings (class names are written in full so Tailwind can detect them)
 const SECTION_META = {
     book: {
-        title: '📚 Llibres',
+        title: 'Llibres',
+        icon: 'book',
         titleClass: 'text-indigo-400',
         sectionClass: '',
         listClass: 'grid gap-4 sm:grid-cols-2',
@@ -84,7 +85,8 @@ const SECTION_META = {
         renderItems: (items) => items.map((book) => renderBookCard(book)).join('')
     },
     activity: {
-        title: '🎤 Activitats',
+        title: 'Activitats',
+        icon: 'microphone',
         titleClass: 'text-teal-400',
         sectionClass: 'mt-6',
         listClass: 'grid gap-4 sm:grid-cols-2',
@@ -354,7 +356,7 @@ function createFilterButton(id, groupClass, action, config) {
     btn.dataset.value = config.id;
     btn.className = `${groupClass} ${FILTER_BTN_BASE} ${FILTER_BTN_IDLE}`;
     btn.setAttribute('aria-pressed', 'false');
-    btn.textContent = config.label;
+    btn.innerHTML = `${config.icon ? iconHTML(config.icon, 'h-3.5 w-3.5') : ''}<span>${escapeHTML(config.label)}</span>`;
     return btn;
 }
 
@@ -506,7 +508,7 @@ function renderSection(type) {
     return `
         <section class="${meta.sectionClass}" data-section="${type}">
             <div class="flex justify-between items-center mb-3">
-                <h2 class="text-xl font-bold ${meta.titleClass} flex items-center gap-2">${meta.title}</h2>
+                <h2 class="text-xl font-bold ${meta.titleClass} flex items-center gap-2">${iconHTML(meta.icon, 'h-5 w-5')}${meta.title}</h2>
                 <span class="text-xs text-slate-400" data-role="count">${renderCountText(shown, items.length)}</span>
             </div>
             <div class="${meta.listClass}" data-role="list">${meta.renderItems(items.slice(0, shown), null)}</div>
@@ -606,16 +608,15 @@ function renderAuthorButton(author, hoverClass, extraClass = '') {
     return `<button type="button" class="underline cursor-pointer ${hoverClass} transition-colors text-left author-filter-trigger ${extraClass}" data-author="${escapeHTML(author)}">${safeValue(author)}</button>`;
 }
 
-// Every cover loads lazily, including the first ones: in Lighthouse tests, loading them eagerly with
-// fetchpriority="high" made the LCP worse, because the image arrived while the cards were still being
-// rendered and then had to wait to be painted.
+// Compact card: the same information as before in less height. Publisher, distributor, category, theme and
+// schedule are identified by icons and tags, with visually hidden labels for screen readers.
 function renderBookCard(book) {
     return `
-        <div class="bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-700 hover:border-indigo-500 transition-colors flex gap-4">
+        <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 hover:border-indigo-500 transition-colors flex gap-4">
             <!-- Cover slot: always present, so every card keeps the same layout. The book icon is visible when there is
                  no cover, while it loads, and when it cannot be loaded (the error handler hides the image). -->
             <div class="relative w-24 h-36 flex-shrink-0 rounded-lg overflow-hidden shadow bg-slate-900 border border-slate-700/60">
-                <div class="absolute inset-0 flex items-center justify-center text-slate-600" aria-hidden="true">${BOOK_ICON_SVG}</div>
+                <div class="absolute inset-0 flex items-center justify-center text-slate-600">${iconHTML('book', 'h-9 w-9')}</div>
                 ${book.cover ? `
                     <img
                         src="${safeValue(book.cover)}"
@@ -628,40 +629,60 @@ function renderBookCard(book) {
                     >
                 ` : ''}
             </div>
-            <div class="flex flex-col justify-between flex-grow">
-                <div>
-                    <!-- The title uses the full width; price and stock share a row below the author -->
-                    <h3 class="font-bold text-lg text-white">${safeValue(book.title)}</h3>
-                    <p class="text-slate-300 font-medium mt-1 [&:has(.author-filter-trigger:hover)_.author-label]:text-indigo-400">
-                        <span class="author-label transition-colors">Autor/a:</span> ${renderBookAuthors(book.author)}
-                    </p>
-                    <div class="mt-2 flex flex-wrap items-center gap-1.5">
-                        <span class="bg-indigo-950 text-indigo-300 text-xs font-semibold px-2 py-1 rounded border border-indigo-900 whitespace-nowrap">${formatPrice(book.price)}</span>
-                        ${renderStockBadge(book.quantity)}
-                    </div>
-
-                    <div class="mt-3 text-sm text-slate-400 space-y-1 border-t border-slate-700/60 pt-2">
-                        ${book.publisher ? `<p><strong>Editorial:</strong> ${safeValue(book.publisher)}</p>` : ''}
-                        ${book.distributor ? `<p><strong>Distribuïdor:</strong> ${safeValue(book.distributor)}</p>` : ''}
-                        ${book.category ? `<p><strong>Categoria:</strong> ${safeValue(book.category)}</p>` : ''}
-                        ${book.theme ? `<p><strong>Tema:</strong> ${safeValue(book.theme)}</p>` : ''}
-                        ${book.schedule ? `<p><strong>Horaris:</strong>${renderSchedule(book.schedule)}</p>` : ''}
-                    </div>
+            <div class="flex flex-col min-w-0 flex-grow">
+                <h3 class="font-bold text-lg leading-snug text-white">${safeValue(book.title)}</h3>
+                <!-- Hovering an author name also highlights the "Autor/a:" label, as in activity cards -->
+                <p class="text-slate-300 font-medium mt-1 [&:has(.author-filter-trigger:hover)_.author-label]:text-indigo-400">
+                    <span class="author-label transition-colors">Autor/a:</span> ${renderBookAuthors(book.author)}
+                </p>
+                <div class="mt-2 flex flex-wrap items-center gap-1.5">
+                    <span class="bg-indigo-950 text-indigo-300 text-xs font-semibold px-2 py-1 rounded border border-indigo-900 whitespace-nowrap">${formatPrice(book.price)}</span>
+                    ${renderStockBadge(book.quantity)}
                 </div>
-
-                <div class="mt-4 pt-3 border-t border-slate-700/60 flex justify-between items-center text-xs text-slate-400">
-                    <span>EAN: <span class="font-mono">${safeValue(book.ean)}</span></span>
-                </div>
+                ${renderBookDetails(book)}
+                <p class="mt-auto pt-2 text-xs text-slate-400">EAN <span class="font-mono">${safeValue(book.ean)}</span></p>
             </div>
         </div>
     `;
 }
 
+// Publisher and distributor (icons), category and theme (tags) and signing schedule (clock), one line each
+function renderBookDetails(book) {
+    const lines = [];
+    const trade = [renderBookDetail('building', 'Editorial', book.publisher), renderBookDetail('truck', 'Distribuïdor', book.distributor)].filter(Boolean);
+    if (trade.length) lines.push(`<p>${trade.join('<span class="inline-block w-3"></span>')}</p>`);
+    // Category (the kind of book) as a pill; theme (the subject, often long) as text with a tag icon
+    const classification = [renderBookCategory(book.category), renderBookDetail('tag', 'Tema', book.theme)].filter(Boolean);
+    if (classification.length) lines.push(`<p class="leading-6">${classification.join('<span class="inline-block w-2"></span>')}</p>`);
+    if (hasText(book.schedule)) {
+        lines.push(`<p>${iconHTML('clock', 'h-4 w-4 mr-1 align-[-0.2em]')}<span class="sr-only">Horaris: </span>${formatBookSchedule(book.schedule)}</p>`);
+    }
+    return lines.length ? `<div class="mt-2 space-y-1 text-sm text-slate-400">${lines.join('')}</div>` : '';
+}
+
+function renderBookDetail(iconName, label, value) {
+    if (!hasText(value)) return '';
+    // Inline (no flex container per item): the icon is aligned with the text by vertical-align, cheaper to lay out
+    return `<span title="${label}">${iconHTML(iconName, 'h-4 w-4 mr-1 align-[-0.2em]')}<span class="sr-only">${label}: </span>${safeValue(value)}</span>`;
+}
+
+function renderBookCategory(value) {
+    if (!hasText(value)) return '';
+    return `<span class="rounded-full bg-indigo-500/15 px-2 py-0.5 text-xs font-semibold text-indigo-200 ring-1 ring-inset ring-indigo-400/30 [box-decoration-break:clone]" title="Categoria"><span class="sr-only">Categoria: </span>${safeValue(value)}</span>`;
+}
+
+// "dd/mm/yyyy HH:MM, ..." -> "dd/mm HH:MM · ..." (the year is the fair's own)
+function formatBookSchedule(scheduleStr) {
+    return String(scheduleStr).split(',').map((s) => s.trim()).filter(Boolean)
+        .map((s) => escapeHTML(s.replace(/^(\d{1,2}\/\d{1,2})\/\d{4}/, '$1'))).join(' · ');
+}
+
+function hasText(value) {
+    return value !== null && value !== undefined && value !== 'null' && String(value).trim() !== '';
+}
+
 // Vertical card so it fits half a row; grid items stretch to the row height and mt-auto keeps
 // the location/time badge at the bottom right, aligned across cards of the same row
-// Neutral book icon for the cover slot (inline SVG: no extra request, colored with currentColor)
-const BOOK_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" class="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>';
-
 // Stock status of a book: the label states it in words, the color only reinforces it
 const STOCK_BADGE_CLASSES = {
     out: 'bg-rose-950 text-rose-300 border-rose-800',
@@ -720,8 +741,8 @@ function formatActivityDay(dayKey) {
 function renderActivityCard(activity) {
     // The day is in the heading above, so the card only shows the time (or the raw text if it is not a date)
     const when = activity._time
-        ? `<span aria-hidden="true">🕐</span> ${escapeHTML(activity._time)}`
-        : `<span aria-hidden="true">📅</span> ${safeValue(activity.datetime)}`;
+        ? `${iconHTML('clock', 'h-4 w-4')}${escapeHTML(activity._time)}`
+        : `${iconHTML('calendar', 'h-4 w-4')}${safeValue(activity.datetime)}`;
     return `
         <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 hover:border-teal-500 transition-colors flex flex-col gap-3">
             <div class="min-w-0">
@@ -733,19 +754,12 @@ function renderActivityCard(activity) {
             <!-- Bottom-right badge, like the stock badge of book cards (divider line + right-aligned box) -->
             <div class="mt-auto pt-3 border-t border-slate-700/60 flex justify-end">
                 <div class="max-w-full text-right text-sm bg-teal-950 text-teal-200 border border-teal-900 px-3 py-1.5 rounded-lg">
-                    <p class="break-words"><span aria-hidden="true">📍</span> ${safeValue(activity.location)}</p>
-                    <p class="font-semibold whitespace-nowrap">${when}</p>
+                    <p class="flex items-center justify-end gap-1.5 break-words">${iconHTML('location', 'h-4 w-4')}${safeValue(activity.location)}</p>
+                    <p class="flex items-center justify-end gap-1.5 font-semibold whitespace-nowrap">${when}</p>
                 </div>
             </div>
         </div>
     `;
-}
-
-function renderSchedule(scheduleStr) {
-    if (!scheduleStr) return '';
-    const items = String(scheduleStr).split(',').map((s) => s.trim());
-    if (items.length === 1) return ` ${safeValue(items[0])}`;
-    return '<br>' + items.map((s) => `<span class="block pl-2">${safeValue(s)}</span>`).join('');
 }
 
 // Book authors come as "COGNOM, NOM" (the comma belongs to the name), so several authors are only split on
@@ -769,6 +783,11 @@ function renderActivityAuthors(authorStr) {
 // ==========================================
 // FORMATTING UTILITIES
 // ==========================================
+
+// Decorative icon defined in src/icons.css (CSS mask painted with the text color; aria-hidden: screen readers skip it)
+function iconHTML(name, classes = 'h-4 w-4') {
+    return `<span class="icon icon-${name} ${classes}" aria-hidden="true"></span>`;
+}
 
 // Escape a value for HTML text or attributes (0 and false are kept, only null/undefined become '')
 function escapeHTML(str) {

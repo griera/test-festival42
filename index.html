@@ -14,13 +14,14 @@
          a speed optimization. It also starts the download early, in parallel with app.js. -->
     <link id="dataPreload" data-content-hash="9220274e" rel="preload" href="data.json?v=20261124203019" as="fetch" crossorigin>
     <!-- Tailwind CSS -->
-    <link rel="stylesheet" href="styles.css?v=0.9.54">
+    <link rel="stylesheet" href="styles.css?v=0.9.56">
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="assets/icons/f42_32x32.png">
     <!-- Application logic: in <head> with defer it downloads in parallel with the HTML and still runs after parsing -->
-    <script src="app.js?v=0.9.54" defer></script>
+    <script src="app.js?v=0.9.56" defer></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+
 
     <!-- Page content (header + main). It is the containing block of the sticky scroll-to-top anchor below,
          so the button stops right above the footer instead of overlapping it. -->
@@ -34,10 +35,10 @@
             <p class="text-indigo-300 font-medium text-lg mt-1">Festival Gèneres Fantàstics de Barcelona</p>
 
             <div class="mt-4 flex flex-wrap justify-center gap-4 text-sm text-slate-300">
-                <!-- Decorative emojis: aria-hidden stops screen readers announcing "calendar", "pin"... -->
-                <p><span aria-hidden="true">📅</span> <strong>Dates:</strong> 4–8 de novembre de 2026</p>
-                <p><span aria-hidden="true">📍</span> <strong>Lloc:</strong> <a href="https://www.barcelona.cat/fabraicoats/ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Fabra i Coats</a></p>
-                <p><span aria-hidden="true">🌐</span> <strong>Web oficial:</strong> <a href="https://www.barcelona.cat/festival42/ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Festival 42</a></p>
+                <!-- Decorative icons: aria-hidden stops screen readers announcing them -->
+                <p class="inline-flex items-center gap-1.5"><span class="icon icon-calendar h-4 w-4 text-indigo-300" aria-hidden="true"></span> <strong>Dates:</strong> 4–8 de novembre de 2026</p>
+                <p class="inline-flex items-center gap-1.5"><span class="icon icon-location h-4 w-4 text-indigo-300" aria-hidden="true"></span> <strong>Lloc:</strong> <a href="https://www.barcelona.cat/fabraicoats/ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Fabra i Coats</a></p>
+                <p class="inline-flex items-center gap-1.5"><span class="icon icon-globe h-4 w-4 text-indigo-300" aria-hidden="true"></span> <strong>Web oficial:</strong> <a href="https://www.barcelona.cat/festival42/ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Festival 42</a></p>
             </div>
         </div>
     </header>
@@ -62,7 +63,7 @@
                 spellcheck="false"
                 class="w-full p-4 pl-12 rounded-xl border border-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-800 text-white text-base sm:text-lg transition-all placeholder-slate-400"
             >
-            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl pointer-events-none" aria-hidden="true">🔍</span>
+            <span class="icon icon-search absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" aria-hidden="true"></span>
         </div>
 
         <!-- Type Filter Chips (dynamically generated). The minimum heights reserve the space of the chips that
@@ -243,6 +244,7 @@
 
     </div>
 
+
     <!-- Connection notice: slim bar fixed at the top of the screen, filled by app.js when the server cannot be
          reached (the stock shown may be outdated). Being fixed, showing it never moves the page; at the top of the
          page it only covers the empty top padding of the header, and it stays visible while scrolling the results.
@@ -255,10 +257,10 @@
     </div>
 
     <!-- New version notice (shown by app.js when a newer Service Worker takes control) -->
-    <!-- Mobile: top of the screen, clear of the scroll-to-top button. Desktop: centered at the bottom. -->
+    <!-- Mobile: top of the screen (below the connection bar), clear of the scroll-to-top button. Desktop: centered at the bottom. -->
     <div
         id="updateBanner"
-        class="fixed inset-x-4 top-4 z-50 sm:inset-x-auto sm:top-auto sm:bottom-6 sm:left-1/2 sm:-translate-x-1/2 sm:w-max sm:max-w-md
+        class="fixed inset-x-4 top-10 z-50 sm:inset-x-auto sm:top-auto sm:bottom-6 sm:left-1/2 sm:-translate-x-1/2 sm:w-max sm:max-w-md
                flex items-center gap-3 p-3 pr-2 rounded-2xl border border-indigo-500/60 bg-slate-800/95 backdrop-blur shadow-2xl shadow-black/40
                transition-all duration-300 ease-out motion-reduce:transition-none
                invisible opacity-0 scale-95 pointer-events-none"
