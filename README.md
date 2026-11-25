@@ -441,12 +441,13 @@ Three sets of rules work together: custom headers for this app, Cloudflare manag
 
 | Header | Value |
 |---|---|
-| `Content-Security-Policy` | `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; object-src 'none'; media-src 'none'; frame-src 'none'; worker-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self';` |
+| `Content-Security-Policy` | `default-src 'self'; script-src 'self' 'sha256-95VmOWhernWAis+haWI5MSSmtR0lXXVe15n+qjcOjZs='; style-src 'self'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; object-src 'none'; media-src 'none'; frame-src 'none'; worker-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self';` |
 | `Cross-Origin-Opener-Policy` | `same-origin` |
 | `Cross-Origin-Resource-Policy` | `same-origin` |
 | `Cross-Origin-Embedder-Policy` | `require-corp` |
 
 * **CSP:** only resources of this site can be loaded, which blocks injected scripts, styles or images from other domains. `worker-src 'self'` is required: with `'none'` the Service Worker cannot be registered and the offline mode never starts.
+* **CSP hash of the theme script:** `index.html` has one inline script in `<head>` that applies the theme chosen with the header button before the first paint (an external file would add a request before painting). The CSP allows it by its hash, 'sha256-95VmOWhernWAis+haWI5MSSmtR0lXXVe15n+qjcOjZs=', and blocks any other inline script. If that line ever changes, its hash changes too: `python3 scripts/bump_version.py check` (also run by the deployment workflow) fails and prints the new hash, which must replace the old one in the comment above the script and in this CSP. If the CSP is not updated, browsers block the script and `app.js` still applies the theme, only with a brief flash on slow devices.
 * **COOP:** cuts the link between this tab and windows of other sites (`window.opener`), preventing tabnabbing and cross-site leaks.
 * **CORP:** prevents other websites from embedding the covers and files of this site (hotlinking) and keeps them out of other sites' browser processes (Spectre-type attacks). If covers are ever moved to a subdomain or another CDN, those files need `same-site` or `cross-origin` instead.
 * **COEP:** the page may only load external resources that explicitly allow it. Today the CSP already blocks every external resource, so it adds little, but it costs nothing. If you ever add one (fonts, analytics, embedded videos…), allow it in the CSP **and** make sure it sends CORP or CORS headers, or it will fail to load.

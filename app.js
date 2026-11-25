@@ -1,6 +1,61 @@
 'use strict';
 
 // ==========================================
+// THEME (applied first of all, so the page is painted in the chosen theme as early as possible)
+// ==========================================
+
+// Header button: automatic (follows the device) -> light -> dark. The choice is stored on this device;
+// the colors of both themes live in src/theme.css.
+const THEME_STORAGE_KEY = 'fair_catalog_theme';
+const THEME_ORDER = ['auto', 'light', 'dark'];
+const THEME_INFO = {
+    auto: { icon: 'theme-auto', label: 'automàtic (segons el dispositiu)' },
+    light: { icon: 'sun', label: 'clar' },
+    dark: { icon: 'moon', label: 'fosc' }
+};
+applyTheme(getStoredTheme(), false);
+
+function getStoredTheme() {
+    try {
+        const stored = localStorage.getItem(THEME_STORAGE_KEY);
+        return THEME_ORDER.includes(stored) ? stored : 'auto';
+    } catch (_) {
+        return 'auto';
+    }
+}
+
+// 'auto' removes data-theme, so src/theme.css follows the device (color-scheme: light dark)
+function applyTheme(theme, store = true) {
+    const root = document.documentElement;
+    if (theme === 'auto') delete root.dataset.theme;
+    else root.dataset.theme = theme;
+    if (store) {
+        try {
+            if (theme === 'auto') localStorage.removeItem(THEME_STORAGE_KEY);
+            else localStorage.setItem(THEME_STORAGE_KEY, theme);
+        } catch (_) {}
+    }
+    renderThemeButton(theme);
+}
+
+function cycleTheme() {
+    const current = document.documentElement.dataset.theme || 'auto';
+    applyTheme(THEME_ORDER[(THEME_ORDER.indexOf(current) + 1) % THEME_ORDER.length]);
+}
+
+// Icon of the current theme; the label says the current theme and the next one
+function renderThemeButton(theme) {
+    const button = document.querySelector('[data-action="toggle-theme"]');
+    if (!button) return;
+    const next = THEME_ORDER[(THEME_ORDER.indexOf(theme) + 1) % THEME_ORDER.length];
+    const text = `Tema: ${THEME_INFO[theme].label}. Canvia a ${THEME_INFO[next].label}`;
+    button.setAttribute('aria-label', text);
+    button.title = text;
+    const icon = button.querySelector('[data-role="theme-icon"]');
+    if (icon) icon.className = `icon icon-${THEME_INFO[theme].icon} h-5 w-5`;
+}
+
+// ==========================================
 // CONFIGURATION
 // ==========================================
 
@@ -221,6 +276,11 @@ function bindGlobalEvents() {
 
         if (target.closest('#scrollToTopBtn')) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+
+        if (target.closest('[data-action="toggle-theme"]')) {
+            cycleTheme();
             return;
         }
 
@@ -617,8 +677,10 @@ function announceResults(message) {
 }
 
 // extraClass: 'inline-block py-0.5' gives stacked names a 24px touch target (WCAG 2.2, 2.5.8)
+// hoverClass: hover text color and highlight background. The 2px horizontal padding keeps the highlight off the
+// letters, and the equal negative margin keeps the text in its original position
 function renderAuthorButton(author, hoverClass, extraClass = '') {
-    return `<button type="button" class="underline cursor-pointer ${hoverClass} transition-colors text-left author-filter-trigger ${extraClass}" data-author="${escapeHTML(author)}">${safeValue(author)}</button>`;
+    return `<button type="button" class="underline cursor-pointer ${hoverClass} rounded-sm px-0.5 -mx-0.5 transition-colors text-left author-filter-trigger ${extraClass}" data-author="${escapeHTML(author)}">${safeValue(author)}</button>`;
 }
 
 // Compact card: the same information as before in less height. Publisher, distributor, category, theme and
@@ -782,14 +844,14 @@ const BOOK_AUTHOR_SEPARATOR = /\s*;\s*|\s+\/\s+/;
 function renderBookAuthors(authorStr) {
     const authors = String(authorStr || '').split(BOOK_AUTHOR_SEPARATOR).map((a) => a.trim()).filter((a) => a.length > 0);
     if (authors.length === 0) return '-';
-    return authors.map((author) => renderAuthorButton(author, 'hover:text-brand-400', 'inline-block py-0.5')).join('; ');
+    return authors.map((author) => renderAuthorButton(author, 'hover:text-brand-400 hover:bg-brand-highlight', 'inline-block py-0.5')).join('; ');
 }
 
 // Participants on one line separated by commas, each one a 24px-tall link (WCAG 2.2, 2.5.8)
 function renderActivityAuthors(authorStr) {
     const authors = String(authorStr || '').split(',').map((a) => a.trim()).filter((a) => a.length > 0);
     if (authors.length === 0) return '-';
-    return authors.map((author) => renderAuthorButton(author, 'hover:text-activity-400', 'inline-block py-0.5')).join(', ');
+    return authors.map((author) => renderAuthorButton(author, 'hover:text-activity-400 hover:bg-activity-highlight', 'inline-block py-0.5')).join(', ');
 }
 
 // ==========================================

@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pàgina no trobada · Festival 42</title>
-    <meta name="color-scheme" content="dark">
+    <!-- Light and dark themes (src/theme.css): this page has no script, so it always follows the device theme. theme-color tints the mobile browser bar like the header, which is dark in both themes:
+         keep it equal to brand-950 of src/theme.css (indigo-950), since a meta tag cannot use CSS colors. -->
+    <meta name="color-scheme" content="light dark">
     <meta name="theme-color" content="#1e1b4b">
     <meta name="robots" content="noindex, nofollow">
     <!-- GitHub Pages serves this file for any missing URL, at any depth (e.g. /a/b/c), so every URL here
@@ -16,7 +18,7 @@
 </head>
 <body class="bg-page text-fg min-h-screen flex flex-col">
 
-    <header class="bg-brand-950 border-b border-brand-900 py-4 px-4">
+    <header class="scheme-dark bg-brand-950 border-b border-brand-900 py-4 px-4">
         <p class="max-w-4xl mx-auto text-center text-lg font-extrabold tracking-tight text-fg-strong">Festival 42</p>
     </header>
 
@@ -35,7 +37,7 @@
         </div>
     </main>
 
-    <footer class="bg-chrome border-t border-line-soft py-4 px-4 text-center text-xs text-fg-muted">
+    <footer class="scheme-dark bg-chrome border-t border-line-soft py-4 px-4 text-center text-xs text-fg-muted">
         Festival Gèneres Fantàstics de Barcelona
     </footer>
 

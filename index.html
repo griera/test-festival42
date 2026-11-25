@@ -4,9 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Festival 42 - Festival Gèneres Fantàstics de Barcelona</title>
-    <!-- Dark native controls (scrollbars, search clear button, autofill) and matching mobile browser bar -->
-    <meta name="color-scheme" content="dark">
+    <!-- Light and dark themes (src/theme.css): the browser uses the device theme for its own controls and the
+         first paint. theme-color tints the mobile browser bar like the header, which is dark in both themes:
+         keep it equal to brand-950 of src/theme.css (indigo-950), since a meta tag cannot use CSS colors. -->
+    <meta name="color-scheme" content="light dark">
     <meta name="theme-color" content="#1e1b4b">
+    <!-- Manual theme (header button) applied before the first paint, so the page never shows the device theme
+         first. Inline on purpose: an external file would add a request before painting, and before the
+         stylesheet because a script placed after it waits for it. The CSP allows this script by its hash, so
+         a change in this line needs the new hash in the Content-Security-Policy of Cloudflare and here
+         (scripts/bump_version.py check compares them). app.js applies the same choice again: if the CSP blocks
+         this script, the theme still works, only with a brief flash on slow devices.
+         CSP hash: 'sha256-95VmOWhernWAis+haWI5MSSmtR0lXXVe15n+qjcOjZs=' -->
+    <script>try{var t=localStorage.getItem('fair_catalog_theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>
     <!-- Crawler access rules definition -->
     <meta name="robots" content="noindex, nofollow">
     <!-- Data file: single source of truth for the data version (scripts/bump_version.py updates the ?v= value).
@@ -14,11 +24,11 @@
          a speed optimization. It also starts the download early, in parallel with app.js. -->
     <link id="dataPreload" data-content-hash="9220274e" rel="preload" href="data.json?v=20261124203019" as="fetch" crossorigin>
     <!-- Tailwind CSS -->
-    <link rel="stylesheet" href="styles.css?v=0.9.59">
+    <link rel="stylesheet" href="styles.css?v=0.9.60">
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="assets/icons/f42_32x32.png">
     <!-- Application logic: in <head> with defer it downloads in parallel with the HTML and still runs after parsing -->
-    <script src="app.js?v=0.9.59" defer></script>
+    <script src="app.js?v=0.9.60" defer></script>
 </head>
 <body class="bg-page text-fg min-h-screen flex flex-col">
 
@@ -30,7 +40,8 @@
     <!-- Header Section -->
     <!-- Compact on mobile (less padding, smaller title) so the results start higher. The "Dates:", "Lloc:" and
          "Web oficial:" labels are only for screen readers: the icons identify each item visually. -->
-    <header class="bg-brand-950 border-b border-brand-900 text-fg-strong shadow-lg py-4 sm:py-8 px-4">
+    <!-- scheme-dark: the header stays dark in both themes (festival identity; matches theme-color) -->
+    <header class="relative scheme-dark bg-brand-950 border-b border-brand-900 text-fg-strong shadow-lg py-4 sm:py-8 px-4">
         <div class="max-w-4xl mx-auto text-center">
             <span class="bg-brand-600 text-brand-100 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Edició 2026</span>
             <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2 text-fg-strong">Festival 42</h1>
@@ -43,6 +54,19 @@
                 <p class="inline-flex items-center gap-1.5"><span class="icon icon-globe h-4 w-4 text-brand-300" aria-hidden="true"></span> <strong class="sr-only">Web oficial:</strong> <a href="https://www.barcelona.cat/festival42/ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-brand-400">Festival 42</a></p>
             </div>
         </div>
+        <!-- Theme button: automatic (follows the device) -> light -> dark. app.js sets its icon and label and stores
+             the choice. Hidden in browsers without light-dark(), which always show the dark theme. It moves down by
+             the height of the connection bar while that one is shown (--offline-bar-h, set by app.js). -->
+        <button
+            type="button"
+            data-action="toggle-theme"
+            class="absolute top-[calc(var(--offline-bar-h,0px)+0.75rem)] right-3 sm:top-[calc(var(--offline-bar-h,0px)+1rem)] sm:right-4 hidden supports-[color:light-dark(white,black)]:inline-flex h-9 w-9 items-center justify-center rounded-full
+                   text-brand-200 hover:text-fg-strong hover:bg-brand-900 transition-colors cursor-pointer focus-ring"
+            aria-label="Tema: automàtic (segons el dispositiu). Canvia a clar"
+            title="Tema: automàtic (segons el dispositiu). Canvia a clar"
+        >
+            <span data-role="theme-icon" class="icon icon-theme-auto h-5 w-5" aria-hidden="true"></span>
+        </button>
     </header>
 
     <!-- Main Search & Content Section -->
@@ -325,7 +349,8 @@
     </div>
 
     <!-- Footer -->
-    <footer class="bg-chrome text-fg-muted py-6 text-sm border-t border-line-soft px-4">
+    <!-- scheme-dark: the footer stays dark in both themes, like the header -->
+    <footer class="scheme-dark bg-chrome text-fg-muted py-6 text-sm border-t border-line-soft px-4">
         <div class="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-4">
 
             <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-fg-soft text-xs sm:text-sm">

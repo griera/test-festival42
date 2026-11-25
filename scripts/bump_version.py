@@ -1,4 +1,5 @@
 import argparse
+import base64
 import hashlib
 import json
 import re
@@ -176,6 +177,35 @@ def check_data_fingerprint():
     return True
 
 
+def check_inline_script_hashes():
+    """Verifies that every inline <script> of index.html matches the hash written in the comment above it.
+
+    The Content-Security-Policy (set in Cloudflare, outside this repository) only allows inline scripts by
+    their hash. If a script changes without updating its hash, browsers block it silently, so this check
+    stops the deployment and shows the new value to put in the comment and in the CSP.
+    """
+    print("  └─ Checking the CSP hashes of the inline scripts...")
+    html = INDEX_FILE.read_text(encoding='utf-8') if INDEX_FILE.exists() else ''
+    # An inline script and the "CSP hash: 'sha256-...'" of the comment right before it
+    pattern = re.compile(r"(?:CSP hash: '(sha256-[A-Za-z0-9+/=]+)'\s*-->\s*)?<script>(.*?)</script>", re.S)
+    scripts = pattern.findall(html)
+    if not scripts:
+        print("     └─ ✔ No inline scripts")
+        return True
+    ok = True
+    for documented, code in scripts:
+        actual = 'sha256-' + base64.b64encode(hashlib.sha256(code.encode('utf-8')).digest()).decode()
+        if documented == actual:
+            print(f"     ├─ ✔ Inline script matches its CSP hash '{actual}'")
+        else:
+            ok = False
+            print(f"     ├─ ❌ Inline script changed: documented {documented or '(none)'}, current '{actual}'")
+            print("     │     Put the current hash in the comment above the script and in the script-src of the")
+            print("     │     Content-Security-Policy in Cloudflare, or browsers will block the script.")
+    print(f"     └─ {'✔' if ok else '❌'} {len(scripts)} inline script(s) checked")
+    return ok
+
+
 def check_consistency():
     """Verifies that index.html and sw.js reference exactly the same versioned URLs. Returns True if aligned."""
     print("  └─ Checking that index.html and sw.js are aligned...")
@@ -247,7 +277,8 @@ def main():
         help="'data': new data timestamp when data.json has changed (app.js is not touched); "
              "'code': bump the app.js/styles.css version; "
              "'check': only verify that index.html and sw.js are aligned, that the cover URLs in "
-             "data.json match the cover files, and that data.json has not changed since its last 'data' run."
+             "data.json match the cover files, that data.json has not changed since its last 'data' run, and "
+             "that the inline scripts of index.html match their CSP hashes."
     )
     parser.add_argument(
         "--force",
@@ -284,6 +315,7 @@ def main():
     ok = check_consistency() and ok
     ok = check_cover_versions() and ok
     ok = check_data_fingerprint() and ok
+    ok = check_inline_script_hashes() and ok
 
     if ok:
         print("✨ Versioning process completed successfully!")

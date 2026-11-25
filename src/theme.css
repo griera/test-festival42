@@ -63,6 +63,11 @@
     --color-notice-400: var(--color-yellow-400);
     --color-notice-500: var(--color-yellow-500);
 
+    /* Highlight behind an author or participant link while hovered: only in the light theme (below), where the
+       hover text color alone barely changes the lightness of the text; transparent in the dark theme */
+    --color-brand-highlight: transparent;
+    --color-activity-highlight: transparent;
+
     /* ---------- Neutrals, by role ---------- */
 
     /* Backgrounds */
@@ -119,4 +124,84 @@
 /* Visible keyboard focus ring */
 @utility focus-ring {
     @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-300;
+}
+
+/* ---------- Light theme ----------
+   Every semantic color gets its light value with light-dark(light, dark): the browser picks one per element from
+   its color-scheme. By default the page follows the device (color-scheme: light dark); the header button sets
+   data-theme="light" or "dark" on <html> to force one (app.js stores the choice). An area can stay dark in both
+   themes with the scheme-dark class: the header and the footer do, so they keep the festival identity and the
+   browser bar color (<meta name="theme-color">) always matches the header.
+   Light values: light page and white surfaces with dark text; accents invert their scale where they are a
+   background or a text (a 300 text becomes 700/800), and keep the solid shades of buttons (600, 700) so white
+   text stays readable on them. Badge backgrounds (950) become 100 with a 300 border, so they stand out on white
+   cards (50/200 almost blended with them); the place and time block of activities, the main information of
+   their cards, goes further (200 with a 400 border) to stand out as much as in the dark theme.
+   Browsers without light-dark() (e.g. iOS before 17.5) keep the dark theme of @theme, and the button is hidden. */
+@layer base {
+    :root {
+        color-scheme: dark;
+    }
+
+    @supports (color: light-dark(white, black)) {
+        :root {
+            color-scheme: light dark;
+
+            /* Neutrals */
+            --color-page: light-dark(var(--color-slate-100), var(--color-slate-900));
+            --color-sunken: light-dark(var(--color-slate-100), var(--color-slate-900));
+            --color-surface: light-dark(var(--color-white), var(--color-slate-800));
+            --color-raised: light-dark(var(--color-slate-200), var(--color-slate-700));
+            --color-line: light-dark(var(--color-slate-300), var(--color-slate-700));
+            --color-line-soft: light-dark(var(--color-slate-200), var(--color-slate-800));
+            --color-fg-strong: light-dark(var(--color-slate-900), var(--color-white));
+            --color-fg: light-dark(var(--color-slate-800), var(--color-slate-100));
+            --color-fg-soft: light-dark(var(--color-slate-700), var(--color-slate-300));
+            --color-fg-muted: light-dark(var(--color-slate-600), var(--color-slate-400));
+            --color-fg-faint: light-dark(var(--color-slate-400), var(--color-slate-600));
+            --color-inverse: light-dark(var(--color-slate-800), var(--color-slate-100));
+            --color-on-inverse: light-dark(var(--color-white), var(--color-slate-900));
+            --color-inverse-line: light-dark(var(--color-slate-800), var(--color-white));
+            /* chrome, on-accent and on-warning: same value in both themes */
+
+            /* Brand: backgrounds and texts invert, buttons (500, 600) stay */
+            --color-brand-200: light-dark(var(--color-indigo-800), var(--color-indigo-200));
+            --color-brand-300: light-dark(var(--color-indigo-700), var(--color-indigo-300));
+            --color-brand-400: light-dark(var(--color-indigo-600), var(--color-indigo-400));
+            --color-brand-900: light-dark(var(--color-indigo-300), var(--color-indigo-900));
+            --color-brand-950: light-dark(var(--color-indigo-100), var(--color-indigo-950));
+
+            /* Activities: 400 goes to 700 (teal-600 is too light for text on white) */
+            --color-activity-200: light-dark(var(--color-teal-800), var(--color-teal-200));
+            --color-activity-300: light-dark(var(--color-teal-700), var(--color-teal-300));
+            --color-activity-400: light-dark(var(--color-teal-700), var(--color-teal-400));
+            --color-activity-900: light-dark(var(--color-teal-400), var(--color-teal-900));
+            --color-activity-950: light-dark(var(--color-teal-200), var(--color-teal-950));
+
+            /* Hover highlight of author and participant links (transparent in the dark theme) */
+            --color-brand-highlight: light-dark(var(--color-indigo-100), transparent);
+            --color-activity-highlight: light-dark(var(--color-teal-100), transparent);
+
+            /* States */
+            --color-success-300: light-dark(var(--color-emerald-700), var(--color-emerald-300));
+            --color-success-400: light-dark(var(--color-emerald-500), var(--color-emerald-400));
+            --color-success-800: light-dark(var(--color-emerald-300), var(--color-emerald-800));
+            --color-success-950: light-dark(var(--color-emerald-100), var(--color-emerald-950));
+            --color-warning-300: light-dark(var(--color-amber-800), var(--color-amber-300));   /* amber-700 gave 4.42:1 on the connection bar */
+            --color-warning-800: light-dark(var(--color-amber-300), var(--color-amber-800));
+            --color-warning-950: light-dark(var(--color-amber-100), var(--color-amber-950));
+            --color-danger-300: light-dark(var(--color-rose-700), var(--color-rose-300));
+            --color-danger-400: light-dark(var(--color-rose-500), var(--color-rose-400));
+            --color-danger-800: light-dark(var(--color-rose-300), var(--color-rose-800));
+            --color-danger-950: light-dark(var(--color-rose-100), var(--color-rose-950));
+        }
+
+        /* Theme forced with the header button */
+        :root[data-theme="light"] {
+            color-scheme: light;
+        }
+        :root[data-theme="dark"] {
+            color-scheme: dark;
+        }
+    }
 }
