@@ -14,11 +14,11 @@
          a speed optimization. It also starts the download early, in parallel with app.js. -->
     <link id="dataPreload" data-content-hash="9220274e" rel="preload" href="data.json?v=20261124203019" as="fetch" crossorigin>
     <!-- Tailwind CSS -->
-    <link rel="stylesheet" href="styles.css?v=0.9.56">
+    <link rel="stylesheet" href="styles.css?v=0.9.57">
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="assets/icons/f42_32x32.png">
     <!-- Application logic: in <head> with defer it downloads in parallel with the HTML and still runs after parsing -->
-    <script src="app.js?v=0.9.56" defer></script>
+    <script src="app.js?v=0.9.57" defer></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
 
@@ -28,26 +28,37 @@
     <div class="flex-grow flex flex-col">
 
     <!-- Header Section -->
-    <header class="bg-indigo-950 border-b border-indigo-900 text-white shadow-lg py-8 px-4">
+    <!-- Compact on mobile (less padding, smaller title, labels only for screen readers) so the results start higher -->
+    <header class="bg-indigo-950 border-b border-indigo-900 text-white shadow-lg py-4 sm:py-8 px-4">
         <div class="max-w-4xl mx-auto text-center">
             <span class="bg-indigo-600 text-indigo-100 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Edició 2026</span>
-            <h1 class="text-4xl font-extrabold tracking-tight mt-2 text-white">Festival 42</h1>
-            <p class="text-indigo-300 font-medium text-lg mt-1">Festival Gèneres Fantàstics de Barcelona</p>
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2 text-white">Festival 42</h1>
+            <p class="text-indigo-300 font-medium text-base sm:text-lg mt-1">Festival Gèneres Fantàstics de Barcelona</p>
 
-            <div class="mt-4 flex flex-wrap justify-center gap-4 text-sm text-slate-300">
+            <div class="mt-3 sm:mt-4 flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm text-slate-300">
                 <!-- Decorative icons: aria-hidden stops screen readers announcing them -->
-                <p class="inline-flex items-center gap-1.5"><span class="icon icon-calendar h-4 w-4 text-indigo-300" aria-hidden="true"></span> <strong>Dates:</strong> 4–8 de novembre de 2026</p>
-                <p class="inline-flex items-center gap-1.5"><span class="icon icon-location h-4 w-4 text-indigo-300" aria-hidden="true"></span> <strong>Lloc:</strong> <a href="https://www.barcelona.cat/fabraicoats/ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Fabra i Coats</a></p>
-                <p class="inline-flex items-center gap-1.5"><span class="icon icon-globe h-4 w-4 text-indigo-300" aria-hidden="true"></span> <strong>Web oficial:</strong> <a href="https://www.barcelona.cat/festival42/ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Festival 42</a></p>
+                <p class="inline-flex items-center gap-1.5"><span class="icon icon-calendar h-4 w-4 text-indigo-300" aria-hidden="true"></span> <strong class="sr-only sm:not-sr-only">Dates:</strong> 4–8 de novembre de 2026</p>
+                <p class="inline-flex items-center gap-1.5"><span class="icon icon-location h-4 w-4 text-indigo-300" aria-hidden="true"></span> <strong class="sr-only sm:not-sr-only">Lloc:</strong> <a href="https://www.barcelona.cat/fabraicoats/ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Fabra i Coats</a></p>
+                <p class="inline-flex items-center gap-1.5"><span class="icon icon-globe h-4 w-4 text-indigo-300" aria-hidden="true"></span> <strong class="sr-only sm:not-sr-only">Web oficial:</strong> <a href="https://www.barcelona.cat/festival42/ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Festival 42</a></p>
             </div>
         </div>
     </header>
 
     <!-- Main Search & Content Section -->
-    <main class="max-w-4xl w-full mx-auto p-4 flex-grow my-6">
+    <main class="max-w-4xl w-full mx-auto p-4 flex-grow my-2 sm:my-6">
 
-        <!-- Search Bar -->
-        <div class="relative mb-8">
+        <!-- Search Bar. Below 700px it stays at the top while scrolling the results (sticky, opaque background:
+             a backdrop blur would be costly to repaint on every scroll frame of a modest phone), just below the
+             connection bar when that one is shown (app.js sets --offline-bar-h to its height). app.js sets
+             data-stuck while it is stuck, to show the shadow only then. -->
+        <div data-role="search-sentinel" class="h-px -mb-px" aria-hidden="true"></div>
+        <div
+            id="searchBar"
+            class="sticky top-[var(--offline-bar-h,0px)] z-30 -mx-4 px-4 py-2 mb-2 bg-slate-900 transition-shadow
+                   data-[stuck]:shadow-lg data-[stuck]:shadow-black/40
+                   min-[700px]:static min-[700px]:mx-0 min-[700px]:px-0 min-[700px]:py-0 min-[700px]:mb-8 min-[700px]:bg-transparent min-[700px]:data-[stuck]:shadow-none"
+        >
+        <div class="relative">
             <!-- A placeholder is not a label: screen readers and voice control need a real one -->
             <label for="searchInput" class="sr-only">Cerca al catàleg</label>
             <!-- type="search": clear button, Esc to clear and a "search" key on mobile keyboards.
@@ -65,14 +76,20 @@
             >
             <span class="icon icon-search absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" aria-hidden="true"></span>
         </div>
+        </div>
 
-        <!-- Type Filter Chips (dynamically generated). The minimum heights reserve the space of the chips that
-             app.js adds afterwards, so the content below does not move (layout shift): one 30px row for the types;
-             two rows for the days below 700px wide (they fit in one row at about 650px and wider, depending on the font). -->
-        <div class="flex flex-wrap justify-center gap-2 mt-4 min-h-7.5" id="typeFilterContainer" role="group" aria-label="Filtra per tipus"></div>
-
-        <!-- Day Filter Chips (dynamically generated) -->
-        <div class="flex flex-wrap justify-center gap-2 mt-4 min-h-17 min-[700px]:min-h-7.5" id="dayFilterContainer" role="group" aria-label="Filtra per dia"></div>
+        <!-- Filter chips (generated by app.js). Below 700px: one row, types | days, that scrolls sideways and reaches
+             the screen edges (a chip cut at the edge shows there are more). At 700px and wider: two centered rows.
+             The minimum heights reserve the 30px rows of the chips that app.js adds afterwards (no layout shift). -->
+        <div
+            data-role="filter-row"
+            class="-mx-4 px-4 py-1 flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden
+                   min-[700px]:mx-0 min-[700px]:px-0 min-[700px]:py-0 min-[700px]:flex-col min-[700px]:gap-4 min-[700px]:overflow-visible"
+        >
+            <div class="flex flex-none gap-2 min-h-7.5 min-[700px]:flex-wrap min-[700px]:justify-center" id="typeFilterContainer" role="group" aria-label="Filtra per tipus"></div>
+            <span class="h-5 w-px flex-none bg-slate-700 min-[700px]:hidden" aria-hidden="true"></span>
+            <div class="flex flex-none gap-2 min-h-7.5 min-[700px]:flex-wrap min-[700px]:justify-center" id="dayFilterContainer" role="group" aria-label="Filtra per dia"></div>
+        </div>
 
         <!-- Offline covers panel.
              app.js sets data-tone (neutral | progress | success | warning | error | off) and fills the texts;
@@ -81,7 +98,7 @@
             id="offlinePanel"
             data-tone="neutral"
             aria-labelledby="offlinePanelLabel"
-            class="group mt-6 rounded-xl border p-3 sm:p-4 transition-colors duration-300 motion-reduce:transition-none
+            class="group relative overflow-hidden mt-4 sm:mt-6 rounded-xl border p-3 sm:p-4 transition-colors duration-300 motion-reduce:transition-none
                    bg-slate-800/60 border-slate-700
                    data-[tone=progress]:border-indigo-500/50 data-[tone=progress]:bg-indigo-950/40
                    data-[tone=success]:border-emerald-500/40 data-[tone=success]:bg-emerald-950/30
@@ -89,10 +106,13 @@
                    data-[tone=error]:border-rose-500/40 data-[tone=error]:bg-rose-950/30
                    data-[tone=off]:bg-slate-800/40 data-[tone=off]:border-slate-700/60"
         >
-            <div class="flex flex-wrap items-center gap-x-3 gap-y-3">
+            <!-- Grid with a fixed height in every state, so the panel never moves the results (layout shift).
+                 Mobile: label and button on the first row (button height reserved), detail below (two lines reserved), no icon.
+                 At 640px and wider: icon | label and detail | button. -->
+            <div class="grid grid-cols-[1fr_auto] items-center gap-x-3 sm:grid-cols-[auto_1fr_auto]">
                 <!-- State icon: only the one matching the current tone is displayed -->
                 <span
-                    class="flex-shrink-0 h-9 w-9 rounded-full flex items-center justify-center
+                    class="hidden sm:flex sm:row-[1/span_2] flex-shrink-0 h-9 w-9 rounded-full items-center justify-center
                            bg-slate-700/60 text-slate-300
                            group-data-[tone=progress]:bg-indigo-500/20 group-data-[tone=progress]:text-indigo-300
                            group-data-[tone=success]:bg-emerald-500/20 group-data-[tone=success]:text-emerald-300
@@ -128,7 +148,6 @@
                     </svg>
                 </span>
 
-                <div class="min-w-0 flex-1">
                     <!-- Only the state label is a live region: the counter changes several times per second
                          and would make screen readers talk non-stop -->
                     <p
@@ -136,33 +155,34 @@
                         data-role="label"
                         role="status"
                         aria-live="polite"
-                        class="text-sm font-semibold text-slate-100
+                        class="row-start-1 min-w-0 min-h-9 flex items-center sm:block sm:min-h-0 text-sm font-semibold text-slate-100
                                group-data-[tone=progress]:text-indigo-200
                                group-data-[tone=success]:text-emerald-300
                                group-data-[tone=warning]:text-amber-300
                                group-data-[tone=error]:text-rose-300
                                group-data-[tone=off]:text-slate-300"
                     >Comprovant les cobertes desades…</p>
-                    <p data-role="detail" class="text-xs text-slate-400 tabular-nums mt-0.5 min-h-4"></p>
-                </div>
+                    <p data-role="detail" class="row-start-2 col-span-2 sm:col-span-1 sm:col-start-2 text-xs text-slate-400 tabular-nums mt-0.5 min-h-8 sm:min-h-4"></p>
 
                 <!-- Shown only when there is something useful to do (download, retry now, try again) -->
                 <button
                     type="button"
                     data-action="prefetch-covers"
                     data-role="action"
-                    class="hidden w-full sm:w-auto flex-shrink-0 items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors cursor-pointer
+                    class="hidden row-start-1 col-start-2 sm:col-start-3 sm:row-[1/span_2] flex-shrink-0 items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors cursor-pointer
                            bg-indigo-600 hover:bg-indigo-500 text-white
                            group-data-[tone=warning]:bg-amber-500 group-data-[tone=warning]:hover:bg-amber-400 group-data-[tone=warning]:text-slate-950
                            group-data-[tone=error]:bg-rose-600 group-data-[tone=error]:hover:bg-rose-500
                            focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300"
                 >
-                    <span data-role="action-label">Descarregar totes les cobertes</span>
+                    <!-- Short text on mobile, full text at 640px and wider; the accessible name is always the full text -->
+                    <span data-role="action-label-short" class="sm:hidden">Descarregar</span>
+                    <span data-role="action-label" class="hidden sm:inline">Descarregar totes les cobertes</span>
                 </button>
             </div>
 
-            <!-- Progress of covers stored on this device. Hidden with "invisible" (not "hidden") and a one-line
-                 minimum height on the detail text, so the panel keeps its size when app.js fills it (no layout shift). -->
+            <!-- Progress of covers stored on this device: a thin line on the bottom edge of the panel (absolute,
+                 takes no height). Hidden with "invisible" when there is no progress to show. -->
             <div
                 data-role="progress"
                 role="progressbar"
@@ -170,11 +190,11 @@
                 aria-valuemin="0"
                 aria-valuemax="100"
                 aria-valuenow="0"
-                class="invisible mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-700/70"
+                class="invisible absolute inset-x-0 bottom-0 h-1 overflow-hidden bg-slate-700/70"
             >
                 <div
                     data-role="progress-fill"
-                    class="h-full w-0 rounded-full transition-[width] duration-300 motion-reduce:transition-none
+                    class="h-full w-0 transition-[width] duration-300 motion-reduce:transition-none
                            bg-slate-400
                            group-data-[tone=progress]:bg-indigo-400
                            group-data-[tone=success]:bg-emerald-400
@@ -190,7 +210,7 @@
         </noscript>
 
         <!-- Loading State (Responsive Skeleton Screen for CLS Optimization) -->
-        <div id="loadingIndicator" role="status" class="space-y-6 mt-6 min-h-[60vh]">
+        <div id="loadingIndicator" role="status" class="space-y-6 mt-4 sm:mt-6 min-h-[60vh]">
             <div class="text-center py-4 text-slate-400">
                 Carregant el catàleg del festival…
             </div>
@@ -216,7 +236,7 @@
         <p id="resultsAnnouncer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
 
         <!-- Results Container -->
-        <div id="resultsContainer" class="space-y-6 hidden mt-6 min-h-[60vh]">
+        <div id="resultsContainer" class="space-y-6 hidden mt-4 sm:mt-6 min-h-[60vh]">
             <!-- Dynamic results will be injected here via JavaScript -->
         </div>
 

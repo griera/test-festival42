@@ -631,7 +631,6 @@ function renderBookCard(book) {
             </div>
             <div class="flex flex-col min-w-0 flex-grow">
                 <h3 class="font-bold text-lg leading-snug text-white">${safeValue(book.title)}</h3>
-                <!-- Hovering an author name also highlights the "Autor/a:" label, as in activity cards -->
                 <p class="text-slate-300 font-medium mt-1 [&:has(.author-filter-trigger:hover)_.author-label]:text-indigo-400">
                     <span class="author-label transition-colors">Autor/a:</span> ${renderBookAuthors(book.author)}
                 </p>
