@@ -127,13 +127,16 @@ const eventDaysConfig = [
 ];
 
 // Per-section rendering settings (class names are written in full so Tailwind can detect them)
+// Result grids: one column on mobile, two at 640px and wider, three at 1280px and wider (about 363px per card
+// in the 1152px main area, the width the compact card already has on a phone). PAGE_SIZE (30) and every
+// "load more" fill complete rows with two or three columns.
 const SECTION_META = {
     book: {
         title: 'Llibres',
         icon: 'book',
         titleClass: 'text-brand-400',
         sectionClass: '',
-        listClass: 'grid gap-4 sm:grid-cols-2',
+        listClass: 'grid gap-4 sm:grid-cols-2 xl:grid-cols-3',
         moreLabel: 'Carregar més llibres',
         moreClass: 'bg-brand-600 hover:bg-brand-500',
         // (items, previousItem) -> HTML; previousItem is the last card already shown ("load more")
@@ -144,7 +147,7 @@ const SECTION_META = {
         icon: 'microphone',
         titleClass: 'text-activity-400',
         sectionClass: 'mt-6',
-        listClass: 'grid gap-4 sm:grid-cols-2',
+        listClass: 'grid gap-4 sm:grid-cols-2 xl:grid-cols-3',
         moreLabel: 'Carregar més activitats',
         moreClass: 'bg-activity-700 hover:bg-activity-800',
         renderItems: renderActivityItems
