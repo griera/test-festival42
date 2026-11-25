@@ -610,7 +610,6 @@ function renderAuthorButton(author, hoverClass, extraClass = '') {
 // fetchpriority="high" made the LCP worse, because the image arrived while the cards were still being
 // rendered and then had to wait to be painted.
 function renderBookCard(book) {
-    const author = typeof book.author === 'string' ? book.author.trim() : '';
     return `
         <div class="bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-700 hover:border-indigo-500 transition-colors flex gap-4">
             ${book.cover ? `
@@ -628,8 +627,8 @@ function renderBookCard(book) {
                 <div>
                     <!-- The title uses the full width; price and stock share a row below the author -->
                     <h3 class="font-bold text-lg text-white">${safeValue(book.title)}</h3>
-                    <p class="text-slate-300 font-medium mt-1">
-                        Autor/a: ${author ? renderAuthorButton(author, 'hover:text-indigo-400') : '-'}
+                    <p class="text-slate-300 font-medium mt-1 [&:has(.author-filter-trigger:hover)_.author-label]:text-indigo-400">
+                        <span class="author-label transition-colors">Autor/a:</span> ${renderBookAuthors(book.author)}
                     </p>
                     <div class="mt-2 flex flex-wrap items-center gap-1.5">
                         <span class="bg-indigo-950 text-indigo-300 text-xs font-semibold px-2 py-1 rounded border border-indigo-900 whitespace-nowrap">${formatPrice(book.price)}</span>
@@ -739,6 +738,17 @@ function renderSchedule(scheduleStr) {
     const items = String(scheduleStr).split(',').map((s) => s.trim());
     if (items.length === 1) return ` ${safeValue(items[0])}`;
     return '<br>' + items.map((s) => `<span class="block pl-2">${safeValue(s)}</span>`).join('');
+}
+
+// Book authors come as "COGNOM, NOM" (the comma belongs to the name), so several authors are only split on
+// unambiguous separators: ';' and ' / '. Never on ' i ', which is part of many Catalan surnames.
+const BOOK_AUTHOR_SEPARATOR = /\s*;\s*|\s+\/\s+/;
+
+// Each author of a book is its own link (search by that author), separated by '; '
+function renderBookAuthors(authorStr) {
+    const authors = String(authorStr || '').split(BOOK_AUTHOR_SEPARATOR).map((a) => a.trim()).filter((a) => a.length > 0);
+    if (authors.length === 0) return '-';
+    return authors.map((author) => renderAuthorButton(author, 'hover:text-indigo-400', 'inline-block py-0.5')).join('; ');
 }
 
 // Participants on one line separated by commas, each one a 24px-tall link (WCAG 2.2, 2.5.8)
