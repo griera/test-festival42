@@ -159,6 +159,16 @@ type;ean;title;author;publisher;distributor;category;price;theme;schedule;quanti
 
 ---
 
+## 🔎 Barcode Readers
+
+USB or Bluetooth barcode readers work out of the box in **keyboard mode** (the usual default): they "type" the code, and the search already covers the EAN. `app.js` recognizes a read so it behaves well wherever the focus is:
+
+* **How a read is detected:** at least 8 digits (EAN-8, UPC-A, EAN-13), each one less than 50 ms after the previous one. Readers type a digit every few milliseconds (Bluetooth ones somewhat slower), while people need about 100 ms per key, so typing by hand is never taken as a read. A read ends with Enter or Tab, or after 100 ms without digits.
+* **What a read does:** the code replaces the current search (instead of being appended to it), wherever the focus is; the type and day filters go back to "all", so the item is not hidden; and the search runs at once, without the usual 300 ms delay. The reader's final Enter or Tab is blocked, so it never clicks the focused button (e.g. "Carregar més").
+* **Reader setup:** keyboard (HID) mode, with Enter as suffix (recommended) or no suffix. The thresholds are `SCAN_MIN_DIGITS`, `SCAN_MAX_KEY_GAP_MS` and `SCAN_END_PAUSE_MS` at the top of `app.js`; raise `SCAN_MAX_KEY_GAP_MS` only if a slow Bluetooth reader is not recognized.
+
+---
+
 ## 🔄 How to Update the Catalog & Test Performance
 
 1. Place your raw semicolon-delimited CSV source file (exported from booksellers, typically in legacy `cp1252` encoding) inside your workspace.
@@ -445,12 +455,14 @@ Three sets of rules work together: custom headers for this app, Cloudflare manag
 | `Cross-Origin-Opener-Policy` | `same-origin` |
 | `Cross-Origin-Resource-Policy` | `same-origin` |
 | `Cross-Origin-Embedder-Policy` | `require-corp` |
+| `Permissions-Policy` | `geolocation=(), microphone=(), camera=(), payment=(), usb=(), serial=(), hid=()` |
 
 * **CSP:** only resources of this site can be loaded, which blocks injected scripts, styles or images from other domains. `worker-src 'self'` is required: with `'none'` the Service Worker cannot be registered and the offline mode never starts.
 * **CSP hash of the theme script:** `index.html` has one inline script in `<head>` that applies the theme chosen with the header button before the first paint (an external file would add a request before painting). The CSP allows it by its hash, 'sha256-95VmOWhernWAis+haWI5MSSmtR0lXXVe15n+qjcOjZs=', and blocks any other inline script. If that line ever changes, its hash changes too: `python3 scripts/bump_version.py check` (also run by the deployment workflow) fails and prints the new hash, which must replace the old one in the comment above the script and in this CSP. If the CSP is not updated, browsers block the script and `app.js` still applies the theme, only with a brief flash on slow devices.
 * **COOP:** cuts the link between this tab and windows of other sites (`window.opener`), preventing tabnabbing and cross-site leaks.
 * **CORP:** prevents other websites from embedding the covers and files of this site (hotlinking) and keeps them out of other sites' browser processes (Spectre-type attacks). If covers are ever moved to a subdomain or another CDN, those files need `same-site` or `cross-origin` instead.
 * **COEP:** the page may only load external resources that explicitly allow it. Today the CSP already blocks every external resource, so it adds little, but it costs nothing. If you ever add one (fonts, analytics, embedded videos…), allow it in the CSP **and** make sure it sends CORP or CORS headers, or it will fail to load.
+* **Permissions-Policy:** disables browser features the app does not use, so they stay unavailable even if code were ever injected into the page: location (`geolocation`), microphone and camera (`microphone`, `camera`), payments (`payment`) and direct access to devices through the browser (`usb` for WebUSB, `serial` for Web Serial, `hid` for WebHID). Barcode readers are not affected: in keyboard (HID) mode the operating system treats them as a keyboard and the page only receives keystrokes, without using any of these browser APIs (see [Barcode Readers](#-barcode-readers)).
 
 #### Managed transforms
 

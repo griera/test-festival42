@@ -74,6 +74,14 @@ const LOW_STOCK_MAX = 2;
 // Delay before running a search while typing (prevents main thread blocking)
 const SEARCH_DEBOUNCE_MS = 300;
 
+// Barcode readers (USB or Bluetooth, keyboard mode) type each digit a few ms apart; people need about 100 ms per
+// key even when typing fast. At least SCAN_MIN_DIGITS digits (EAN-8, UPC-A, EAN-13), each less than
+// SCAN_MAX_KEY_GAP_MS after the previous one, are taken as a scan. Without a final Enter, the scan ends after
+// SCAN_END_PAUSE_MS without digits.
+const SCAN_MIN_DIGITS = 8;
+const SCAN_MAX_KEY_GAP_MS = 50;
+const SCAN_END_PAUSE_MS = 100;
+
 // Extra wait before announcing results to screen readers, so fast typing produces one announcement, not one per pause
 const RESULTS_ANNOUNCE_DELAY_MS = 500;
 
@@ -203,6 +211,7 @@ async function init() {
     bindGlobalEvents();
     initConnectionStatus();
     initStickySearch();
+    initBarcodeReader();
 
     try {
         await loadData();
@@ -548,6 +557,62 @@ function handleSearch() {
 function searchByAuthor(authorName) {
     clearTimeout(searchTimeout);
     getSearchInput().value = authorName;
+    resetVisibleLimits();
+    executeSearch();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ------------------------------------------
+// Barcode readers (USB or Bluetooth, keyboard mode)
+// ------------------------------------------
+// A reader "types" the code and usually ends with Enter. Without help, the code was appended to the text already in
+// the search box ("Minotauro9788401035777", no results), lost when the focus was elsewhere, and its Enter clicked
+// the focused button. A fast burst of digits is taken as a scan (see SCAN_* in the configuration): the code replaces
+// the search wherever the focus is, filters go back to "all" so the item is not hidden, and the search runs at once.
+// Typing by hand is never affected: keys slower than SCAN_MAX_KEY_GAP_MS end the burst.
+
+const scanState = { digits: '', lastKeyAt: 0, endTimer: null };
+
+function initBarcodeReader() {
+    // Capture phase: seen before the focused element handles the key (needed to stop the final Enter)
+    document.addEventListener('keydown', onBarcodeKeydown, true);
+}
+
+function onBarcodeKeydown(e) {
+    if (e.ctrlKey || e.altKey || e.metaKey) return;
+    const now = performance.now();
+    const inBurst = now - scanState.lastKeyAt <= SCAN_MAX_KEY_GAP_MS;
+
+    if (/^[0-9]$/.test(e.key)) {
+        if (!inBurst) scanState.digits = '';     // first digit, or a slow key: a new burst starts here
+        scanState.digits += e.key;
+        scanState.lastKeyAt = now;
+        clearTimeout(scanState.endTimer);
+        scanState.endTimer = setTimeout(finishBarcodeScan, SCAN_END_PAUSE_MS);
+        return;
+    }
+    if ((e.key === 'Enter' || e.key === 'Tab') && inBurst && scanState.digits.length >= SCAN_MIN_DIGITS) {
+        e.preventDefault();                       // the reader's Enter must not click the focused button
+        finishBarcodeScan();
+        return;
+    }
+    scanState.digits = '';                        // any other key: not a scan
+}
+
+function finishBarcodeScan() {
+    clearTimeout(scanState.endTimer);
+    const code = scanState.digits;
+    scanState.digits = '';
+    if (code.length >= SCAN_MIN_DIGITS) applyScannedCode(code);
+}
+
+function applyScannedCode(code) {
+    const input = getSearchInput();
+    if (!input) return;
+    clearTimeout(searchTimeout);                  // the digits typed into the box must not trigger their own search
+    input.value = code;
+    setTypeFilter('all', false);
+    setDayFilter('all', false);
     resetVisibleLimits();
     executeSearch();
     window.scrollTo({ top: 0, behavior: 'smooth' });

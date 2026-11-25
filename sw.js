@@ -8,8 +8,8 @@ const COVERS_CACHE = `${CACHE_PREFIX}covers-v1`; // also read and pruned by app.
 const CORE_ASSETS = [
     './',
     './index.html',
-    './styles.css?v=0.9.65',
-    './app.js?v=0.9.65',
+    './styles.css?v=0.9.66',
+    './app.js?v=0.9.66',
     './data.json?v=20261124203019',
     './assets/icons/f42_32x32.png'
 ];
