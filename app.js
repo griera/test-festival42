@@ -80,7 +80,8 @@ const SECTION_META = {
         listClass: 'grid gap-4 sm:grid-cols-2',
         moreLabel: 'Carregar més llibres',
         moreClass: 'bg-indigo-600 hover:bg-indigo-500',
-        renderItem: renderBookCard
+        // (items, previousItem) -> HTML; previousItem is the last card already shown ("load more")
+        renderItems: (items) => items.map((book) => renderBookCard(book)).join('')
     },
     activity: {
         title: '🎤 Activitats',
@@ -89,7 +90,7 @@ const SECTION_META = {
         listClass: 'grid gap-4 sm:grid-cols-2',
         moreLabel: 'Carregar més activitats',
         moreClass: 'bg-teal-700 hover:bg-teal-800',
-        renderItem: renderActivityCard
+        renderItems: renderActivityItems
     }
 };
 
@@ -297,7 +298,21 @@ function prepareItem(item) {
         .filter((value) => value !== null && value !== undefined && value !== '')
         .map(normalizeText)
         .join('\u0001'); // separator that typed text never contains, so a match cannot span two fields
-    return { ...item, _search: searchText };
+    return { ...item, _search: searchText, ...parseActivityDate(item) };
+}
+
+// Date of an activity ("dd/mm/yyyy HH:MM", as written by process_catalog.py):
+// _when sorts activities chronologically, _day groups them under a day heading, _time is shown on the card.
+// Activities without a recognizable date get null/'' and are listed last.
+function parseActivityDate(item) {
+    if (item.type !== 'activity') return {};
+    const match = /^\s*(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?/.exec(String(item.datetime || ''));
+    if (!match) return { _when: null, _day: '', _time: '' };
+    const [, day, month, year, hour, minute] = match;
+    const pad = (value) => String(value).padStart(2, '0');
+    const dayKey = `${year}${pad(month)}${pad(day)}`;
+    const time = hour !== undefined ? `${pad(hour)}:${minute}` : '';
+    return { _when: Number(`${dayKey}${time ? time.replace(':', '') : '0000'}`), _day: dayKey, _time: time };
 }
 
 // Lowercase and accent-insensitive ("Barceló" matches "barcelo", "Ç" matches "c")
@@ -313,9 +328,15 @@ function getSearchInput() {
     return document.getElementById('searchInput');
 }
 
+// Types offered as filters: "all" plus the types the catalog really contains
+function getAvailableTypes() {
+    const present = new Set(state.data.map((item) => item.type));
+    return eventTypesConfig.filter((typeObj) => typeObj.id === 'all' || present.has(typeObj.id));
+}
+
 function buildFilterButtons() {
     const typeContainer = document.getElementById('typeFilterContainer');
-    eventTypesConfig.forEach((typeObj) => {
+    getAvailableTypes().forEach((typeObj) => {
         typeContainer.appendChild(createFilterButton(`btn-filter-${typeObj.id}`, 'type-filter-btn', 'filter-type', typeObj));
     });
 
@@ -343,7 +364,7 @@ function applyInitialStateFromUrl() {
     const initialDay = urlParams.get('day');
     const initialQuery = urlParams.get('search');
 
-    const validTypes = eventTypesConfig.map((t) => t.id);
+    const validTypes = getAvailableTypes().map((t) => t.id);
     setTypeFilter(validTypes.includes(initialType) ? initialType : 'all', false);
 
     const validDays = eventDaysConfig.map((d) => d.id);
@@ -425,6 +446,9 @@ function executeSearch() {
         else if (item.type === 'activity') activity.push(item);
     }
 
+    // Activities in chronological order; undated ones last, keeping their order (sort is stable)
+    activity.sort((a, b) => (a._when === null) - (b._when === null) || (a._when || 0) - (b._when || 0));
+
     state.results = { book, activity };
     updateUrlParams(rawQuery, state.typeFilter, state.dayFilter);
     renderResults(rawQuery);
@@ -485,7 +509,7 @@ function renderSection(type) {
                 <h2 class="text-xl font-bold ${meta.titleClass} flex items-center gap-2">${meta.title}</h2>
                 <span class="text-xs text-slate-400" data-role="count">${renderCountText(shown, items.length)}</span>
             </div>
-            <div class="${meta.listClass}" data-role="list">${items.slice(0, shown).map(meta.renderItem).join('')}</div>
+            <div class="${meta.listClass}" data-role="list">${meta.renderItems(items.slice(0, shown), null)}</div>
             <div data-role="more">${renderLoadMore(type, items.length - shown)}</div>
         </section>
     `;
@@ -520,7 +544,7 @@ function loadMoreItems(type) {
     state.visible[type] = start + PAGE_SIZE;
 
     const list = section.querySelector('[data-role="list"]');
-    list.insertAdjacentHTML('beforeend', items.slice(start, end).map(meta.renderItem).join(''));
+    list.insertAdjacentHTML('beforeend', meta.renderItems(items.slice(start, end), items[start - 1] || null));
     section.querySelector('[data-role="count"]').textContent = renderCountText(end, items.length);
     section.querySelector('[data-role="more"]').innerHTML = renderLoadMore(type, items.length - end);
 
@@ -662,20 +686,48 @@ function renderStockBadge(quantity) {
     return `<span class="${STOCK_BADGE_CLASSES[status.tone]} text-xs font-semibold px-2 py-1 rounded border whitespace-nowrap">${escapeHTML(status.label)}</span>`;
 }
 
+// Activity cards grouped under a heading per day. previousActivity is the last card already shown, so
+// "load more" does not repeat the heading of a day that continues.
+function renderActivityItems(activities, previousActivity) {
+    let currentDay = previousActivity ? previousActivity._day : null;
+    return activities.map((activity) => {
+        let heading = '';
+        if (activity._day !== currentDay) {
+            currentDay = activity._day;
+            heading = `<h3 class="col-span-full mt-2 first:mt-0 text-sm font-semibold uppercase tracking-wide text-teal-300">${escapeHTML(formatActivityDay(activity._day))}</h3>`;
+        }
+        return heading + renderActivityCard(activity);
+    }).join('');
+}
+
+const activityDayFormatter = new Intl.DateTimeFormat('ca-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+
+// 'YYYYMMDD' -> 'Dimecres, 4 de novembre' ('' -> 'Sense data')
+function formatActivityDay(dayKey) {
+    if (!dayKey) return 'Sense data';
+    const date = new Date(Number(dayKey.slice(0, 4)), Number(dayKey.slice(4, 6)) - 1, Number(dayKey.slice(6, 8)));
+    const label = activityDayFormatter.format(date);
+    return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
 function renderActivityCard(activity) {
+    // The day is in the heading above, so the card only shows the time (or the raw text if it is not a date)
+    const when = activity._time
+        ? `<span aria-hidden="true">🕐</span> ${escapeHTML(activity._time)}`
+        : `<span aria-hidden="true">📅</span> ${safeValue(activity.datetime)}`;
     return `
         <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 hover:border-teal-500 transition-colors flex flex-col gap-3">
             <div class="min-w-0">
-                <h3 class="font-bold text-white">${safeValue(activity.title)}</h3>
+                <h4 class="font-bold text-white">${safeValue(activity.title)}</h4>
                 <p class="text-sm text-slate-400 mt-1 [&:has(.author-filter-trigger:hover)_strong]:text-teal-400">
-                    <strong class="transition-colors">Participants:</strong>${renderActivityAuthors(activity.author)}
+                    <strong class="transition-colors">Participants:</strong> ${renderActivityAuthors(activity.author)}
                 </p>
             </div>
             <!-- Bottom-right badge, like the stock badge of book cards (divider line + right-aligned box) -->
             <div class="mt-auto pt-3 border-t border-slate-700/60 flex justify-end">
                 <div class="max-w-full text-right text-sm bg-teal-950 text-teal-200 border border-teal-900 px-3 py-1.5 rounded-lg">
                     <p class="break-words"><span aria-hidden="true">📍</span> ${safeValue(activity.location)}</p>
-                    <p class="font-semibold whitespace-nowrap"><span aria-hidden="true">📅</span> ${safeValue(activity.datetime)}</p>
+                    <p class="font-semibold whitespace-nowrap">${when}</p>
                 </div>
             </div>
         </div>
@@ -689,14 +741,11 @@ function renderSchedule(scheduleStr) {
     return '<br>' + items.map((s) => `<span class="block pl-2">${safeValue(s)}</span>`).join('');
 }
 
+// Participants on one line separated by commas, each one a 24px-tall link (WCAG 2.2, 2.5.8)
 function renderActivityAuthors(authorStr) {
-    if (!authorStr) return ' -';
-    const authors = String(authorStr).split(',').map((a) => a.trim()).filter((a) => a.length > 0);
-    if (authors.length === 0) return ' -';
-    if (authors.length === 1) return ` ${renderAuthorButton(authors[0], 'hover:text-teal-400', 'inline-block py-0.5')}`;
-    return '<br>' + authors.map((author) =>
-        `<span class="block pl-2">${renderAuthorButton(author, 'hover:text-teal-400', 'inline-block py-0.5')}</span>`
-    ).join('');
+    const authors = String(authorStr || '').split(',').map((a) => a.trim()).filter((a) => a.length > 0);
+    if (authors.length === 0) return '-';
+    return authors.map((author) => renderAuthorButton(author, 'hover:text-teal-400', 'inline-block py-0.5')).join(', ');
 }
 
 // ==========================================
