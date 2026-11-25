@@ -91,6 +91,16 @@ npx @tailwindcss/cli -i ./src/input.css -o ./styles.css --watch
 
 ```
 
+### Design System (colors and components)
+
+`src/theme.css` (imported by `src/input.css`) is the single place for colors and shared components. Templates (`index.html`, `404.html`, `app.js`) never use the Tailwind palette directly:
+
+* **Accent families**, named by their role: `brand`, `activity`, `day`, `success`, `warning`, `danger`, `notice` (e.g. `bg-brand-600`, `text-danger-300`). Only the shades in use are declared; to use another one, add its line.
+* **Neutrals**, named by their role: `page`, `surface`, `raised`, `sunken`, `chrome`, `line`, `fg-strong`, `fg`, `fg-soft`, `fg-muted`, `fg-faint`, `on-accent`, `inverse`, `on-inverse`, `on-warning`.
+* **Components:** `card`, `chip`, `badge`, `btn-primary`, `focus-ring`.
+
+Avoid color names that match existing Tailwind utilities: a color named `inset` would generate a `ring-inset` color utility that replaces the built-in `ring-inset`.
+
 ---
 
 ## 🐍 Python Environment & Dependencies

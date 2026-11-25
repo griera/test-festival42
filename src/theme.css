@@ -1,0 +1,122 @@
+/* Design system: semantic colors and shared components (Tailwind v4).
+   index.html, 404.html and app.js use these names, never the Tailwind palette directly, so a color is decided
+   here, once. Each name generates the usual utilities: bg-surface, text-fg-muted, border-line, bg-brand-600/20...
+   The values reference the Tailwind palette variables, so the result is exactly the palette color.
+
+   Two kinds of names:
+   - Accent families, named by their role, with the full shade scale of their palette (brand-50 ... brand-950).
+     Changing the color of a role is replacing the palette name in its block.
+   - Neutrals, named by what they are used for (page, surface, line, fg...), because the same gray plays
+     different roles (slate-900 is the page background and also the text of a light button); a theme can
+     then give each role its own value. */
+@theme {
+    /* ---------- Accent families ---------- */
+
+    /* Brand and books: header, primary buttons, focus rings, book accents */
+    --color-brand-100: var(--color-indigo-100);
+    --color-brand-200: var(--color-indigo-200);
+    --color-brand-300: var(--color-indigo-300);
+    --color-brand-400: var(--color-indigo-400);
+    --color-brand-500: var(--color-indigo-500);
+    --color-brand-600: var(--color-indigo-600);
+    --color-brand-900: var(--color-indigo-900);
+    --color-brand-950: var(--color-indigo-950);
+
+    /* Activities */
+    --color-activity-200: var(--color-teal-200);
+    --color-activity-300: var(--color-teal-300);
+    --color-activity-400: var(--color-teal-400);
+    --color-activity-500: var(--color-teal-500);
+    --color-activity-600: var(--color-teal-600);
+    --color-activity-700: var(--color-teal-700);
+    --color-activity-800: var(--color-teal-800);
+    --color-activity-900: var(--color-teal-900);
+    --color-activity-950: var(--color-teal-950);
+
+    /* Day filter */
+    --color-day-400: var(--color-blue-400);
+    --color-day-600: var(--color-blue-600);
+
+    /* Success: covers ready offline, books in stock */
+    --color-success-300: var(--color-emerald-300);
+    --color-success-400: var(--color-emerald-400);
+    --color-success-500: var(--color-emerald-500);
+    --color-success-800: var(--color-emerald-800);
+    --color-success-950: var(--color-emerald-950);
+
+    /* Warning: paused download, connection notice, few units left */
+    --color-warning-300: var(--color-amber-300);
+    --color-warning-400: var(--color-amber-400);
+    --color-warning-500: var(--color-amber-500);
+    --color-warning-800: var(--color-amber-800);
+    --color-warning-950: var(--color-amber-950);
+
+    /* Danger: errors, sold out */
+    --color-danger-300: var(--color-rose-300);
+    --color-danger-400: var(--color-rose-400);
+    --color-danger-500: var(--color-rose-500);
+    --color-danger-600: var(--color-rose-600);
+    --color-danger-800: var(--color-rose-800);
+    --color-danger-950: var(--color-rose-950);
+
+    /* Notice: "Prototip de proves" badge of the footer */
+    --color-notice-400: var(--color-yellow-400);
+    --color-notice-500: var(--color-yellow-500);
+
+    /* ---------- Neutrals, by role ---------- */
+
+    /* Backgrounds */
+    --color-page: var(--color-slate-900);        /* page and sticky search bar */
+    --color-sunken: var(--color-slate-900);      /* sunken areas inside cards: cover slot, unknown stock badge */
+    --color-surface: var(--color-slate-800);     /* cards, search box, filter chips, panels */
+    --color-raised: var(--color-slate-700);      /* elements on a surface: icon circles, progress track, hover */
+    --color-chrome: var(--color-slate-950);      /* footer */
+
+    /* Borders */
+    --color-line: var(--color-slate-700);        /* borders and separators */
+    --color-line-soft: var(--color-slate-800);   /* borders on the darkest backgrounds (footer) */
+
+    /* Text (also usable as background: bg-fg-muted is the neutral progress bar) */
+    --color-fg-strong: var(--color-white);       /* titles and key text */
+    --color-fg: var(--color-slate-100);          /* body text */
+    --color-fg-soft: var(--color-slate-300);     /* secondary text */
+    --color-fg-muted: var(--color-slate-400);    /* details, placeholders, footer */
+    --color-fg-faint: var(--color-slate-600);    /* decorative: separators, cover placeholder icon */
+
+    /* On colored backgrounds */
+    --color-on-accent: var(--color-white);       /* text on brand, activity and day buttons and chips */
+    --color-inverse: var(--color-slate-100);     /* active "all" filter chip (light on the dark page) */
+    --color-on-inverse: var(--color-slate-900);  /* its text */
+    --color-inverse-line: var(--color-white);    /* its border */
+    --color-on-warning: var(--color-slate-950);  /* text on the warning (amber) button */
+}
+
+/* ---------- Shared components ----------
+   Each one only groups properties that the templates do not set again (no colors except the base surface and
+   border of .card, no padding or shadow), so their order against other utilities never matters. A hover or
+   state class (hover:border-brand-500, group-data-[...]) still overrides them: it is more specific. */
+
+/* Base of a card: surface, border and rounded corners (padding, shadow and hover are set per card) */
+@utility card {
+    @apply rounded-xl border border-line bg-surface;
+}
+
+/* Filter chip (types and days); app.js adds the idle or active colors */
+@utility chip {
+    @apply inline-flex flex-none items-center gap-1.5 whitespace-nowrap rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors cursor-pointer;
+}
+
+/* Small label with a border: price and stock of a book (colors per use) */
+@utility badge {
+    @apply rounded border px-2 py-1 text-xs font-semibold whitespace-nowrap;
+}
+
+/* Primary button colors: brand background, lighter on hover */
+@utility btn-primary {
+    @apply bg-brand-600 text-on-accent hover:bg-brand-500;
+}
+
+/* Visible keyboard focus ring */
+@utility focus-ring {
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-300;
+}

@@ -48,14 +48,14 @@ const UPDATE_REMINDER_MS = 5 * 60 * 1000;
 // Captured while the script is executing (document.currentScript is null afterwards)
 const APP_SCRIPT_SRC = document.currentScript ? document.currentScript.src : '';
 
-const FILTER_BTN_BASE = 'inline-flex flex-none items-center gap-1.5 whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer';
-const FILTER_BTN_IDLE = 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
+const FILTER_BTN_BASE = 'chip';
+const FILTER_BTN_IDLE = 'bg-surface text-fg-soft border-line hover:bg-raised';
 
 // Content type configuration mapping
 const eventTypesConfig = [
-    { id: 'all', label: 'Tots', activeClass: 'bg-slate-100 text-slate-900 border-white shadow-sm' },
-    { id: 'book', label: 'Llibres', icon: 'book', activeClass: 'bg-indigo-600 text-white border-indigo-500' },
-    { id: 'activity', label: 'Activitats', icon: 'microphone', activeClass: 'bg-teal-700 text-white border-teal-600' }
+    { id: 'all', label: 'Tots', activeClass: 'bg-inverse text-on-inverse border-inverse-line shadow-sm' },
+    { id: 'book', label: 'Llibres', icon: 'book', activeClass: 'bg-brand-600 text-on-accent border-brand-500' },
+    { id: 'activity', label: 'Activitats', icon: 'microphone', activeClass: 'bg-activity-700 text-on-accent border-activity-600' }
 ];
 
 // Configured event dates array for dynamic selector rendering
@@ -63,11 +63,11 @@ const eventDaysList = ['04112026', '05112026', '06112026', '07112026', '08112026
 
 // Content day configuration mapping
 const eventDaysConfig = [
-    { id: 'all', label: 'Tots els dies', activeClass: 'bg-slate-100 text-slate-900 border-white shadow-sm' },
+    { id: 'all', label: 'Tots els dies', activeClass: 'bg-inverse text-on-inverse border-inverse-line shadow-sm' },
     ...eventDaysList.map((dayCode) => ({
         id: dayCode,
         label: formatDayLabel(dayCode),
-        activeClass: 'bg-blue-600 text-white border-blue-400 shadow-md'
+        activeClass: 'bg-day-600 text-on-accent border-day-400 shadow-md'
     }))
 ];
 
@@ -76,22 +76,22 @@ const SECTION_META = {
     book: {
         title: 'Llibres',
         icon: 'book',
-        titleClass: 'text-indigo-400',
+        titleClass: 'text-brand-400',
         sectionClass: '',
         listClass: 'grid gap-4 sm:grid-cols-2',
         moreLabel: 'Carregar més llibres',
-        moreClass: 'bg-indigo-600 hover:bg-indigo-500',
+        moreClass: 'bg-brand-600 hover:bg-brand-500',
         // (items, previousItem) -> HTML; previousItem is the last card already shown ("load more")
         renderItems: (items) => items.map((book) => renderBookCard(book)).join('')
     },
     activity: {
         title: 'Activitats',
         icon: 'microphone',
-        titleClass: 'text-teal-400',
+        titleClass: 'text-activity-400',
         sectionClass: 'mt-6',
         listClass: 'grid gap-4 sm:grid-cols-2',
         moreLabel: 'Carregar més activitats',
-        moreClass: 'bg-teal-700 hover:bg-teal-800',
+        moreClass: 'bg-activity-700 hover:bg-activity-800',
         renderItems: renderActivityItems
     }
 };
@@ -158,10 +158,10 @@ async function init() {
         console.error('Error loading data:', error);
         // Written for the staff at the stand: what happened and what to do (technical details go to the console)
         document.getElementById('loadingIndicator').innerHTML = `
-            <div class="text-center py-12 bg-slate-800 rounded-xl border border-rose-500/40">
-                <p class="text-rose-300 font-semibold">No s'ha pogut carregar el catàleg.</p>
-                <p class="text-slate-400 text-sm mt-1">Comprova la connexió i torna-ho a provar.</p>
-                <button type="button" data-action="reload-app" class="mt-4 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-wait focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300">Tornar-ho a provar</button>
+            <div class="text-center py-12 bg-surface rounded-xl border border-danger-500/40">
+                <p class="text-danger-300 font-semibold">No s'ha pogut carregar el catàleg.</p>
+                <p class="text-fg-muted text-sm mt-1">Comprova la connexió i torna-ho a provar.</p>
+                <button type="button" data-action="reload-app" class="mt-4 px-4 py-2 rounded-lg btn-primary text-sm font-semibold transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-wait focus-ring">Tornar-ho a provar</button>
             </div>
         `;
     }
@@ -503,8 +503,8 @@ function renderResults(query) {
             ? `No s'ha trobat cap resultat per "${escapeHTML(query)}".`
             : 'No hi ha resultats amb els filtres seleccionats.';
         container.innerHTML = `
-            <div class="text-center py-12 bg-slate-800 rounded-xl shadow-sm border border-slate-700">
-                <p class="text-slate-400 text-lg">${message}</p>
+            <div class="text-center py-12 card shadow-sm">
+                <p class="text-fg-muted text-lg">${message}</p>
             </div>
         `;
         return;
@@ -522,7 +522,7 @@ function renderSection(type) {
         <section class="${meta.sectionClass}" data-section="${type}">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-xl font-bold ${meta.titleClass} flex items-center gap-2">${iconHTML(meta.icon, 'h-5 w-5')}${meta.title}</h2>
-                <span class="text-xs text-slate-400" data-role="count">${renderCountText(shown, items.length)}</span>
+                <span class="text-xs text-fg-muted" data-role="count">${renderCountText(shown, items.length)}</span>
             </div>
             <div class="${meta.listClass}" data-role="list">${meta.renderItems(items.slice(0, shown), null)}</div>
             <div data-role="more">${renderLoadMore(type, items.length - shown)}</div>
@@ -539,7 +539,7 @@ function renderLoadMore(type, remaining) {
     const meta = SECTION_META[type];
     return `
         <div class="text-center mt-6">
-            <button type="button" data-action="load-more" data-type="${type}" class="${meta.moreClass} text-white font-medium px-5 py-2 rounded-xl text-sm transition-colors shadow-sm cursor-pointer inline-flex flex-col items-center justify-center">
+            <button type="button" data-action="load-more" data-type="${type}" class="${meta.moreClass} text-on-accent font-medium px-5 py-2 rounded-xl text-sm transition-colors shadow-sm cursor-pointer inline-flex flex-col items-center justify-center">
                 <span>${meta.moreLabel}</span>
                 <span class="text-xs opacity-90 font-normal">(${remaining} restants)</span>
             </button>
@@ -625,11 +625,11 @@ function renderAuthorButton(author, hoverClass, extraClass = '') {
 // schedule are identified by icons and tags, with visually hidden labels for screen readers.
 function renderBookCard(book) {
     return `
-        <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 hover:border-indigo-500 transition-colors flex gap-4">
+        <div class="card p-4 shadow-sm hover:border-brand-500 transition-colors flex gap-4">
             <!-- Cover slot: always present, so every card keeps the same layout. The book icon is visible when there is
                  no cover, while it loads, and when it cannot be loaded (the error handler hides the image). -->
-            <div class="relative w-24 h-36 flex-shrink-0 rounded-lg overflow-hidden shadow bg-slate-900 border border-slate-700/60">
-                <div class="absolute inset-0 flex items-center justify-center text-slate-600">${iconHTML('book', 'h-9 w-9')}</div>
+            <div class="relative w-24 h-36 flex-shrink-0 rounded-lg overflow-hidden shadow bg-sunken border border-line/60">
+                <div class="absolute inset-0 flex items-center justify-center text-fg-faint">${iconHTML('book', 'h-9 w-9')}</div>
                 ${book.cover ? `
                     <img
                         src="${safeValue(book.cover)}"
@@ -643,16 +643,16 @@ function renderBookCard(book) {
                 ` : ''}
             </div>
             <div class="flex flex-col min-w-0 flex-grow">
-                <h3 class="font-bold text-lg leading-snug text-white">${safeValue(book.title)}</h3>
-                <p class="text-slate-300 font-medium mt-1 [&:has(.author-filter-trigger:hover)_.author-label]:text-indigo-400">
+                <h3 class="font-bold text-lg leading-snug text-fg-strong">${safeValue(book.title)}</h3>
+                <p class="text-fg-soft font-medium mt-1 [&:has(.author-filter-trigger:hover)_.author-label]:text-brand-400">
                     <span class="author-label transition-colors">Autor/a:</span> ${renderBookAuthors(book.author)}
                 </p>
                 <div class="mt-2 flex flex-wrap items-center gap-1.5">
-                    <span class="bg-indigo-950 text-indigo-300 text-xs font-semibold px-2 py-1 rounded border border-indigo-900 whitespace-nowrap">${formatPrice(book.price)}</span>
+                    <span class="badge bg-brand-950 text-brand-300 border-brand-900">${formatPrice(book.price)}</span>
                     ${renderStockBadge(book.quantity)}
                 </div>
                 ${renderBookDetails(book)}
-                <p class="mt-auto pt-2 text-xs text-slate-400">EAN <span class="font-mono">${safeValue(book.ean)}</span></p>
+                <p class="mt-auto pt-2 text-xs text-fg-muted">EAN <span class="font-mono">${safeValue(book.ean)}</span></p>
             </div>
         </div>
     `;
@@ -669,7 +669,7 @@ function renderBookDetails(book) {
     if (hasText(book.schedule)) {
         lines.push(`<p>${iconHTML('clock', 'h-4 w-4 mr-1 align-[-0.2em]')}<span class="sr-only">Horaris: </span>${formatBookSchedule(book.schedule)}</p>`);
     }
-    return lines.length ? `<div class="mt-2 space-y-1 text-sm text-slate-400">${lines.join('')}</div>` : '';
+    return lines.length ? `<div class="mt-2 space-y-1 text-sm text-fg-muted">${lines.join('')}</div>` : '';
 }
 
 function renderBookDetail(iconName, label, value) {
@@ -680,7 +680,7 @@ function renderBookDetail(iconName, label, value) {
 
 function renderBookCategory(value) {
     if (!hasText(value)) return '';
-    return `<span class="rounded-full bg-indigo-500/15 px-2 py-0.5 text-xs font-semibold text-indigo-200 ring-1 ring-inset ring-indigo-400/30 [box-decoration-break:clone]" title="Categoria"><span class="sr-only">Categoria: </span>${safeValue(value)}</span>`;
+    return `<span class="rounded-full bg-brand-500/15 px-2 py-0.5 text-xs font-semibold text-brand-200 ring-1 ring-inset ring-brand-400/30 [box-decoration-break:clone]" title="Categoria"><span class="sr-only">Categoria: </span>${safeValue(value)}</span>`;
 }
 
 // "dd/mm/yyyy HH:MM, ..." -> "dd/mm HH:MM · ..." (the year is the fair's own)
@@ -697,10 +697,10 @@ function hasText(value) {
 // the location/time badge at the bottom right, aligned across cards of the same row
 // Stock status of a book: the label states it in words, the color only reinforces it
 const STOCK_BADGE_CLASSES = {
-    out: 'bg-rose-950 text-rose-300 border-rose-800',
-    low: 'bg-amber-950 text-amber-300 border-amber-800',
-    ok: 'bg-emerald-950 text-emerald-300 border-emerald-800',
-    unknown: 'bg-slate-900 text-slate-400 border-slate-700'
+    out: 'bg-danger-950 text-danger-300 border-danger-800',
+    low: 'bg-warning-950 text-warning-300 border-warning-800',
+    ok: 'bg-success-950 text-success-300 border-success-800',
+    unknown: 'bg-sunken text-fg-muted border-line'
 };
 
 // Numeric quantity of a book, or null when unknown (e.g. "No Disponible", empty, negative)
@@ -723,7 +723,7 @@ function getStockStatus(quantity) {
 function renderStockBadge(quantity) {
     const status = getStockStatus(quantity);
     if (status.tone === 'unknown' && !state.hasStockData) return '';
-    return `<span class="${STOCK_BADGE_CLASSES[status.tone]} text-xs font-semibold px-2 py-1 rounded border whitespace-nowrap">${escapeHTML(status.label)}</span>`;
+    return `<span class="badge ${STOCK_BADGE_CLASSES[status.tone]}">${escapeHTML(status.label)}</span>`;
 }
 
 // Activity cards grouped under a heading per day. previousActivity is the last card already shown, so
@@ -734,7 +734,7 @@ function renderActivityItems(activities, previousActivity) {
         let heading = '';
         if (activity._day !== currentDay) {
             currentDay = activity._day;
-            heading = `<h3 class="col-span-full mt-2 first:mt-0 text-sm font-semibold uppercase tracking-wide text-teal-300">${escapeHTML(formatActivityDay(activity._day))}</h3>`;
+            heading = `<h3 class="col-span-full mt-2 first:mt-0 text-sm font-semibold uppercase tracking-wide text-activity-300">${escapeHTML(formatActivityDay(activity._day))}</h3>`;
         }
         return heading + renderActivityCard(activity);
     }).join('');
@@ -756,16 +756,16 @@ function renderActivityCard(activity) {
         ? `${iconHTML('clock', 'h-4 w-4')}${escapeHTML(activity._time)}`
         : `${iconHTML('calendar', 'h-4 w-4')}${safeValue(activity.datetime)}`;
     return `
-        <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 hover:border-teal-500 transition-colors flex flex-col gap-3">
+        <div class="card p-4 shadow-sm hover:border-activity-500 transition-colors flex flex-col gap-3">
             <div class="min-w-0">
-                <h4 class="font-bold text-white">${safeValue(activity.title)}</h4>
-                <p class="text-sm text-slate-400 mt-1 [&:has(.author-filter-trigger:hover)_strong]:text-teal-400">
+                <h4 class="font-bold text-fg-strong">${safeValue(activity.title)}</h4>
+                <p class="text-sm text-fg-muted mt-1 [&:has(.author-filter-trigger:hover)_strong]:text-activity-400">
                     <strong class="transition-colors">Participants:</strong> ${renderActivityAuthors(activity.author)}
                 </p>
             </div>
             <!-- Bottom-right badge, like the stock badge of book cards (divider line + right-aligned box) -->
-            <div class="mt-auto pt-3 border-t border-slate-700/60 flex justify-end">
-                <div class="max-w-full text-right text-sm bg-teal-950 text-teal-200 border border-teal-900 px-3 py-1.5 rounded-lg">
+            <div class="mt-auto pt-3 border-t border-line/60 flex justify-end">
+                <div class="max-w-full text-right text-sm bg-activity-950 text-activity-200 border border-activity-900 px-3 py-1.5 rounded-lg">
                     <p class="flex items-center justify-end gap-1.5 break-words">${iconHTML('location', 'h-4 w-4')}${safeValue(activity.location)}</p>
                     <p class="flex items-center justify-end gap-1.5 font-semibold whitespace-nowrap">${when}</p>
                 </div>
@@ -782,14 +782,14 @@ const BOOK_AUTHOR_SEPARATOR = /\s*;\s*|\s+\/\s+/;
 function renderBookAuthors(authorStr) {
     const authors = String(authorStr || '').split(BOOK_AUTHOR_SEPARATOR).map((a) => a.trim()).filter((a) => a.length > 0);
     if (authors.length === 0) return '-';
-    return authors.map((author) => renderAuthorButton(author, 'hover:text-indigo-400', 'inline-block py-0.5')).join('; ');
+    return authors.map((author) => renderAuthorButton(author, 'hover:text-brand-400', 'inline-block py-0.5')).join('; ');
 }
 
 // Participants on one line separated by commas, each one a 24px-tall link (WCAG 2.2, 2.5.8)
 function renderActivityAuthors(authorStr) {
     const authors = String(authorStr || '').split(',').map((a) => a.trim()).filter((a) => a.length > 0);
     if (authors.length === 0) return '-';
-    return authors.map((author) => renderAuthorButton(author, 'hover:text-teal-400', 'inline-block py-0.5')).join(', ');
+    return authors.map((author) => renderAuthorButton(author, 'hover:text-activity-400', 'inline-block py-0.5')).join(', ');
 }
 
 // ==========================================
