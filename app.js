@@ -1008,6 +1008,7 @@ async function registerOfflineServiceWorker() {
         console.warn('Service Worker registration postponed (offline?):', err);
     }
     schedulePeriodicUpdateChecks(registration);
+    claimPageIfUncontrolled(registration);
 
     initCoverTracking();
 
@@ -1419,13 +1420,23 @@ async function requestPersistentStorage() {
 // On the very first visit the page is not controlled until the new Service Worker claims it
 function waitForController(timeoutMs) {
     if (navigator.serviceWorker.controller) return Promise.resolve(true);
-    return new Promise((resolve) => {
+    const controlled = new Promise((resolve) => {
         const timer = setTimeout(() => resolve(Boolean(navigator.serviceWorker.controller)), timeoutMs);
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             clearTimeout(timer);
             resolve(true);
         }, { once: true });
     });
+    navigator.serviceWorker.getRegistration().then(claimPageIfUncontrolled).catch(() => {});
+    return controlled;
+}
+
+// A forced reload (Ctrl+Shift+R) loads the page skipping the Service Worker, and the page would stay without one
+// until the next release activates: no covers stored (the download failed with a misleading "network problems"
+// message) and no offline reload. If a worker is already active, ask it to take control of this page now.
+function claimPageIfUncontrolled(registration) {
+    if (navigator.serviceWorker.controller || !registration || !registration.active) return;
+    registration.active.postMessage({ type: 'CLAIM' });
 }
 
 // Removes stored covers that data.json no longer references: removed books, and previous versions of

@@ -8,8 +8,8 @@ const COVERS_CACHE = `${CACHE_PREFIX}covers-v1`; // also read and pruned by app.
 const CORE_ASSETS = [
     './',
     './index.html',
-    './styles.css?v=0.9.63',
-    './app.js?v=0.9.63',
+    './styles.css?v=0.9.65',
+    './app.js?v=0.9.65',
     './data.json?v=20261124203019',
     './assets/icons/f42_32x32.png'
 ];
@@ -71,11 +71,17 @@ self.addEventListener('activate', (event) => {
     })());
 });
 
-// app.js asks which versions a newly activated worker serves, to decide whether to show the update notice
+// app.js asks which versions a newly activated worker serves, to decide whether to show the update notice,
+// and asks it to take control of a page loaded skipping it (see CLAIM below)
 self.addEventListener('message', (event) => {
     const port = event.ports && event.ports[0];
     if (port && event.data && event.data.type === 'GET_VERSION') {
         port.postMessage(SERVED_VERSIONS);
+    }
+    // A forced reload (Ctrl+Shift+R) loads the page skipping this worker, and the page stays without one until the
+    // next release activates: no offline reload, covers not stored. clients.claim() takes control of it now
+    if (event.data && event.data.type === 'CLAIM') {
+        event.waitUntil(self.clients.claim());
     }
 });
 
