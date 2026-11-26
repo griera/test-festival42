@@ -880,11 +880,19 @@ function formatActivityDay(dayKey) {
     return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
+// Day and time of an activity, in the "DD/MM HH:MM" format of the book schedules. Every card carries its own day:
+// the day heading scrolls out of view on small screens, and search results can mix days.
+// No time: "DD/MM"; not a recognizable date ("Per confirmar"): the text as it is.
+function formatActivityWhen(activity) {
+    if (!activity._day) return `${iconHTML('calendar', 'h-4 w-4')}${safeValue(activity.datetime)}`;
+    const date = `${activity._day.slice(6, 8)}/${activity._day.slice(4, 6)}`;
+    return activity._time
+        ? `${iconHTML('clock', 'h-4 w-4')}${date} ${escapeHTML(activity._time)}`
+        : `${iconHTML('calendar', 'h-4 w-4')}${date}`;
+}
+
 function renderActivityCard(activity) {
-    // The day is in the heading above, so the card only shows the time (or the raw text if it is not a date)
-    const when = activity._time
-        ? `${iconHTML('clock', 'h-4 w-4')}${escapeHTML(activity._time)}`
-        : `${iconHTML('calendar', 'h-4 w-4')}${safeValue(activity.datetime)}`;
+    const when = formatActivityWhen(activity);
     return `
         <div class="card p-4 shadow-sm hover:border-activity-500 transition-colors flex flex-col gap-3">
             <div class="min-w-0">

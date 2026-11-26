@@ -9,6 +9,7 @@ on:
     paths:
       - 'index.html'
       - '404.html'
+      - 'robots.txt'
       - 'app.js'
       - 'sw.js'
       - 'styles.css'
@@ -49,7 +50,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir _site
-          cp index.html 404.html app.js sw.js styles.css data.json _site/
+          cp index.html 404.html robots.txt app.js sw.js styles.css data.json _site/
           cp -r assets _site/assets
 
       # Only the published copies are minified: the repository keeps the readable, commented sources.

@@ -25,19 +25,22 @@ Coming soon
 ```text
 test-festival42/
 ├── index.html               # Public frontend interface (search, filters, rendering)
-├── 404.html                 # Custom "not found" page served by GitHub Pages (no scripts, CSP compliant)
+├── 404.html                 # Custom "not found" page (no scripts, CSP compliant)
+├── robots.txt               # Asks crawlers not to crawl the site (User-agent: * / Disallow: /)
 ├── app.js                   # External frontend application logic (CSP compliant)
 ├── sw.js                    # Service Worker: app shell + book cover caching and update detection
 ├── styles.css               # Compiled, purged, and minified production Tailwind CSS
 ├── src/
-│   └── input.css            # Tailwind CSS v4 source stylesheet (@import "tailwindcss";)
-├── package.json             # Node.js project and dev dependencies (Tailwind CLI, esbuild, html-minifier-terser)
+│   ├── input.css            # Tailwind CSS v4 entry point (imports theme.css and icons.css)
+│   ├── theme.css            # Design system: semantic colors (light and dark) and components
+│   └── icons.css            # Outline icons as CSS masks, painted with the text color
+├── package.json             # Node.js project and dev dependencies (Tailwind CLI, minifiers)
 ├── package-lock.json        # Node.js locked dependency versions for exact deterministic installs
 ├── data.json                # Public processed dataset consumed by the web app
 ├── node_modules/            # Node.js local dependencies (ignored by Git)
 ├── data/                    # Dataset files
 │   ├── catalog.csv          # Bookstore catalog (CSV dataset)
-│   ├── replacements.json    # Recurring text fixes applied to the raw CSV (process_catalog.py --replacements)
+│   ├── replacements.json    # Recurring text fixes for the raw CSV (--replacements)
 │   ├── extra_data.json      # Special activities and extra events (JSON dataset)
 │   └── catalog.pdf          # PDF catalog with book covers (ignored by Git)
 ├── assets/                  # Public static assets
@@ -50,15 +53,15 @@ test-festival42/
 ├── scripts/                 # Python development and automation tools
 │   ├── generate_catalog.py  # Script for massive synthetic load testing data
 │   ├── process_catalog.py   # Script to process raw catalog CSV and convert it into a JSON payload
-│   ├── cover_version.py     # Content fingerprint of a cover, used in its URL (?v=); shared by process_catalog and bump_version
-│   ├── bump_version.py      # Script for versioning (semver for app & styles, timestamp for data; syncs index.html and sw.js; checks cover and data versions)
+│   ├── cover_version.py     # Content fingerprint of a cover, used in its URL (?v=)
+│   ├── bump_version.py      # Version bumps and pre-deploy checks (see Version Management Workflow)
 │   └── extract_covers.py    # Script to extract book covers from distributor's PDF catalogs
 ├── requirements.txt         # Python package dependencies
 ├── .venv/                   # Python virtual environment (ignored by Git)
 ├── .github/
 │   └── workflows/
-│       └── deploy-pages.yml # GitHub Actions workflow: publishes only the static site files to GitHub Pages
-├── .gitignore               # Git exclusion rules (including the temporary _site/ folder of the deploy workflow)
+│       └── deploy-pages.yml # GitHub Actions: publishes only the site files to GitHub Pages
+├── .gitignore               # Git exclusion rules (including the temporary _site/ deploy folder)
 └── README.md                # Project documentation
 
 ```
@@ -306,9 +309,11 @@ The workflow uses an **allowlist**: only these files are copied to the published
 
 | Published | Not published |
 |---|---|
-| `index.html`, `404.html`, `app.js`, `sw.js`, `styles.css`, `data.json`, `assets/` (covers and icons) | `README.md`, `CNAME`, `scripts/`, `data/`, `src/`, `docs/`, `package.json`, `package-lock.json`, `requirements.txt`, ZAP reports and any other file |
+| `index.html`, `404.html`, `robots.txt`, `app.js`, `sw.js`, `styles.css`, `data.json`, `assets/` (covers and icons) | `README.md`, `CNAME`, `scripts/`, `data/`, `src/`, `docs/`, `package.json`, `package-lock.json`, `requirements.txt`, ZAP reports and any other file |
 
 If a listed file is missing, the workflow fails instead of publishing an incomplete site. If the website ever needs a new file (e.g. a `manifest.webmanifest`), add it in **two places** of the workflow: the `cp` command of the "Collect site files" step and the `paths` list of the trigger. If it is a JavaScript or HTML file, also add it to the "Minify JS, HTML and JSON" step.
+
+`robots.txt` (`User-agent: *` / `Disallow: /`) asks crawlers not to crawl the site, alongside the `noindex` meta tag of the pages. It is a public, voluntary request, not a security control: search engines and the AI crawlers of the major companies follow it, but malicious scrapers ignore it, and the site stays reachable for anyone (blocking bots for real is done in Cloudflare). It does not affect Lighthouse: the SEO check "Page is blocked from indexing" already fails because of `noindex` (on purpose), and the Agentic Browsing category does not check `robots.txt`.
 
 ### How It Works
 
