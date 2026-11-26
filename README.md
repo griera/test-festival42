@@ -251,6 +251,7 @@ Versioned URLs (`app.js?v=…`, `styles.css?v=…`, `data.json?v=…`) let brows
 3. **Consistency check**: every run verifies that `index.html` and `sw.js` reference the same versions, and exits with code `1` if they do not or if a file or pattern is missing.
 4. **Cover check**: every run also verifies that each cover URL in `data.json` carries the fingerprint of the current cover file (see the covers note in [How to Update the Catalog](#-how-to-update-the-catalog--test-performance)). Outdated or missing covers make it exit with code `1`, which also stops the deployment workflow.
 5. **Data check**: `data` also records a fingerprint of `data.json` in its preload link in `index.html` (`data-content-hash`), and every run verifies that `data.json` still matches it. If `data.json` is regenerated (e.g. with new stock) without running `data`, its `?v=` URL would not change and every device would keep its cached copy, so the check fails and the deployment workflow stops. When adopting this check, run `data` once to record the first fingerprint.
+6. **CSP hash check**: every run verifies that each inline `<script>` of `index.html` matches the hash written in the comment above it (`CSP hash: 'sha256-…'`). The Content-Security-Policy, set in Cloudflare outside this repository, only allows inline scripts by their hash, so a changed script would be blocked silently by browsers. If a script changes, the check fails and prints its new hash, which must replace the old one in that comment and in the `script-src` of the CSP (see [Security Headers](#security-headers)).
 
 > ⚠️ Never change `app.js` or `styles.css` without bumping the code version, and never edit `?v=` values by hand: versioned files are cached for a week, so a changed file under an unchanged URL would keep being served in its old version.
 
@@ -282,7 +283,7 @@ python3 scripts/bump_version.py code --type major
 
 ```
 
-* **To only verify that `index.html` and `sw.js` are aligned (changes nothing), e.g. right before deploying:**
+* **To only run the checks of rules 3 to 6 (changes nothing), e.g. right before deploying (the deployment workflow runs it too):**
 ```bash
 python3 scripts/bump_version.py check
 
